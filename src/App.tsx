@@ -15,6 +15,17 @@ import Clients from "./pages/admin/Clients";
 import Subscriptions from "./pages/admin/Subscriptions";
 import Payments from "./pages/admin/Payments";
 import Settings from "./pages/admin/Settings";
+import UserLayout from "./components/user/UserLayout";
+import UserDashboard from "./pages/user/UserDashboard";
+import Leads from "./pages/user/Leads";
+import Segments from "./pages/user/Segments";
+import Landings from "./pages/user/Landings";
+import Campaigns from "./pages/user/Campaigns";
+import Automations from "./pages/user/Automations";
+import Statistics from "./pages/user/Statistics";
+import UserSettings from "./pages/user/UserSettings";
+import Profile from "./pages/user/Profile";
+import Billing from "./pages/user/Billing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +51,20 @@ const App = () => (
             <Route path="suscripciones" element={<Subscriptions />} />
             <Route path="pagos" element={<Payments />} />
             <Route path="configuracion" element={<Settings />} />
+          </Route>
+          
+          {/* User Panel Routes */}
+          <Route path="/panel" element={<UserLayout />}>
+            <Route index element={<UserDashboard />} />
+            <Route path="leads" element={<Leads />} />
+            <Route path="leads/segmentos" element={<Segments />} />
+            <Route path="landings" element={<Landings />} />
+            <Route path="campanas" element={<Campaigns />} />
+            <Route path="automatizaciones" element={<Automations />} />
+            <Route path="estadisticas" element={<Statistics />} />
+            <Route path="configuracion" element={<UserSettings />} />
+            <Route path="perfil" element={<Profile />} />
+            <Route path="facturacion" element={<Billing />} />
           </Route>
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
