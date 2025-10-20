@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket } from "lucide-react";
+import { Rocket, Settings } from "lucide-react";
 
 const Navbar = () => {
   const location = useLocation();
@@ -56,6 +56,11 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <Link to="/admin">
+              <Button variant="ghost" size="icon" title="Panel Admin">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <Link to="/login">
               <Button variant="ghost" size="sm">
                 Iniciar sesión
