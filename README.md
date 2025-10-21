@@ -1,73 +1,248 @@
-# Welcome to your Lovable project
+# LandFlow
 
-## Project info
+**LandFlow** es una plataforma completa para la creación de landing pages optimizadas y automatización de email marketing. Diseñada para empresas que buscan escalar sus campañas de forma predecible y profesional.
 
-**URL**: https://lovable.dev/projects/e360fdc0-c04b-4d1a-8d70-8c0b1f270c9c
+## 🚀 Características Principales
 
-## How can I edit this code?
+✅ **Landings Profesionales** - Crea páginas optimizadas para conversión  
+✅ **Automatización Completa** - Embudos automatizados en piloto automático  
+✅ **Email Marketing Ilimitado** - Campañas y secuencias sin límites de embudos  
+✅ **Analytics Avanzado** - Métricas de leads, conversiones y rendimiento  
+✅ **Segmentación Inteligente** - Control total de tus contactos  
+✅ **Escalabilidad** - Ideal para crecer de forma predecible
 
-There are several ways of editing your application.
+## 📋 Estructura del Proyecto
 
-**Use Lovable**
+### **Landing Page Pública**
+- **Home** (`/`) - Página principal con Hero, características y CTA
+- **Precios** (`/precios`) - 4 planes: Essential, Growth, Scale, Enterprise
+- **Nosotros** (`/nosotros`) - Información sobre la empresa
+- **Contacto** (`/contacto`) - Formulario de contacto y soporte
+- **Login** (`/login`) - Página de inicio de sesión
+- **Registro** (`/registro`) - Página de registro de usuarios
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e360fdc0-c04b-4d1a-8d70-8c0b1f270c9c) and start prompting.
+### **Panel de Administración** (`/admin`)
+Sin autenticación (por ahora)
 
-Changes made via Lovable will be committed automatically to this repo.
+Páginas implementadas:
+- **Dashboard** - Vista general con métricas clave
+- **Clientes** - Gestión de clientes registrados
+- **Suscripciones** - Administración de planes activos
+- **Pagos** - Historial de transacciones
+- **Configuración** - Ajustes generales del sistema
 
-**Use your preferred IDE**
+### **Panel de Usuario** (`/panel`)
+Sin autenticación (por ahora)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Páginas implementadas:
+- **Dashboard** - Vista general del usuario
+- **Leads** - Gestión de contactos capturados
+  - **Segmentos** - Segmentación avanzada de leads
+- **Landings** - Creación y gestión de landing pages
+- **Campañas** - Email marketing y secuencias
+- **Automatizaciones** - Workflows automatizados
+- **Estadísticas** - Métricas y rendimiento
+- **Configuración** - Ajustes de la cuenta
+- **Perfil** - Información personal del usuario
+- **Facturación** - Pagos y plan actual
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠️ Tecnologías
 
-Follow these steps:
+- **Frontend**: React 18 + TypeScript
+- **Routing**: React Router v6
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Build Tool**: Vite
+- **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod
+- **Charts**: Recharts
+- **State**: TanStack Query
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+## 🎨 Sistema de Diseño
+
+El proyecto utiliza un sistema de diseño moderno basado en:
+- **Colores HSL** - Tokens semánticos para consistencia
+- **Gradientes** - Efectos visuales sutiles y elegantes
+- **Animaciones** - Transiciones suaves (fade-in, scale-in, float, glow)
+- **Componentes UI** - shadcn/ui completamente personalizado
+
+Todos los colores y estilos están centralizados en:
+- `src/index.css` - Variables CSS y tokens de diseño
+- `tailwind.config.ts` - Configuración de Tailwind
+
+## 📦 Planes y Precios
+
+| Plan | Contactos | Emails/mes | Precio |
+|------|-----------|------------|--------|
+| **Essential** | 1.000 | 5.000 | 49 €/mes |
+| **Growth** | 5.000 | 20.000 | 99 €/mes |
+| **Scale** | 20.000 | 60.000 | 199 €/mes |
+| **Enterprise** | +20.000 | +60.000 | Desde 399 €/mes |
+
+**Emails adicionales:**
+- 1,5 € por cada 1.000 emails extra
+- Bloques opcionales: +5.000 (15€), +20.000 (50€), +50.000 (100€)
+
+## 🚀 Instalación y Desarrollo
+
+```bash
+# Clonar el repositorio
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Instalar dependencias
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Iniciar servidor de desarrollo
 npm run dev
+
+# Build para producción
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+## 📝 Changelog
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prompt 1 - Landing Page Inicial
+**Fecha**: Primera implementación
 
-**Use GitHub Codespaces**
+**Implementado:**
+- ✅ Sistema de diseño moderno (colores HSL, gradientes, animaciones)
+- ✅ Componente Button con variantes `hero` y `cta`
+- ✅ Navbar responsive con navegación y botones Login/Registro
+- ✅ Footer con enlaces y detalles de empresa
+- ✅ Página Home con secciones:
+  - Hero (título, descripción, CTAs)
+  - Features (6 características clave)
+  - How It Works (4 pasos)
+  - CTA Section
+- ✅ Página Precios (4 planes detallados)
+- ✅ Página Nosotros (historia, misión, valores)
+- ✅ Página Contacto (formulario y opciones)
+- ✅ Páginas Login y Registro
+- ✅ Página NotFound mejorada
+- ✅ Actualización de metadatos SEO
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**Archivos creados:**
+- `src/components/Navbar.tsx`
+- `src/components/Footer.tsx`
+- `src/components/home/*` (Hero, Features, HowItWorks, CTASection)
+- `src/pages/Home.tsx`
+- `src/pages/Pricing.tsx`
+- `src/pages/About.tsx`
+- `src/pages/Contact.tsx`
+- `src/pages/Login.tsx`
+- `src/pages/Register.tsx`
 
-## What technologies are used for this project?
+**Archivos modificados:**
+- `src/index.css`
+- `tailwind.config.ts`
+- `src/components/ui/button.tsx`
+- `src/App.tsx`
+- `index.html`
 
-This project is built with:
+### Prompt 2 - Panel de Administración
+**Fecha**: Segunda implementación
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**Implementado:**
+- ✅ Panel de admin completo sin autenticación
+- ✅ AdminSidebar con navegación colapsable
+- ✅ AdminLayout con header y área de contenido
+- ✅ Páginas de administración:
+  - Dashboard con métricas clave
+  - Clientes con tabla de gestión
+  - Suscripciones con estado de planes
+  - Pagos con historial de transacciones
+  - Configuración del sistema
+- ✅ Icono de acceso rápido en Navbar
 
-## How can I deploy this project?
+**Archivos creados:**
+- `src/components/admin/AdminSidebar.tsx`
+- `src/components/admin/AdminLayout.tsx`
+- `src/pages/admin/Dashboard.tsx`
+- `src/pages/admin/Clients.tsx`
+- `src/pages/admin/Subscriptions.tsx`
+- `src/pages/admin/Payments.tsx`
+- `src/pages/admin/Settings.tsx`
 
-Simply open [Lovable](https://lovable.dev/projects/e360fdc0-c04b-4d1a-8d70-8c0b1f270c9c) and click on Share -> Publish.
+**Archivos modificados:**
+- `src/App.tsx` (rutas admin)
+- `src/components/Navbar.tsx` (enlace admin)
 
-## Can I connect a custom domain to my Lovable project?
+### Prompt 3 - Panel de Usuario
+**Fecha**: Tercera implementación
 
-Yes, you can!
+**Implementado:**
+- ✅ Panel de usuario completo sin autenticación
+- ✅ UserSidebar con navegación colapsable y submenús
+- ✅ UserLayout con header, notificaciones y área de contenido
+- ✅ Páginas de usuario:
+  - Dashboard con métricas personales
+  - Leads con gestión de contactos
+  - Segmentos (subpágina de Leads)
+  - Landings para crear páginas
+  - Campañas de email marketing
+  - Automatizaciones de workflows
+  - Estadísticas con gráficos
+  - Configuración de cuenta
+  - Perfil de usuario
+  - Facturación y pagos
+- ✅ Logo LandFlow con gradiente en sidebar
+- ✅ Enlace de acceso rápido en Navbar
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Archivos creados:**
+- `src/components/user/UserSidebar.tsx`
+- `src/components/user/UserLayout.tsx`
+- `src/pages/user/UserDashboard.tsx`
+- `src/pages/user/Leads.tsx`
+- `src/pages/user/Segments.tsx`
+- `src/pages/user/Landings.tsx`
+- `src/pages/user/Campaigns.tsx`
+- `src/pages/user/Automations.tsx`
+- `src/pages/user/Statistics.tsx`
+- `src/pages/user/UserSettings.tsx`
+- `src/pages/user/Profile.tsx`
+- `src/pages/user/Billing.tsx`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+**Archivos modificados:**
+- `src/App.tsx` (rutas usuario)
+- `src/components/Navbar.tsx` (enlace panel usuario)
+
+### Prompt 4 - Documentación y README
+**Fecha**: Cuarta implementación
+
+**Implementado:**
+- ✅ README.md completo con documentación del proyecto
+- ✅ Changelog detallado de todas las implementaciones
+- ✅ Estructura y tecnologías documentadas
+- ✅ Guías de instalación y desarrollo
+
+**Archivos creados:**
+- `README.md` (este archivo)
+
+---
+
+## 📌 Estado Actual
+
+**✅ Completado:**
+- Landing page completa y responsive
+- Panel de administración funcional
+- Panel de usuario con todas las secciones
+- Sistema de diseño consistente
+- Navegación y rutas configuradas
+
+**🔄 Pendiente:**
+- Autenticación y autorización
+- Integración con backend (Lovable Cloud)
+- Funcionalidad real en formularios
+- Conexión a base de datos
+- Sistema de pagos (Stripe)
+- Envío real de emails
+- Generador de landing pages
+- Editor de campañas
+- Constructor de automatizaciones
+
+## 📞 Soporte
+
+Para más información, visita [lovable.dev](https://lovable.dev/projects/e360fdc0-c04b-4d1a-8d70-8c0b1f270c9c)
+
+---
+
+**Última actualización**: Prompt 4 - Documentación completa del proyecto
