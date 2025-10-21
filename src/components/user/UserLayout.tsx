@@ -3,6 +3,7 @@ import { UserSidebar } from "./UserSidebar";
 import { Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const UserLayout = () => {
   return (
@@ -17,6 +18,7 @@ const UserLayout = () => {
                 <h1 className="text-lg font-semibold">Mi Panel</h1>
               </div>
               <div className="flex items-center gap-2">
+                <ThemeToggle />
                 <Button variant="ghost" size="icon">
                   <Bell className="h-5 w-5" />
                 </Button>

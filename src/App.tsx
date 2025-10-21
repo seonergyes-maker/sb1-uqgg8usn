@@ -20,9 +20,17 @@ import UserDashboard from "./pages/user/UserDashboard";
 import Leads from "./pages/user/Leads";
 import Segments from "./pages/user/Segments";
 import Landings from "./pages/user/Landings";
+import LandingEditor from "./pages/user/LandingEditor";
 import Campaigns from "./pages/user/Campaigns";
+import EmailEditor from "./pages/user/EmailEditor";
 import Automations from "./pages/user/Automations";
 import Statistics from "./pages/user/Statistics";
+import AdvancedAnalytics from "./pages/user/AdvancedAnalytics";
+import Templates from "./pages/user/Templates";
+import ABTesting from "./pages/user/ABTesting";
+import Scheduler from "./pages/user/Scheduler";
+import Webhooks from "./pages/user/Webhooks";
+import Integrations from "./pages/user/Integrations";
 import UserSettings from "./pages/user/UserSettings";
 import Profile from "./pages/user/Profile";
 import Billing from "./pages/user/Billing";
@@ -59,9 +67,17 @@ const App = () => (
             <Route path="leads" element={<Leads />} />
             <Route path="leads/segmentos" element={<Segments />} />
             <Route path="landings" element={<Landings />} />
+            <Route path="landings/editor" element={<LandingEditor />} />
             <Route path="campanas" element={<Campaigns />} />
+            <Route path="campanas/editor" element={<EmailEditor />} />
             <Route path="automatizaciones" element={<Automations />} />
             <Route path="estadisticas" element={<Statistics />} />
+            <Route path="analytics" element={<AdvancedAnalytics />} />
+            <Route path="templates" element={<Templates />} />
+            <Route path="ab-testing" element={<ABTesting />} />
+            <Route path="scheduler" element={<Scheduler />} />
+            <Route path="webhooks" element={<Webhooks />} />
+            <Route path="integraciones" element={<Integrations />} />
             <Route path="configuracion" element={<UserSettings />} />
             <Route path="perfil" element={<Profile />} />
             <Route path="facturacion" element={<Billing />} />
