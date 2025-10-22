@@ -5,12 +5,19 @@ This is a full-stack marketing automation platform migrated from Lovable to Repl
 
 ## Recent Changes (October 22, 2025)
 
-### Latest Update - Database Integration ✅
+### Latest Update - Subscriptions Module Complete ✅
+- **Integrated Subscriptions with MySQL database**
+- Created `subscriptions` table with foreign key relationship to `clients`
+- Implemented full CRUD API endpoints (`/api/subscriptions`)
+- Updated admin Subscriptions page to use real database data
+- All subscription operations (cancel, reactivate, filter, export) now work with real data
+- 6 test subscriptions linked to existing clients
+
+### Database Integration Complete ✅
 - **Integrated MySQL/MariaDB database** with Drizzle ORM
-- Created `clients` table schema in MySQL
-- Implemented full CRUD API endpoints for clients (`/api/clients`)
-- Updated admin Clients page to use real database data via TanStack Query
-- All client operations (create, update, delete, suspend, filter, export) now persist to database
+- Created `clients` and `subscriptions` tables in MySQL
+- Implemented full CRUD API endpoints for both modules
+- All admin pages use real database data via TanStack Query
 - Removed mock data - app now uses authentic MySQL data
 
 ### Previous Migration
@@ -73,6 +80,11 @@ npx drizzle-kit push  # Push schema changes to MySQL database
   - contacts, emailsSent
   - registeredAt, updatedAt
 
+- **subscriptions** - Subscription management
+  - id, clientId (FK to clients), plan, price
+  - status, startDate, nextBilling
+  - createdAt, updatedAt
+
 ## Development
 ```bash
 npm run dev    # Start development server on port 5000
@@ -93,8 +105,17 @@ npm run start  # Run production build
 - Export to CSV
 - Real-time data updates with TanStack Query
 
+### ✅ Suscripciones (Fully Functional)
+- View all subscriptions from MySQL database
+- Linked to clients with foreign key relationship
+- Cancel/reactivate subscriptions
+- Search by client name or plan
+- Filter by plan and status
+- Export to CSV
+- Real-time statistics (Active, Trial, Canceled)
+- Real-time data updates with TanStack Query
+
 ### 🚧 To Be Implemented
-- **Suscripciones** - Connect to database
 - **Pagos** - Connect to database  
 - **Dashboard** - Connect to real statistics
 - **Configuración** - System settings
@@ -113,6 +134,7 @@ npm run start  # Run production build
 - ✅ Server running successfully on port 5000
 - ✅ **Integrated MySQL database** with Drizzle ORM
 - ✅ **Admin Clients page fully functional** with real database operations
+- ✅ **Admin Subscriptions page fully functional** with real database operations and foreign key relations
 
 ## User Preferences
 - Always use Spanish for communication
