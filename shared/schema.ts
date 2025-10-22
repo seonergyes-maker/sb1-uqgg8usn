@@ -139,6 +139,23 @@ export const landings = mysqlTable("landings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const templates = mysqlTable("templates", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { length: 50 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  subject: varchar("subject", { length: 500 }),
+  content: text("content").notNull(),
+  variables: text("variables"),
+  thumbnail: varchar("thumbnail", { length: 500 }),
+  status: varchar("status", { length: 50 }).notNull().default("Activa"),
+  timesUsed: int("times_used").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -147,6 +164,7 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   campaigns: many(campaigns),
   automations: many(automations),
   landings: many(landings),
+  templates: many(templates),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -199,6 +217,13 @@ export const automationsRelations = relations(automations, ({ one }) => ({
 export const landingsRelations = relations(landings, ({ one }) => ({
   client: one(clients, {
     fields: [landings.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const templatesRelations = relations(templates, ({ one }) => ({
+  client: one(clients, {
+    fields: [templates.clientId],
     references: [clients.id],
   }),
 }));
@@ -307,6 +332,24 @@ export const insertLandingSchema = createInsertSchema(landings).omit({
 
 export const updateLandingSchema = insertLandingSchema.partial();
 
+export const insertTemplateSchema = createInsertSchema(templates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional().nullable(),
+  type: z.string().min(1, "El tipo es requerido"),
+  category: z.string().min(1, "La categoría es requerida"),
+  subject: z.string().optional().nullable(),
+  content: z.string().min(1, "El contenido es requerido"),
+  variables: z.string().optional().nullable(),
+  thumbnail: z.string().optional().nullable(),
+  status: z.string().default("Activa"),
+});
+
+export const updateTemplateSchema = insertTemplateSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -342,3 +385,7 @@ export type UpdateAutomation = z.infer<typeof updateAutomationSchema>;
 export type Landing = typeof landings.$inferSelect;
 export type InsertLanding = z.infer<typeof insertLandingSchema>;
 export type UpdateLanding = z.infer<typeof updateLandingSchema>;
+
+export type Template = typeof templates.$inferSelect;
+export type InsertTemplate = z.infer<typeof insertTemplateSchema>;
+export type UpdateTemplate = z.infer<typeof updateTemplateSchema>;
