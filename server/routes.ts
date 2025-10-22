@@ -763,36 +763,30 @@ export function registerRoutes(app: Express) {
   // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
   app.post("/api/seed/base-templates", async (req, res) => {
     try {
-      console.log('🎨 Seeding base templates...');
+      console.log('🎨 Inserting base template manually without is_base_template field...');
       
-      const baseTemplates = [
-        {
-          clientId: 0,
-          name: "Email Bienvenida Moderna",
-          description: "Template moderno de bienvenida con diseño limpio y profesional",
-          type: "Email",
-          category: "Transaccional",
-          subject: "¡Bienvenido/a a {{company}}!",
-          content: `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px}.content{padding:40px 30px}.content h2{color:#333;font-size:24px;margin-bottom:20px}.content p{color:#666;line-height:1.6;font-size:16px}.cta-button{display:inline-block;padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-decoration:none;border-radius:5px;margin:20px 0;font-weight:bold}.footer{background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>¡Bienvenido/a!</h1></div><div class="content"><h2>Hola {{name}},</h2><p>Nos alegra tenerte con nosotros en {{company}}.</p><a href="{{dashboard_url}}" class="cta-button">Ir a mi panel</a></div><div class="footer"><p>© {{year}} {{company}}</p></div></div></body></html>`,
-          variables: '{"name":"Nombre del usuario","company":"Nombre de la empresa","dashboard_url":"URL del panel","year":"Año actual"}',
-          thumbnail: null,
-          isBaseTemplate: 1,
-          status: "Activa",
-          timesUsed: 0,
-        },
-      ];
+      // Insertar directamente sin el campo is_base_template que no existe aún
+      const baseTemplate = {
+        clientId: 0,
+        name: "Email Bienvenida Moderna",
+        description: "Template moderno de bienvenida con diseño limpio y profesional",
+        type: "Email",
+        category: "Transaccional",
+        subject: "¡Bienvenido/a a {{company}}!",
+        content: `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px}.content{padding:40px 30px}.content h2{color:#333;font-size:24px;margin-bottom:20px}.content p{color:#666;line-height:1.6;font-size:16px}.cta-button{display:inline-block;padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-decoration:none;border-radius:5px;margin:20px 0;font-weight:bold}.footer{background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>¡Bienvenido/a!</h1></div><div class="content"><h2>Hola {{name}},</h2><p>Nos alegra tenerte con nosotros en {{company}}.</p><a href="{{dashboard_url}}" class="cta-button">Ir a mi panel</a></div><div class="footer"><p>© {{year}} {{company}}</p></div></div></body></html>`,
+        variables: '{"name":"Nombre del usuario","company":"Nombre de la empresa","dashboard_url":"URL del panel","year":"Año actual"}',
+        thumbnail: null,
+        status: "Activa",
+        timesUsed: 0,
+      };
       
-      const inserted = [];
-      for (const template of baseTemplates) {
-        const newTemplate = await storage.createTemplate(template);
-        inserted.push(newTemplate);
-      }
+      const newTemplate = await storage.createTemplate(baseTemplate);
       
-      console.log(`✅ ${inserted.length} base templates seeded successfully`);
-      res.json({ success: true, count: inserted.length, templates: inserted });
+      console.log('✅ Base template inserted successfully');
+      res.json({ success: true, template: newTemplate });
     } catch (error) {
-      console.error("Error seeding base templates:", error);
-      res.status(500).json({ error: "Failed to seed base templates" });
+      console.error("Error seeding base template:", error);
+      res.status(500).json({ error: "Failed to seed base template" });
     }
   });
 }
