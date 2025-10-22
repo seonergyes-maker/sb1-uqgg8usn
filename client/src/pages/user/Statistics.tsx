@@ -10,11 +10,6 @@ interface UserStats {
   avgLeadScore: string;
   totalSegments: number;
   totalLeadsSegmented: number;
-  totalCampaigns: number;
-  sentCampaigns: number;
-  totalRecipients: number;
-  avgOpenRate: string;
-  avgClickRate: string;
   totalAutomations: number;
   activeAutomations: number;
   totalExecutions: number;
@@ -69,7 +64,6 @@ const Statistics = () => {
         <TabsList>
           <TabsTrigger value="overview">Resumen General</TabsTrigger>
           <TabsTrigger value="leads">Leads</TabsTrigger>
-          <TabsTrigger value="campaigns">Campañas</TabsTrigger>
           <TabsTrigger value="automations">Automatizaciones</TabsTrigger>
         </TabsList>
 
@@ -94,14 +88,14 @@ const Statistics = () => {
             <Card className="border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Emails Enviados
+                  Total Segmentos
                 </CardTitle>
-                <Mail className="h-4 w-4 text-primary" />
+                <Target className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold" data-testid="text-total-recipients">{stats.totalRecipients.toLocaleString()}</div>
+                <div className="text-2xl font-bold" data-testid="text-total-segments">{stats.totalSegments}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {stats.sentCampaigns} campañas enviadas
+                  {stats.totalLeadsSegmented} leads segmentados
                 </p>
               </CardContent>
             </Card>
@@ -109,14 +103,14 @@ const Statistics = () => {
             <Card className="border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Tasa de Apertura
+                  Automatizaciones
                 </CardTitle>
-                <Eye className="h-4 w-4 text-primary" />
+                <Zap className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary" data-testid="text-avg-open-rate">{stats.avgOpenRate}%</div>
+                <div className="text-2xl font-bold text-primary" data-testid="text-total-automations">{stats.totalAutomations}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Promedio de campañas
+                  {stats.activeAutomations} activas
                 </p>
               </CardContent>
             </Card>
@@ -124,14 +118,14 @@ const Statistics = () => {
             <Card className="border-border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Tasa de Clics
+                  Tasa de Éxito
                 </CardTitle>
-                <MousePointer className="h-4 w-4 text-primary" />
+                <TrendingUp className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary" data-testid="text-avg-click-rate">{stats.avgClickRate}%</div>
+                <div className="text-2xl font-bold text-primary" data-testid="text-avg-success-rate">{stats.avgSuccessRate}%</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Promedio de campañas
+                  Promedio de automatizaciones
                 </p>
               </CardContent>
             </Card>
@@ -328,118 +322,6 @@ const Statistics = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="campaigns" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Campañas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalCampaigns}</div>
-                <p className="text-xs text-muted-foreground mt-1">Campañas creadas</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Enviadas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-green-600">{stats.sentCampaigns}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats.totalCampaigns > 0 
-                    ? `${((stats.sentCampaigns / stats.totalCampaigns) * 100).toFixed(0)}% del total`
-                    : "0% del total"}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Destinatarios
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalRecipients.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground mt-1">Emails totales enviados</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Tasa Apertura
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-primary">{stats.avgOpenRate}%</div>
-                <p className="text-xs text-muted-foreground mt-1">Promedio</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Rendimiento de Email</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-medium">Tasa de Apertura</span>
-                      <span className="text-sm font-medium text-primary">{stats.avgOpenRate}%</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-3">
-                      <div className="bg-primary h-3 rounded-full" style={{ width: `${stats.avgOpenRate}%` }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-medium">Tasa de Clics</span>
-                      <span className="text-sm font-medium text-primary">{stats.avgClickRate}%</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-3">
-                      <div className="bg-primary h-3 rounded-full" style={{ width: `${stats.avgClickRate}%` }}></div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Métricas Clave</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-muted-foreground">Emails enviados</span>
-                    <span className="font-bold">{stats.totalRecipients.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-sm text-muted-foreground">Campañas activas</span>
-                    <span className="font-bold">{stats.sentCampaigns}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-muted-foreground">Promedio por campaña</span>
-                    <span className="font-bold">
-                      {stats.sentCampaigns > 0 
-                        ? (stats.totalRecipients / stats.sentCampaigns).toLocaleString(undefined, { maximumFractionDigits: 0 })
-                        : 0}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         <TabsContent value="automations" className="space-y-6">

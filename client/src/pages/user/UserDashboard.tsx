@@ -35,10 +35,10 @@ const stats = [
 ];
 
 const recentActivity = [
-  { action: "Nueva campaña enviada", description: "Bienvenida nuevos leads", time: "Hace 2 horas" },
   { action: "Landing publicada", description: "Oferta Black Friday", time: "Hace 5 horas" },
   { action: "Automatización activada", description: "Secuencia abandono carrito", time: "Ayer" },
   { action: "45 nuevos leads", description: "Landing página principal", time: "Ayer" },
+  { action: "Template creado", description: "Email de bienvenida", time: "Hace 2 días" },
 ];
 
 const UserDashboard = () => {
@@ -58,10 +58,10 @@ const UserDashboard = () => {
               Nueva landing
             </Button>
           </Link>
-          <Link href="/panel/campanas">
+          <Link href="/panel/automatizaciones">
             <Button variant="hero">
               <Mail className="mr-2 h-4 w-4" />
-              Nueva campaña
+              Nueva automatización
             </Button>
           </Link>
         </div>
