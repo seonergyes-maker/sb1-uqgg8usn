@@ -142,7 +142,15 @@ export const insertSettingsSchema = createInsertSchema(settings).omit({
 
 export const updateSettingsSchema = insertSettingsSchema.partial();
 
-export const insertLeadSchema = createInsertSchema(leads).omit({
+export const insertLeadSchema = createInsertSchema(leads, {
+  clientId: z.number(),
+  name: z.string().min(1, "El nombre es requerido"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().optional(),
+  source: z.string().min(1, "El origen es requerido"),
+  status: z.string().default("Nuevo"),
+  score: z.number().min(0).max(100).default(0),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
