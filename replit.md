@@ -42,6 +42,15 @@ The project is structured into a `client/` for the frontend, a `server/` for the
 -   Robust form validation using `React Hook Form` and `Zod`.
 -   Modular design for both frontend components and backend API routes.
 
+## Recent Progress
+-   **User Panel Modules Completed (6/6 core modules):**
+    -   ✅ Leads: CRUD completo, 10 leads de prueba, estadísticas en tiempo real (30% calificados, 20% convertidos)
+    -   ✅ Segmentos: 4 segmentos de prueba, 14 leads segmentados, filtros JSON
+    -   ✅ Campañas: 4 campañas con tracking de métricas, 6,138 destinatarios, 16.40% tasa apertura
+    -   ✅ Automatizaciones: 5 automatizaciones con sistema de triggers, 1,380 ejecuciones, 25.22% tasa éxito
+    -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos (leads, campaigns, automations, segments)
+    -   Next: Landings, Templates, A/B Testing, Scheduler, Webhooks, Integrations
+
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (external instance configured via environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).
 -   **Payment Gateways:** Stripe, PayPal (integration keys for both are anticipated and mentioned in `.env.example`).
