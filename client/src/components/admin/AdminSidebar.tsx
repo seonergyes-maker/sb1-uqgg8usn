@@ -22,20 +22,20 @@ const menuItems = [
 
 export function AdminSidebar() {
   const { open } = useSidebar();
-  const location = useLocation();
+  const [location] = useLocation();
 
   const isActive = (path: string) => {
     if (path === "/admin") {
-      return location.pathname === path;
+      return location === path;
     }
-    return location.pathname.startsWith(path);
+    return location.startsWith(path);
   };
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 border-b border-sidebar-border">
-          <Link to="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="bg-gradient-primary p-2 rounded-lg">
               <Rocket className="h-5 w-5 text-primary-foreground" />
             </div>

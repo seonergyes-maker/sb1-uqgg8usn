@@ -57,17 +57,17 @@ const settingsItems = [
 
 export function UserSidebar() {
   const { open } = useSidebar();
-  const location = useLocation();
+  const [location] = useLocation();
 
   const isActive = (path: string) => {
     if (path === "/panel") {
-      return location.pathname === path;
+      return location === path;
     }
-    return location.pathname.startsWith(path);
+    return location.startsWith(path);
   };
 
   const isSubmenuActive = (submenu: { url: string }[]) => {
-    return submenu.some(item => location.pathname === item.url);
+    return submenu.some(item => location === item.url);
   };
 
   return (
@@ -109,7 +109,7 @@ export function UserSidebar() {
                         <SidebarMenuSub>
                           {item.submenu.map((subItem) => (
                             <SidebarMenuSubItem key={subItem.url}>
-                              <SidebarMenuSubButton asChild isActive={location.pathname === subItem.url}>
+                              <SidebarMenuSubButton asChild isActive={location === subItem.url}>
                                 <Link href={subItem.url}>
                                   <span>{subItem.title}</span>
                                 </Link>
