@@ -9,6 +9,7 @@ import {
   segments,
   campaigns,
   automations,
+  landings,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -32,7 +33,10 @@ import {
   type UpdateCampaign,
   type Automation,
   type InsertAutomation,
-  type UpdateAutomation
+  type UpdateAutomation,
+  type Landing,
+  type InsertLanding,
+  type UpdateLanding
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -108,6 +112,12 @@ export interface IStorage {
   createAutomation(automation: InsertAutomation): Promise<Automation>;
   updateAutomation(id: number, automation: UpdateAutomation): Promise<Automation | undefined>;
   deleteAutomation(id: number): Promise<boolean>;
+  
+  getLandings(clientId: number, filters?: { status?: string; search?: string }): Promise<Landing[]>;
+  getLandingById(id: number): Promise<Landing | undefined>;
+  createLanding(landing: InsertLanding): Promise<Landing>;
+  updateLanding(id: number, landing: UpdateLanding): Promise<Landing | undefined>;
+  deleteLanding(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -557,6 +567,61 @@ export class DbStorage implements IStorage {
 
   async deleteAutomation(id: number): Promise<boolean> {
     const result = await db.delete(automations).where(eq(automations.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getLandings(clientId: number, filters?: { status?: string; search?: string }): Promise<Landing[]> {
+    const conditions: SQL[] = [eq(landings.clientId, clientId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(landings.status, filters.status));
+    }
+    
+    let landingsList: Landing[];
+    if (conditions.length > 0) {
+      const whereCondition = and(...conditions);
+      if (whereCondition) {
+        landingsList = await db.select().from(landings).where(whereCondition);
+      } else {
+        landingsList = await db.select().from(landings).where(eq(landings.clientId, clientId));
+      }
+    } else {
+      landingsList = await db.select().from(landings).where(eq(landings.clientId, clientId));
+    }
+    
+    if (filters?.search) {
+      return landingsList.filter(landing => 
+        landing.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        landing.slug.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        (landing.title && landing.title.toLowerCase().includes(filters.search!.toLowerCase()))
+      );
+    }
+    
+    return landingsList;
+  }
+
+  async getLandingById(id: number): Promise<Landing | undefined> {
+    const result = await db.select().from(landings).where(eq(landings.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createLanding(landing: InsertLanding): Promise<Landing> {
+    const result = await db.insert(landings).values(landing);
+    const insertedId = Number(result[0].insertId);
+    const newLanding = await this.getLandingById(insertedId);
+    if (!newLanding) {
+      throw new Error("Failed to create landing");
+    }
+    return newLanding;
+  }
+
+  async updateLanding(id: number, landing: UpdateLanding): Promise<Landing | undefined> {
+    await db.update(landings).set(landing).where(eq(landings.id, id));
+    return await this.getLandingById(id);
+  }
+
+  async deleteLanding(id: number): Promise<boolean> {
+    const result = await db.delete(landings).where(eq(landings.id, id));
     return result[0].affectedRows > 0;
   }
 
