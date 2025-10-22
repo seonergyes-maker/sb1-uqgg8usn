@@ -1,6 +1,11 @@
 import type { Express } from "express";
 import { storage } from "./storage.js";
-import { insertClientSchema, updateClientSchema } from "../shared/schema.js";
+import { 
+  insertClientSchema, 
+  updateClientSchema,
+  insertSubscriptionSchema,
+  updateSubscriptionSchema
+} from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
   // GET /api/clients - List all clients with optional filters
@@ -86,6 +91,92 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting client:", error);
       res.status(500).json({ error: "Failed to delete client" });
+    }
+  });
+
+  // GET /api/subscriptions - List all subscriptions with optional filters
+  app.get("/api/subscriptions", async (req, res) => {
+    try {
+      const { plan, status, search } = req.query;
+      const subscriptions = await storage.getSubscriptions({
+        plan: plan as string,
+        status: status as string,
+        search: search as string,
+      });
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      res.status(500).json({ error: "Failed to fetch subscriptions" });
+    }
+  });
+
+  // GET /api/subscriptions/:id - Get a single subscription by ID
+  app.get("/api/subscriptions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const subscription = await storage.getSubscriptionById(id);
+      
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+  });
+
+  // POST /api/subscriptions - Create a new subscription
+  app.post("/api/subscriptions", async (req, res) => {
+    try {
+      const validatedData = insertSubscriptionSchema.parse(req.body);
+      const newSubscription = await storage.createSubscription(validatedData);
+      res.status(201).json(newSubscription);
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid subscription data", details: error });
+      }
+      res.status(500).json({ error: "Failed to create subscription" });
+    }
+  });
+
+  // PATCH /api/subscriptions/:id - Update a subscription
+  app.patch("/api/subscriptions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateSubscriptionSchema.parse(req.body);
+      const updatedSubscription = await storage.updateSubscription(id, validatedData);
+      
+      if (!updatedSubscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      
+      res.json(updatedSubscription);
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid subscription data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update subscription" });
+    }
+  });
+
+  // DELETE /api/subscriptions/:id - Delete a subscription
+  app.delete("/api/subscriptions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteSubscription(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting subscription:", error);
+      res.status(500).json({ error: "Failed to delete subscription" });
     }
   });
 }
