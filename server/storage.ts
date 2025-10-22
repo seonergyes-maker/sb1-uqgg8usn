@@ -5,6 +5,7 @@ import {
   subscriptions,
   payments,
   settings,
+  leads,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -16,7 +17,10 @@ import {
   type UpdatePayment,
   type Settings,
   type InsertSettings,
-  type UpdateSettings
+  type UpdateSettings,
+  type Lead,
+  type InsertLead,
+  type UpdateLead
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -49,6 +53,12 @@ export interface IStorage {
   updateSettings(settingsData: UpdateSettings): Promise<Settings>;
   
   getDashboardStats(): Promise<DashboardStats>;
+  
+  getLeads(clientId: number, filters?: { status?: string; source?: string; search?: string }): Promise<Lead[]>;
+  getLeadById(id: number): Promise<Lead | undefined>;
+  createLead(lead: InsertLead): Promise<Lead>;
+  updateLead(id: number, lead: UpdateLead): Promise<Lead | undefined>;
+  deleteLead(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -298,6 +308,61 @@ export class DbStorage implements IStorage {
       monthlyRevenue,
       recentClients: recentClientsData,
     };
+  }
+
+  async getLeads(clientId: number, filters?: { status?: string; source?: string; search?: string }): Promise<Lead[]> {
+    const conditions: SQL[] = [eq(leads.clientId, clientId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(leads.status, filters.status));
+    }
+    
+    if (filters?.source && filters.source !== 'all') {
+      conditions.push(eq(leads.source, filters.source));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(leads.name, `%${filters.search}%`),
+        like(leads.email, `%${filters.search}%`),
+        like(leads.phone, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(leads).where(whereCondition);
+    }
+    
+    return await db.select().from(leads).where(eq(leads.clientId, clientId));
+  }
+
+  async getLeadById(id: number): Promise<Lead | undefined> {
+    const result = await db.select().from(leads).where(eq(leads.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createLead(lead: InsertLead): Promise<Lead> {
+    const result = await db.insert(leads).values(lead);
+    const insertedId = Number(result[0].insertId);
+    const newLead = await this.getLeadById(insertedId);
+    if (!newLead) {
+      throw new Error("Failed to create lead");
+    }
+    return newLead;
+  }
+
+  async updateLead(id: number, lead: UpdateLead): Promise<Lead | undefined> {
+    await db.update(leads).set(lead).where(eq(leads.id, id));
+    return await this.getLeadById(id);
+  }
+
+  async deleteLead(id: number): Promise<boolean> {
+    const result = await db.delete(leads).where(eq(leads.id, id));
+    return result[0].affectedRows > 0;
   }
 }
 
