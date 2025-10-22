@@ -156,6 +156,23 @@ export const templates = mysqlTable("templates", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const scheduledTasks = mysqlTable("scheduled_tasks", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  taskType: varchar("task_type", { length: 100 }).notNull(),
+  referenceId: int("reference_id"),
+  referenceName: varchar("reference_name", { length: 255 }),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("Programada"),
+  executedAt: timestamp("executed_at"),
+  result: text("result"),
+  recurrence: varchar("recurrence", { length: 50 }).notNull().default("none"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -165,6 +182,7 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   automations: many(automations),
   landings: many(landings),
   templates: many(templates),
+  scheduledTasks: many(scheduledTasks),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -224,6 +242,13 @@ export const landingsRelations = relations(landings, ({ one }) => ({
 export const templatesRelations = relations(templates, ({ one }) => ({
   client: one(clients, {
     fields: [templates.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const scheduledTasksRelations = relations(scheduledTasks, ({ one }) => ({
+  client: one(clients, {
+    fields: [scheduledTasks.clientId],
     references: [clients.id],
   }),
 }));
@@ -350,6 +375,25 @@ export const insertTemplateSchema = createInsertSchema(templates).omit({
 
 export const updateTemplateSchema = insertTemplateSchema.partial();
 
+export const insertScheduledTaskSchema = createInsertSchema(scheduledTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  executedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional().nullable(),
+  taskType: z.string().min(1, "El tipo de tarea es requerido"),
+  referenceId: z.number().optional().nullable(),
+  referenceName: z.string().optional().nullable(),
+  scheduledFor: z.string().min(1, "La fecha programada es requerida"),
+  status: z.string().default("Programada"),
+  result: z.string().optional().nullable(),
+  recurrence: z.string().default("none"),
+});
+
+export const updateScheduledTaskSchema = insertScheduledTaskSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -389,3 +433,7 @@ export type UpdateLanding = z.infer<typeof updateLandingSchema>;
 export type Template = typeof templates.$inferSelect;
 export type InsertTemplate = z.infer<typeof insertTemplateSchema>;
 export type UpdateTemplate = z.infer<typeof updateTemplateSchema>;
+
+export type ScheduledTask = typeof scheduledTasks.$inferSelect;
+export type InsertScheduledTask = z.infer<typeof insertScheduledTaskSchema>;
+export type UpdateScheduledTask = z.infer<typeof updateScheduledTaskSchema>;
