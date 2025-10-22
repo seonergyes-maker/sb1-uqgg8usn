@@ -15,7 +15,9 @@ import {
   insertCampaignSchema,
   updateCampaignSchema,
   insertAutomationSchema,
-  updateAutomationSchema
+  updateAutomationSchema,
+  insertLandingSchema,
+  updateLandingSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -683,6 +685,86 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching user stats:", error);
       res.status(500).json({ error: "Failed to fetch user stats" });
+    }
+  });
+
+  // GET /api/landings/:clientId - Get landings for a client
+  app.get("/api/landings/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const { status, search } = req.query;
+      const landings = await storage.getLandings(clientId, {
+        status: status as string,
+        search: search as string,
+      });
+      res.json(landings);
+    } catch (error) {
+      console.error("Error fetching landings:", error);
+      res.status(500).json({ error: "Failed to fetch landings" });
+    }
+  });
+
+  // GET /api/landings/:clientId/:id - Get a single landing
+  app.get("/api/landings/:clientId/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const landing = await storage.getLandingById(id);
+      
+      if (!landing) {
+        return res.status(404).json({ error: "Landing not found" });
+      }
+      
+      res.json(landing);
+    } catch (error) {
+      console.error("Error fetching landing:", error);
+      res.status(500).json({ error: "Failed to fetch landing" });
+    }
+  });
+
+  // POST /api/landings - Create a new landing
+  app.post("/api/landings", async (req, res) => {
+    try {
+      const validatedData = insertLandingSchema.parse(req.body);
+      const landing = await storage.createLanding(validatedData);
+      res.status(201).json(landing);
+    } catch (error) {
+      console.error("Error creating landing:", error);
+      res.status(400).json({ error: "Failed to create landing" });
+    }
+  });
+
+  // PATCH /api/landings/:id - Update a landing
+  app.patch("/api/landings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateLandingSchema.parse(req.body);
+      const landing = await storage.updateLanding(id, validatedData);
+      
+      if (!landing) {
+        return res.status(404).json({ error: "Landing not found" });
+      }
+      
+      res.json(landing);
+    } catch (error) {
+      console.error("Error updating landing:", error);
+      res.status(400).json({ error: "Failed to update landing" });
+    }
+  });
+
+  // DELETE /api/landings/:id - Delete a landing
+  app.delete("/api/landings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteLanding(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Landing not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting landing:", error);
+      res.status(500).json({ error: "Failed to delete landing" });
     }
   });
 }
