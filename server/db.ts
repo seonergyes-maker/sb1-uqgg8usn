@@ -1,5 +1,6 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import pkg from 'pg';
+const { Pool } = pkg;
 import * as schema from '../shared/schema.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -8,6 +9,8 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-const poolConnection = mysql.createPool(connectionString);
+const pool = new Pool({
+  connectionString,
+});
 
-export const db = drizzle(poolConnection, { schema, mode: 'default' });
+export const db = drizzle(pool, { schema });
