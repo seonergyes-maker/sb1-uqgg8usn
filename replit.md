@@ -43,14 +43,15 @@ The project is structured into a `client/` for the frontend, a `server/` for the
 -   Modular design for both frontend components and backend API routes.
 
 ## Recent Progress
--   **User Panel Modules Completed (6/11 modules):**
+-   **User Panel Modules Completed (7/11 modules):**
     -   ✅ Leads: CRUD completo, 10 leads de prueba, estadísticas en tiempo real (30% calificados, 20% convertidos)
     -   ✅ Segmentos: 4 segmentos de prueba, 14 leads segmentados, filtros JSON
     -   ✅ Campañas: 4 campañas con tracking de métricas, 6,138 destinatarios, 16.40% tasa apertura
     -   ✅ Automatizaciones: 5 automatizaciones con sistema de triggers, 1,380 ejecuciones, 25.22% tasa éxito
     -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos
     -   ✅ Landings: 5 landing pages con tracking, 9,670 visitas totales, 1,623 conversiones, 15.91% tasa promedio
-    -   Next: Templates, A/B Testing, Scheduler, Webhooks, Integrations
+    -   ✅ Templates: 8 plantillas (5 email, 3 landing), 14,064 usos totales, sistema de variables dinámicas
+    -   Next: A/B Testing, Scheduler, Webhooks, Integrations
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (external instance configured via environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).
