@@ -31,7 +31,6 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { Link } from "wouter";
 
 const menuItems = [
   { title: "Dashboard", url: "/panel", icon: LayoutDashboard },
