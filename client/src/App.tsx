@@ -50,53 +50,126 @@ const App = () => (
         <Route path="/login" component={Login} />
         <Route path="/registro" component={Register} />
         
-        <Route path="/admin/:rest*">
-          {(params) => {
-            const path = params.rest || "";
-            return (
-              <AdminLayout>
-                <Switch>
-                  <Route path="/admin" component={Dashboard} />
-                  <Route path="/admin/dashboard" component={Dashboard} />
-                  <Route path="/admin/clientes" component={Clients} />
-                  <Route path="/admin/suscripciones" component={Subscriptions} />
-                  <Route path="/admin/pagos" component={Payments} />
-                  <Route path="/admin/configuracion" component={Settings} />
-                </Switch>
-              </AdminLayout>
-            );
-          }}
+        <Route path="/admin">
+          <AdminLayout>
+            <Dashboard />
+          </AdminLayout>
+        </Route>
+        <Route path="/admin/dashboard">
+          <AdminLayout>
+            <Dashboard />
+          </AdminLayout>
+        </Route>
+        <Route path="/admin/clientes">
+          <AdminLayout>
+            <Clients />
+          </AdminLayout>
+        </Route>
+        <Route path="/admin/suscripciones">
+          <AdminLayout>
+            <Subscriptions />
+          </AdminLayout>
+        </Route>
+        <Route path="/admin/pagos">
+          <AdminLayout>
+            <Payments />
+          </AdminLayout>
+        </Route>
+        <Route path="/admin/configuracion">
+          <AdminLayout>
+            <Settings />
+          </AdminLayout>
         </Route>
         
-        <Route path="/panel" component={UserLayout} />
-        <Route path="/panel/:rest*">
-          {(params) => {
-            const path = params.rest || "";
-            return (
-              <UserLayout>
-                <Switch>
-                  <Route path="/panel" component={UserDashboard} />
-                  <Route path="/panel/leads" component={Leads} />
-                  <Route path="/panel/leads/segmentos" component={Segments} />
-                  <Route path="/panel/landings" component={Landings} />
-                  <Route path="/panel/landings/editor" component={LandingEditor} />
-                  <Route path="/panel/campanas" component={Campaigns} />
-                  <Route path="/panel/campanas/editor" component={EmailEditor} />
-                  <Route path="/panel/automatizaciones" component={Automations} />
-                  <Route path="/panel/estadisticas" component={Statistics} />
-                  <Route path="/panel/analytics" component={AdvancedAnalytics} />
-                  <Route path="/panel/templates" component={Templates} />
-                  <Route path="/panel/ab-testing" component={ABTesting} />
-                  <Route path="/panel/scheduler" component={Scheduler} />
-                  <Route path="/panel/webhooks" component={Webhooks} />
-                  <Route path="/panel/integraciones" component={Integrations} />
-                  <Route path="/panel/configuracion" component={UserSettings} />
-                  <Route path="/panel/perfil" component={Profile} />
-                  <Route path="/panel/facturacion" component={Billing} />
-                </Switch>
-              </UserLayout>
-            );
-          }}
+        <Route path="/panel">
+          <UserLayout>
+            <UserDashboard />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/leads">
+          <UserLayout>
+            <Leads />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/leads/segmentos">
+          <UserLayout>
+            <Segments />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/landings">
+          <UserLayout>
+            <Landings />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/landings/editor">
+          <UserLayout>
+            <LandingEditor />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/campanas">
+          <UserLayout>
+            <Campaigns />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/campanas/editor">
+          <UserLayout>
+            <EmailEditor />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/automatizaciones">
+          <UserLayout>
+            <Automations />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/estadisticas">
+          <UserLayout>
+            <Statistics />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/analytics">
+          <UserLayout>
+            <AdvancedAnalytics />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/templates">
+          <UserLayout>
+            <Templates />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/ab-testing">
+          <UserLayout>
+            <ABTesting />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/scheduler">
+          <UserLayout>
+            <Scheduler />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/webhooks">
+          <UserLayout>
+            <Webhooks />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/integraciones">
+          <UserLayout>
+            <Integrations />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/configuracion">
+          <UserLayout>
+            <UserSettings />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/perfil">
+          <UserLayout>
+            <Profile />
+          </UserLayout>
+        </Route>
+        <Route path="/panel/facturacion">
+          <UserLayout>
+            <Billing />
+          </UserLayout>
         </Route>
         
         <Route component={NotFound} />
