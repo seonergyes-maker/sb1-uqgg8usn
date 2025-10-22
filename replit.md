@@ -5,7 +5,19 @@ This is a full-stack marketing automation platform migrated from Lovable to Repl
 
 ## Recent Changes (October 22, 2025)
 
-### Latest Update - Dashboard Module Complete ✅
+### Latest Update - Payments Module Complete ✅
+- **Integrated Payments with MySQL database**
+- Created `payments` table with foreign keys to `clients` and `subscriptions`
+- Implemented full CRUD API endpoints (`/api/payments`)
+- Updated admin Payments page to use real database data
+- Support for Stripe and PayPal payment methods
+- Payment status tracking (pending, completed, failed, refunded)
+- Created `.env.example` with Stripe/PayPal configuration for dev and prod
+- All payment operations (refund, retry, filter, export) work with real data
+- Real-time statistics (Total processed, Completed, Pending, Failed)
+- Real-time data updates with TanStack Query
+
+### Dashboard Module Complete ✅
 - **Integrated Dashboard with MySQL database**
 - Created endpoint `/api/dashboard/stats` for real-time statistics
 - Implemented metric calculations (total clients, active subscriptions, monthly revenue)
@@ -93,6 +105,13 @@ npx drizzle-kit push  # Push schema changes to MySQL database
   - status, startDate, nextBilling
   - createdAt, updatedAt
 
+- **payments** - Payment tracking and processing
+  - id, clientId (FK to clients), subscriptionId (FK to subscriptions)
+  - amount, currency, paymentMethod (stripe/paypal)
+  - paymentStatus (pending/completed/failed/refunded)
+  - transactionId, metadata (JSON)
+  - createdAt, updatedAt
+
 ## Development
 ```bash
 npm run dev    # Start development server on port 5000
@@ -130,9 +149,21 @@ npm run start  # Run production build
 - All metrics calculated from real database data
 - Real-time data updates with TanStack Query
 
+### ✅ Pagos (Fully Functional)
+- View all payments from MySQL database
+- Linked to clients and subscriptions with foreign key relationships
+- Process refunds and retry failed payments
+- Search by client name or transaction ID
+- Filter by payment method (Stripe, PayPal) and status
+- Export to CSV
+- Real-time statistics (Total processed, Completed, Pending, Failed)
+- Support for invoice generation (UI ready)
+- Real-time data updates with TanStack Query
+
 ### 🚧 To Be Implemented
-- **Pagos** - Connect to database and implement payment tracking
 - **Configuración** - System settings and configuration management
+- **Stripe Integration** - Connect Stripe SDK for real payment processing (keys ready in .env.example)
+- **PayPal Integration** - Connect PayPal SDK for real payment processing (keys ready in .env.example)
 
 ## Migration Status
 ✅ **Migration Complete!** The project has been successfully migrated to the Replit full-stack structure on October 22, 2025.
@@ -150,6 +181,7 @@ npm run start  # Run production build
 - ✅ **Admin Clients page fully functional** with real database operations
 - ✅ **Admin Subscriptions page fully functional** with real database operations and foreign key relations
 - ✅ **Admin Dashboard page fully functional** with real-time statistics from MySQL
+- ✅ **Admin Payments page fully functional** with real database operations, Stripe/PayPal support, and transaction tracking
 
 ## User Preferences
 - Always use Spanish for communication
