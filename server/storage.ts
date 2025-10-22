@@ -3,12 +3,16 @@ import { db } from "./db.js";
 import { 
   clients, 
   subscriptions,
+  payments,
   type Client, 
   type InsertClient, 
   type UpdateClient,
   type Subscription,
   type InsertSubscription,
-  type UpdateSubscription
+  type UpdateSubscription,
+  type Payment,
+  type InsertPayment,
+  type UpdatePayment
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -30,6 +34,12 @@ export interface IStorage {
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: number, subscription: UpdateSubscription): Promise<Subscription | undefined>;
   deleteSubscription(id: number): Promise<boolean>;
+  
+  getPayments(filters?: { paymentMethod?: string; paymentStatus?: string; search?: string }): Promise<(Payment & { clientName: string })[]>;
+  getPaymentById(id: number): Promise<Payment | undefined>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePayment(id: number, payment: UpdatePayment): Promise<Payment | undefined>;
+  deletePayment(id: number): Promise<boolean>;
   
   getDashboardStats(): Promise<DashboardStats>;
 }
@@ -156,6 +166,75 @@ export class DbStorage implements IStorage {
 
   async deleteSubscription(id: number): Promise<boolean> {
     const result = await db.delete(subscriptions).where(eq(subscriptions.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getPayments(filters?: { paymentMethod?: string; paymentStatus?: string; search?: string }): Promise<(Payment & { clientName: string })[]> {
+    const conditions: SQL[] = [];
+    
+    if (filters?.paymentMethod && filters.paymentMethod !== 'all') {
+      conditions.push(eq(payments.paymentMethod, filters.paymentMethod));
+    }
+    
+    if (filters?.paymentStatus && filters.paymentStatus !== 'all') {
+      conditions.push(eq(payments.paymentStatus, filters.paymentStatus));
+    }
+    
+    let paymentsList: Payment[];
+    if (conditions.length > 0) {
+      const whereCondition = and(...conditions);
+      if (whereCondition) {
+        paymentsList = await db.select().from(payments).where(whereCondition);
+      } else {
+        paymentsList = await db.select().from(payments);
+      }
+    } else {
+      paymentsList = await db.select().from(payments);
+    }
+    
+    const paymentsWithClient = await Promise.all(
+      paymentsList.map(async (payment) => {
+        const client = await this.getClientById(payment.clientId);
+        return {
+          ...payment,
+          clientName: client?.name || 'Unknown'
+        };
+      })
+    );
+    
+    if (filters?.search) {
+      return paymentsWithClient.filter(payment => 
+        payment.clientName.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        payment.transactionId?.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        payment.paymentMethod.toLowerCase().includes(filters.search!.toLowerCase())
+      );
+    }
+    
+    return paymentsWithClient;
+  }
+
+  async getPaymentById(id: number): Promise<Payment | undefined> {
+    const result = await db.select().from(payments).where(eq(payments.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const result = await db.insert(payments).values(payment);
+    const insertedId = Number(result[0].insertId);
+    const newPayment = await this.getPaymentById(insertedId);
+    if (!newPayment) {
+      throw new Error("Failed to create payment");
+    }
+    return newPayment;
+  }
+
+  async updatePayment(id: number, payment: UpdatePayment): Promise<Payment | undefined> {
+    await db.update(payments).set(payment).where(eq(payments.id, id));
+    return await this.getPaymentById(id);
+  }
+
+  async deletePayment(id: number): Promise<boolean> {
+    const result = await db.delete(payments).where(eq(payments.id, id));
     return result[0].affectedRows > 0;
   }
 
