@@ -4,7 +4,9 @@ import {
   insertClientSchema, 
   updateClientSchema,
   insertSubscriptionSchema,
-  updateSubscriptionSchema
+  updateSubscriptionSchema,
+  insertPaymentSchema,
+  updatePaymentSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -188,6 +190,92 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
       res.status(500).json({ error: "Failed to fetch dashboard statistics" });
+    }
+  });
+
+  // GET /api/payments - List all payments with optional filters
+  app.get("/api/payments", async (req, res) => {
+    try {
+      const { paymentMethod, paymentStatus, search } = req.query;
+      const payments = await storage.getPayments({
+        paymentMethod: paymentMethod as string,
+        paymentStatus: paymentStatus as string,
+        search: search as string,
+      });
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  // GET /api/payments/:id - Get a single payment by ID
+  app.get("/api/payments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const payment = await storage.getPaymentById(id);
+      
+      if (!payment) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      res.json(payment);
+    } catch (error) {
+      console.error("Error fetching payment:", error);
+      res.status(500).json({ error: "Failed to fetch payment" });
+    }
+  });
+
+  // POST /api/payments - Create a new payment
+  app.post("/api/payments", async (req, res) => {
+    try {
+      const validatedData = insertPaymentSchema.parse(req.body);
+      const newPayment = await storage.createPayment(validatedData);
+      res.status(201).json(newPayment);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid payment data", details: error });
+      }
+      res.status(500).json({ error: "Failed to create payment" });
+    }
+  });
+
+  // PATCH /api/payments/:id - Update a payment
+  app.patch("/api/payments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updatePaymentSchema.parse(req.body);
+      const updatedPayment = await storage.updatePayment(id, validatedData);
+      
+      if (!updatedPayment) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      res.json(updatedPayment);
+    } catch (error) {
+      console.error("Error updating payment:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid payment data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update payment" });
+    }
+  });
+
+  // DELETE /api/payments/:id - Delete a payment
+  app.delete("/api/payments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deletePayment(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      res.status(500).json({ error: "Failed to delete payment" });
     }
   });
 }
