@@ -7,7 +7,9 @@ import {
   updateSubscriptionSchema,
   insertPaymentSchema,
   updatePaymentSchema,
-  updateSettingsSchema
+  updateSettingsSchema,
+  insertLeadSchema,
+  updateLeadSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -303,6 +305,97 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid settings data", details: error });
       }
       res.status(500).json({ error: "Failed to update settings" });
+    }
+  });
+
+  // GET /api/leads - List all leads for a client with optional filters
+  app.get("/api/leads", async (req, res) => {
+    try {
+      const { clientId, status, source, search } = req.query;
+      
+      if (!clientId) {
+        return res.status(400).json({ error: "clientId is required" });
+      }
+      
+      const leads = await storage.getLeads(parseInt(clientId as string), {
+        status: status as string,
+        source: source as string,
+        search: search as string,
+      });
+      res.json(leads);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+      res.status(500).json({ error: "Failed to fetch leads" });
+    }
+  });
+
+  // GET /api/leads/:id - Get a single lead by ID
+  app.get("/api/leads/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const lead = await storage.getLeadById(id);
+      
+      if (!lead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      res.json(lead);
+    } catch (error) {
+      console.error("Error fetching lead:", error);
+      res.status(500).json({ error: "Failed to fetch lead" });
+    }
+  });
+
+  // POST /api/leads - Create a new lead
+  app.post("/api/leads", async (req, res) => {
+    try {
+      const validatedData = insertLeadSchema.parse(req.body);
+      const newLead = await storage.createLead(validatedData);
+      res.status(201).json(newLead);
+    } catch (error) {
+      console.error("Error creating lead:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid lead data", details: error });
+      }
+      res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
+  // PATCH /api/leads/:id - Update a lead
+  app.patch("/api/leads/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateLeadSchema.parse(req.body);
+      const updatedLead = await storage.updateLead(id, validatedData);
+      
+      if (!updatedLead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      res.json(updatedLead);
+    } catch (error) {
+      console.error("Error updating lead:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid lead data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update lead" });
+    }
+  });
+
+  // DELETE /api/leads/:id - Delete a lead
+  app.delete("/api/leads/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteLead(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+      res.status(500).json({ error: "Failed to delete lead" });
     }
   });
 }
