@@ -673,4 +673,16 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Failed to delete automation" });
     }
   });
+
+  // GET /api/user-stats/:clientId - Get aggregated user statistics
+  app.get("/api/user-stats/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const stats = await storage.getUserStats(clientId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ error: "Failed to fetch user stats" });
+    }
+  });
 }

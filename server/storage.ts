@@ -42,6 +42,24 @@ export interface DashboardStats {
   recentClients: (Client & { daysAgo: number })[];
 }
 
+export interface UserStats {
+  totalLeads: number;
+  qualifiedLeads: number;
+  convertedLeads: number;
+  avgLeadScore: string;
+  totalSegments: number;
+  totalLeadsSegmented: number;
+  totalCampaigns: number;
+  sentCampaigns: number;
+  totalRecipients: number;
+  avgOpenRate: string;
+  avgClickRate: string;
+  totalAutomations: number;
+  activeAutomations: number;
+  totalExecutions: number;
+  avgSuccessRate: string;
+}
+
 export interface IStorage {
   getClients(filters?: { plan?: string; status?: string; search?: string }): Promise<Client[]>;
   getClientById(id: number): Promise<Client | undefined>;
@@ -65,6 +83,7 @@ export interface IStorage {
   updateSettings(settingsData: UpdateSettings): Promise<Settings>;
   
   getDashboardStats(): Promise<DashboardStats>;
+  getUserStats(clientId: number): Promise<UserStats>;
   
   getLeads(clientId: number, filters?: { status?: string; source?: string; search?: string }): Promise<Lead[]>;
   getLeadById(id: number): Promise<Lead | undefined>;
@@ -539,6 +558,60 @@ export class DbStorage implements IStorage {
   async deleteAutomation(id: number): Promise<boolean> {
     const result = await db.delete(automations).where(eq(automations.id, id));
     return result[0].affectedRows > 0;
+  }
+
+  async getUserStats(clientId: number): Promise<UserStats> {
+    // Get lead statistics
+    const allLeads = await db.select().from(leads).where(eq(leads.clientId, clientId));
+    const qualifiedLeads = allLeads.filter(l => l.status === "Calificado" || l.status === "Convertido");
+    const convertedLeads = allLeads.filter(l => l.status === "Convertido");
+    const avgLeadScore = allLeads.length > 0
+      ? (allLeads.reduce((sum, l) => sum + l.score, 0) / allLeads.length).toFixed(2)
+      : "0.00";
+
+    // Get segment statistics
+    const allSegments = await db.select().from(segments).where(eq(segments.clientId, clientId));
+    const totalLeadsSegmented = allSegments.reduce((sum, s) => sum + s.leadCount, 0);
+
+    // Get campaign statistics
+    const allCampaigns = await db.select().from(campaigns).where(eq(campaigns.clientId, clientId));
+    const sentCampaigns = allCampaigns.filter(c => c.status === "Enviada");
+    const totalRecipients = allCampaigns.reduce((sum, c) => sum + c.recipientCount, 0);
+    const campaignsWithOpenRate = allCampaigns.filter(c => c.openRate !== null && Number(c.openRate) > 0);
+    const avgOpenRate = campaignsWithOpenRate.length > 0
+      ? (campaignsWithOpenRate.reduce((sum, c) => sum + Number(c.openRate || 0), 0) / campaignsWithOpenRate.length).toFixed(2)
+      : "0.00";
+    const campaignsWithClickRate = allCampaigns.filter(c => c.clickRate !== null && Number(c.clickRate) > 0);
+    const avgClickRate = campaignsWithClickRate.length > 0
+      ? (campaignsWithClickRate.reduce((sum, c) => sum + Number(c.clickRate || 0), 0) / campaignsWithClickRate.length).toFixed(2)
+      : "0.00";
+
+    // Get automation statistics
+    const allAutomations = await db.select().from(automations).where(eq(automations.clientId, clientId));
+    const activeAutomations = allAutomations.filter(a => a.status === "Activa");
+    const totalExecutions = allAutomations.reduce((sum, a) => sum + a.executionCount, 0);
+    const automationsWithRate = allAutomations.filter(a => a.successRate !== null && Number(a.successRate) > 0);
+    const avgSuccessRate = automationsWithRate.length > 0
+      ? (automationsWithRate.reduce((sum, a) => sum + Number(a.successRate || 0), 0) / automationsWithRate.length).toFixed(2)
+      : "0.00";
+
+    return {
+      totalLeads: allLeads.length,
+      qualifiedLeads: qualifiedLeads.length,
+      convertedLeads: convertedLeads.length,
+      avgLeadScore,
+      totalSegments: allSegments.length,
+      totalLeadsSegmented,
+      totalCampaigns: allCampaigns.length,
+      sentCampaigns: sentCampaigns.length,
+      totalRecipients,
+      avgOpenRate,
+      avgClickRate,
+      totalAutomations: allAutomations.length,
+      activeAutomations: activeAutomations.length,
+      totalExecutions,
+      avgSuccessRate,
+    };
   }
 }
 
