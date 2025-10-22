@@ -134,6 +134,7 @@ export const templates = mysqlTable("templates", {
   content: text("content").notNull(),
   variables: text("variables"),
   thumbnail: varchar("thumbnail", { length: 500 }),
+  isBaseTemplate: int("is_base_template").notNull().default(0),
   status: varchar("status", { length: 50 }).notNull().default("Activa"),
   timesUsed: int("times_used").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
