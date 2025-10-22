@@ -7,6 +7,7 @@ import {
   settings,
   leads,
   segments,
+  campaigns,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -24,7 +25,10 @@ import {
   type UpdateLead,
   type Segment,
   type InsertSegment,
-  type UpdateSegment
+  type UpdateSegment,
+  type Campaign,
+  type InsertCampaign,
+  type UpdateCampaign
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -69,6 +73,12 @@ export interface IStorage {
   createSegment(segment: InsertSegment): Promise<Segment>;
   updateSegment(id: number, segment: UpdateSegment): Promise<Segment | undefined>;
   deleteSegment(id: number): Promise<boolean>;
+  
+  getCampaigns(clientId: number, filters?: { status?: string; search?: string }): Promise<Campaign[]>;
+  getCampaignById(id: number): Promise<Campaign | undefined>;
+  createCampaign(campaign: InsertCampaign): Promise<Campaign>;
+  updateCampaign(id: number, campaign: UpdateCampaign): Promise<Campaign | undefined>;
+  deleteCampaign(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -418,6 +428,56 @@ export class DbStorage implements IStorage {
 
   async deleteSegment(id: number): Promise<boolean> {
     const result = await db.delete(segments).where(eq(segments.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getCampaigns(clientId: number, filters?: { status?: string; search?: string }): Promise<Campaign[]> {
+    const conditions: SQL[] = [eq(campaigns.clientId, clientId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(campaigns.status, filters.status));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(campaigns.name, `%${filters.search}%`),
+        like(campaigns.subject, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(campaigns).where(whereCondition);
+    }
+    
+    return await db.select().from(campaigns).where(eq(campaigns.clientId, clientId));
+  }
+
+  async getCampaignById(id: number): Promise<Campaign | undefined> {
+    const result = await db.select().from(campaigns).where(eq(campaigns.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createCampaign(campaign: InsertCampaign): Promise<Campaign> {
+    const result = await db.insert(campaigns).values(campaign);
+    const insertedId = Number(result[0].insertId);
+    const newCampaign = await this.getCampaignById(insertedId);
+    if (!newCampaign) {
+      throw new Error("Failed to create campaign");
+    }
+    return newCampaign;
+  }
+
+  async updateCampaign(id: number, campaign: UpdateCampaign): Promise<Campaign | undefined> {
+    await db.update(campaigns).set(campaign).where(eq(campaigns.id, id));
+    return await this.getCampaignById(id);
+  }
+
+  async deleteCampaign(id: number): Promise<boolean> {
+    const result = await db.delete(campaigns).where(eq(campaigns.id, id));
     return result[0].affectedRows > 0;
   }
 }
