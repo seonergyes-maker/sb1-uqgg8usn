@@ -80,9 +80,22 @@ export const leads = mysqlTable("leads", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const segments = mysqlTable("segments", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  filters: text("filters").notNull(),
+  leadCount: int("lead_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
+  leads: many(leads),
+  segments: many(segments),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -107,6 +120,13 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
 export const leadsRelations = relations(leads, ({ one }) => ({
   client: one(clients, {
     fields: [leads.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const segmentsRelations = relations(segments, ({ one }) => ({
+  client: one(clients, {
+    fields: [segments.clientId],
     references: [clients.id],
   }),
 }));
@@ -158,6 +178,20 @@ export const insertLeadSchema = createInsertSchema(leads, {
 
 export const updateLeadSchema = insertLeadSchema.partial();
 
+export const insertSegmentSchema = createInsertSchema(segments, {
+  clientId: z.number(),
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  filters: z.string().min(1, "Los filtros son requeridos"),
+  leadCount: z.number().min(0).default(0),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateSegmentSchema = insertSegmentSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -177,3 +211,7 @@ export type UpdateSettings = z.infer<typeof updateSettingsSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type UpdateLead = z.infer<typeof updateLeadSchema>;
+
+export type Segment = typeof segments.$inferSelect;
+export type InsertSegment = z.infer<typeof insertSegmentSchema>;
+export type UpdateSegment = z.infer<typeof updateSegmentSchema>;

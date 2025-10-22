@@ -6,6 +6,7 @@ import {
   payments,
   settings,
   leads,
+  segments,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -20,7 +21,10 @@ import {
   type UpdateSettings,
   type Lead,
   type InsertLead,
-  type UpdateLead
+  type UpdateLead,
+  type Segment,
+  type InsertSegment,
+  type UpdateSegment
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -59,6 +63,12 @@ export interface IStorage {
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: number, lead: UpdateLead): Promise<Lead | undefined>;
   deleteLead(id: number): Promise<boolean>;
+  
+  getSegments(clientId: number, filters?: { search?: string }): Promise<Segment[]>;
+  getSegmentById(id: number): Promise<Segment | undefined>;
+  createSegment(segment: InsertSegment): Promise<Segment>;
+  updateSegment(id: number, segment: UpdateSegment): Promise<Segment | undefined>;
+  deleteSegment(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -362,6 +372,52 @@ export class DbStorage implements IStorage {
 
   async deleteLead(id: number): Promise<boolean> {
     const result = await db.delete(leads).where(eq(leads.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getSegments(clientId: number, filters?: { search?: string }): Promise<Segment[]> {
+    const conditions: SQL[] = [eq(segments.clientId, clientId)];
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(segments.name, `%${filters.search}%`),
+        like(segments.description, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(segments).where(whereCondition);
+    }
+    
+    return await db.select().from(segments).where(eq(segments.clientId, clientId));
+  }
+
+  async getSegmentById(id: number): Promise<Segment | undefined> {
+    const result = await db.select().from(segments).where(eq(segments.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createSegment(segment: InsertSegment): Promise<Segment> {
+    const result = await db.insert(segments).values(segment);
+    const insertedId = Number(result[0].insertId);
+    const newSegment = await this.getSegmentById(insertedId);
+    if (!newSegment) {
+      throw new Error("Failed to create segment");
+    }
+    return newSegment;
+  }
+
+  async updateSegment(id: number, segment: UpdateSegment): Promise<Segment | undefined> {
+    await db.update(segments).set(segment).where(eq(segments.id, id));
+    return await this.getSegmentById(id);
+  }
+
+  async deleteSegment(id: number): Promise<boolean> {
+    const result = await db.delete(segments).where(eq(segments.id, id));
     return result[0].affectedRows > 0;
   }
 }

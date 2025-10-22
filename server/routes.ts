@@ -9,7 +9,9 @@ import {
   updatePaymentSchema,
   updateSettingsSchema,
   insertLeadSchema,
-  updateLeadSchema
+  updateLeadSchema,
+  insertSegmentSchema,
+  updateSegmentSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -396,6 +398,95 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting lead:", error);
       res.status(500).json({ error: "Failed to delete lead" });
+    }
+  });
+
+  // GET /api/segments - List all segments for a client with optional filters
+  app.get("/api/segments", async (req, res) => {
+    try {
+      const { clientId, search } = req.query;
+      
+      if (!clientId) {
+        return res.status(400).json({ error: "clientId is required" });
+      }
+      
+      const segments = await storage.getSegments(parseInt(clientId as string), {
+        search: search as string,
+      });
+      res.json(segments);
+    } catch (error) {
+      console.error("Error fetching segments:", error);
+      res.status(500).json({ error: "Failed to fetch segments" });
+    }
+  });
+
+  // GET /api/segments/:id - Get a single segment by ID
+  app.get("/api/segments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const segment = await storage.getSegmentById(id);
+      
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+      
+      res.json(segment);
+    } catch (error) {
+      console.error("Error fetching segment:", error);
+      res.status(500).json({ error: "Failed to fetch segment" });
+    }
+  });
+
+  // POST /api/segments - Create a new segment
+  app.post("/api/segments", async (req, res) => {
+    try {
+      const validatedData = insertSegmentSchema.parse(req.body);
+      const newSegment = await storage.createSegment(validatedData);
+      res.status(201).json(newSegment);
+    } catch (error) {
+      console.error("Error creating segment:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid segment data", details: error });
+      }
+      res.status(500).json({ error: "Failed to create segment" });
+    }
+  });
+
+  // PATCH /api/segments/:id - Update a segment
+  app.patch("/api/segments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateSegmentSchema.parse(req.body);
+      const updatedSegment = await storage.updateSegment(id, validatedData);
+      
+      if (!updatedSegment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+      
+      res.json(updatedSegment);
+    } catch (error) {
+      console.error("Error updating segment:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid segment data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update segment" });
+    }
+  });
+
+  // DELETE /api/segments/:id - Delete a segment
+  app.delete("/api/segments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteSegment(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting segment:", error);
+      res.status(500).json({ error: "Failed to delete segment" });
     }
   });
 }
