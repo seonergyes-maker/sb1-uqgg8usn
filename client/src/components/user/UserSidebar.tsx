@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "wouter";
 import { 
   LayoutDashboard,
   Users, 
@@ -31,7 +31,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 const menuItems = [
   { title: "Dashboard", url: "/panel", icon: LayoutDashboard },
@@ -75,7 +75,7 @@ export function UserSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 border-b border-sidebar-border">
-          <Link to="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="bg-gradient-primary p-2 rounded-lg">
               <Rocket className="h-5 w-5 text-primary-foreground" />
             </div>
@@ -111,7 +111,7 @@ export function UserSidebar() {
                           {item.submenu.map((subItem) => (
                             <SidebarMenuSubItem key={subItem.url}>
                               <SidebarMenuSubButton asChild isActive={location.pathname === subItem.url}>
-                                <NavLink to={subItem.url}>
+                                <Link href={subItem.url}>
                                   <span>{subItem.title}</span>
                                 </NavLink>
                               </SidebarMenuSubButton>
@@ -124,7 +124,7 @@ export function UserSidebar() {
                 ) : (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <NavLink to={item.url} end={item.url === "/panel"}>
+                      <Link href={item.url} end={item.url === "/panel"}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </NavLink>
@@ -143,7 +143,7 @@ export function UserSidebar() {
               {settingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url}>
+                    <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </NavLink>

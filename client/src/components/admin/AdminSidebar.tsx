@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { Users, CreditCard, DollarSign, Settings, Rocket, LayoutDashboard } from "lucide-react";
 import {
   Sidebar,
@@ -11,7 +11,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
 
 const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -55,10 +54,10 @@ export function AdminSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end={item.url === "/admin"}>
+                    <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

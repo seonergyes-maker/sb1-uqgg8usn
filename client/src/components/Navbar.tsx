@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Rocket, Settings, LayoutDashboard } from "lucide-react";
 
@@ -11,7 +11,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-gradient-primary p-2 rounded-lg group-hover:shadow-glow transition-all duration-300">
               <Rocket className="h-6 w-6 text-primary-foreground" />
             </div>
@@ -56,22 +56,22 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Link to="/panel">
+            <Link href="/panel">
               <Button variant="ghost" size="icon" title="Mi Panel">
                 <LayoutDashboard className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/admin">
+            <Link href="/admin">
               <Button variant="ghost" size="icon" title="Admin">
                 <Settings className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link href="/login">
               <Button variant="ghost" size="sm">
                 Iniciar sesión
               </Button>
             </Link>
-            <Link to="/registro">
+            <Link href="/registro">
               <Button variant="hero" size="sm">
                 Registrarse
               </Button>

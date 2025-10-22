@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "wouter";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
@@ -23,7 +23,7 @@ const NotFound = () => {
           Lo sentimos, la página que buscas no existe o ha sido movida.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link to="/">
+          <Link href="/">
             <Button variant="hero" size="lg">
               <Home className="mr-2 h-5 w-5" />
               Volver al inicio

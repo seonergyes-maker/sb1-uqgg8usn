@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Mail, Eye, TrendingUp, Plus, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 const stats = [
   {
@@ -52,13 +52,13 @@ const UserDashboard = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link to="/panel/landings">
+          <Link href="/panel/landings">
             <Button variant="outline">
               <Plus className="mr-2 h-4 w-4" />
               Nueva landing
             </Button>
           </Link>
-          <Link to="/panel/campanas">
+          <Link href="/panel/campanas">
             <Button variant="hero">
               <Mail className="mr-2 h-4 w-4" />
               Nueva campaña

@@ -1,8 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
-import { Outlet } from "react-router-dom";
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -15,7 +14,7 @@ const AdminLayout = () => {
             </div>
           </header>
           <div className="flex-1 p-6">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

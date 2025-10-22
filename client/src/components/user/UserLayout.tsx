@@ -1,11 +1,10 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserSidebar } from "./UserSidebar";
-import { Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const UserLayout = () => {
+const UserLayout = ({ children }: { children?: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -19,14 +18,14 @@ const UserLayout = () => {
               </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" data-testid="button-notifications">
                   <Bell className="h-5 w-5" />
                 </Button>
               </div>
             </div>
           </header>
           <div className="flex-1 p-6">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

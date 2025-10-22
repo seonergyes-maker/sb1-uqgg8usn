@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 const plans = [
   {
@@ -135,7 +135,7 @@ const Pricing = () => {
                 </CardContent>
                 
                 <CardFooter>
-                  <Link to="/registro" className="w-full">
+                  <Link href="/registro" className="w-full">
                     <Button 
                       variant={plan.popular ? "hero" : "outline"} 
                       className="w-full"

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Rocket } from "lucide-react";
 
 const Footer = () => {
@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
+            <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="bg-gradient-primary p-2 rounded-lg">
                 <Rocket className="h-5 w-5 text-primary-foreground" />
               </div>
@@ -25,12 +25,12 @@ const Footer = () => {
             <h3 className="font-semibold mb-4 text-foreground">Producto</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Características
                 </Link>
               </li>
               <li>
-                <Link to="/precios" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/precios" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Precios
                 </Link>
               </li>
@@ -41,12 +41,12 @@ const Footer = () => {
             <h3 className="font-semibold mb-4 text-foreground">Empresa</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/nosotros" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/nosotros" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Sobre nosotros
                 </Link>
               </li>
               <li>
-                <Link to="/contacto" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/contacto" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Contacto
                 </Link>
               </li>

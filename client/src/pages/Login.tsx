@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+          <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <div className="bg-gradient-primary p-2 rounded-lg shadow-lg">
               <Rocket className="h-6 w-6 text-primary-foreground" />
             </div>
@@ -79,7 +79,7 @@ const Login = () => {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
               ¿No tienes cuenta?{" "}
-              <Link to="/registro" className="text-primary hover:underline font-medium">
+              <Link href="/registro" className="text-primary hover:underline font-medium">
                 Regístrate gratis
               </Link>
             </div>
@@ -87,7 +87,7 @@ const Login = () => {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          <Link to="/" className="hover:text-primary transition-colors">
+          <Link href="/" className="hover:text-primary transition-colors">
             ← Volver al inicio
           </Link>
         </p>

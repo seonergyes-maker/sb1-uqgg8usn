@@ -19,7 +19,7 @@ const CTASection = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/registro">
+              <Link href="/registro">
                 <Button 
                   size="lg" 
                   className="bg-background text-foreground hover:bg-background/90 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
@@ -28,7 +28,7 @@ const CTASection = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/contacto">
+              <Link href="/contacto">
                 <Button 
                   variant="outline" 
                   size="lg"
