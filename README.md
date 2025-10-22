@@ -39,12 +39,20 @@ Páginas implementadas:
 - **Leads** - Gestión de contactos capturados
   - **Segmentos** - Segmentación avanzada de leads
 - **Landings** - Creación y gestión de landing pages
+  - **Landing Editor** - Editor visual de páginas
 - **Campañas** - Email marketing y secuencias
+  - **Email Editor** - Editor visual de emails
+  - **Scheduler** - Programación de envíos
 - **Automatizaciones** - Workflows automatizados
 - **Estadísticas** - Métricas y rendimiento
+  - **Analytics Avanzado** - Análisis detallado
+  - **A/B Testing** - Pruebas de optimización
 - **Configuración** - Ajustes de la cuenta
 - **Perfil** - Información personal del usuario
 - **Facturación** - Pagos y plan actual
+- **Plantillas** - Biblioteca de templates
+- **Integraciones** - Conexiones externas
+- **Webhooks** - Gestión de eventos
 
 ## 🛠️ Tecnologías
 
@@ -238,6 +246,54 @@ npm run build
 
 **Nota:** Todas las páginas tienen diseño completo, componentes UI funcionales y datos de ejemplo. 
 Solo falta implementar la funcionalidad backend (autenticación, base de datos, APIs, etc.)
+
+### Prompt 6 - Expansión Panel Usuario
+**Fecha**: Sexta implementación
+
+**Implementado:**
+- ✅ ThemeToggle (modo oscuro/claro)
+- ✅ OnboardingWizard (tutorial inicial)
+- ✅ Templates (galería de plantillas)
+- ✅ EmailEditor (editor visual de emails)
+- ✅ LandingEditor (editor visual de landings)
+- ✅ ABTesting (pruebas A/B)
+- ✅ Scheduler (programación de campañas)
+- ✅ Webhooks (gestión de eventos)
+- ✅ Integrations (conexiones externas)
+- ✅ AdvancedAnalytics (análisis avanzado)
+
+**Archivos creados:**
+- `src/components/ThemeToggle.tsx`
+- `src/components/OnboardingWizard.tsx`
+- `src/pages/user/Templates.tsx`
+- `src/pages/user/EmailEditor.tsx`
+- `src/pages/user/LandingEditor.tsx`
+- `src/pages/user/ABTesting.tsx`
+- `src/pages/user/Scheduler.tsx`
+- `src/pages/user/Webhooks.tsx`
+- `src/pages/user/Integrations.tsx`
+- `src/pages/user/AdvancedAnalytics.tsx`
+
+**Archivos modificados:**
+- `src/App.tsx` (nuevas rutas)
+- `src/components/user/UserLayout.tsx` (ThemeToggle)
+
+### Prompt 7 - Funcionalidad Admin
+**Fecha**: Séptima implementación
+
+**Implementado:**
+- ✅ Búsqueda funcional en tablas admin
+- ✅ Filtros avanzados con diálogos
+- ✅ Acciones de botones (editar, eliminar, exportar)
+- ✅ Confirmaciones con AlertDialog
+- ✅ Toasts de notificación
+- ✅ Export de datos a CSV
+
+**Archivos modificados:**
+- `src/pages/admin/Clients.tsx`
+- `src/pages/admin/Subscriptions.tsx`
+- `src/pages/admin/Payments.tsx`
+- `README.md`
 
 ---
 
