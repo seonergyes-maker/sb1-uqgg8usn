@@ -22,7 +22,8 @@ export function TemplateSelector({ type, onSelect, selectedTemplateId }: Templat
     queryKey: ["/api/templates", { type }],
   });
 
-  const baseTemplates = templates.filter((t) => t.isBaseTemplate === 1);
+  // Templates base son los que tienen clientId = 0
+  const baseTemplates = templates.filter((t) => t.clientId === 0);
   
   const filteredTemplates = baseTemplates.filter((template) => {
     const matchesSearch = template.name.toLowerCase().includes(search.toLowerCase()) ||

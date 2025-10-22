@@ -34,6 +34,7 @@ import Integrations from "./pages/user/Integrations";
 import UserSettings from "./pages/user/UserSettings";
 import Profile from "./pages/user/Profile";
 import Billing from "./pages/user/Billing";
+import PublicLanding from "./pages/PublicLanding";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -48,6 +49,9 @@ const App = () => (
         <Route path="/contacto" component={Contact} />
         <Route path="/login" component={Login} />
         <Route path="/registro" component={Register} />
+        
+        {/* Ruta pública para landings - sin autenticación */}
+        <Route path="/l/:slug" component={PublicLanding} />
         
         <Route path="/admin">
           <AdminLayout>

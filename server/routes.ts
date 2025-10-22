@@ -760,12 +760,49 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // GET /api/public/landings/:slug - Get landing by slug (public, no auth)
+  app.get("/api/public/landings/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const landings = await storage.getLandings(0);
+      const landing = landings.find(l => l.slug === slug);
+      
+      if (!landing) {
+        return res.status(404).json({ error: "Landing not found" });
+      }
+      
+      res.json(landing);
+    } catch (error) {
+      console.error("Error fetching public landing:", error);
+      res.status(500).json({ error: "Failed to fetch landing" });
+    }
+  });
+
+  // POST /api/public/landings/:slug/track-visit - Track landing visit (public)
+  app.post("/api/public/landings/:slug/track-visit", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const landings = await storage.getLandings(0);
+      const landing = landings.find(l => l.slug === slug);
+      
+      if (landing) {
+        await storage.updateLanding(landing.id, {
+          views: (landing.views || 0) + 1
+        });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error tracking visit:", error);
+      res.status(500).json({ error: "Failed to track visit" });
+    }
+  });
+
   // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
   app.post("/api/seed/base-templates", async (req, res) => {
     try {
-      console.log('🎨 Inserting base template manually without is_base_template field...');
+      console.log('🎨 Insertando template base de prueba...');
       
-      // Insertar directamente sin el campo is_base_template que no existe aún
       const baseTemplate = {
         clientId: 0,
         name: "Email Bienvenida Moderna",
@@ -782,10 +819,10 @@ export function registerRoutes(app: Express) {
       
       const newTemplate = await storage.createTemplate(baseTemplate);
       
-      console.log('✅ Base template inserted successfully');
+      console.log('✅ Template base insertado exitosamente');
       res.json({ success: true, template: newTemplate });
     } catch (error) {
-      console.error("Error seeding base template:", error);
+      console.error("Error al insertar template base:", error);
       res.status(500).json({ error: "Failed to seed base template" });
     }
   });
