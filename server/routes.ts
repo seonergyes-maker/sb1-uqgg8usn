@@ -13,7 +13,9 @@ import {
   insertSegmentSchema,
   updateSegmentSchema,
   insertCampaignSchema,
-  updateCampaignSchema
+  updateCampaignSchema,
+  insertAutomationSchema,
+  updateAutomationSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -579,6 +581,96 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting campaign:", error);
       res.status(500).json({ error: "Failed to delete campaign" });
+    }
+  });
+
+  // GET /api/automations - List all automations for a client with optional filters
+  app.get("/api/automations", async (req, res) => {
+    try {
+      const { clientId, status, search } = req.query;
+      
+      if (!clientId) {
+        return res.status(400).json({ error: "clientId is required" });
+      }
+      
+      const automations = await storage.getAutomations(parseInt(clientId as string), {
+        status: status as string,
+        search: search as string,
+      });
+      res.json(automations);
+    } catch (error) {
+      console.error("Error fetching automations:", error);
+      res.status(500).json({ error: "Failed to fetch automations" });
+    }
+  });
+
+  // GET /api/automations/:id - Get a single automation by ID
+  app.get("/api/automations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const automation = await storage.getAutomationById(id);
+      
+      if (!automation) {
+        return res.status(404).json({ error: "Automation not found" });
+      }
+      
+      res.json(automation);
+    } catch (error) {
+      console.error("Error fetching automation:", error);
+      res.status(500).json({ error: "Failed to fetch automation" });
+    }
+  });
+
+  // POST /api/automations - Create a new automation
+  app.post("/api/automations", async (req, res) => {
+    try {
+      const validatedData = insertAutomationSchema.parse(req.body);
+      const newAutomation = await storage.createAutomation(validatedData);
+      res.status(201).json(newAutomation);
+    } catch (error) {
+      console.error("Error creating automation:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid automation data", details: error });
+      }
+      res.status(500).json({ error: "Failed to create automation" });
+    }
+  });
+
+  // PATCH /api/automations/:id - Update an automation
+  app.patch("/api/automations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateAutomationSchema.parse(req.body);
+      const updatedAutomation = await storage.updateAutomation(id, validatedData);
+      
+      if (!updatedAutomation) {
+        return res.status(404).json({ error: "Automation not found" });
+      }
+      
+      res.json(updatedAutomation);
+    } catch (error) {
+      console.error("Error updating automation:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid automation data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update automation" });
+    }
+  });
+
+  // DELETE /api/automations/:id - Delete an automation
+  app.delete("/api/automations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAutomation(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Automation not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting automation:", error);
+      res.status(500).json({ error: "Failed to delete automation" });
     }
   });
 }

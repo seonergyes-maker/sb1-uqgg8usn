@@ -8,6 +8,7 @@ import {
   leads,
   segments,
   campaigns,
+  automations,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -28,7 +29,10 @@ import {
   type UpdateSegment,
   type Campaign,
   type InsertCampaign,
-  type UpdateCampaign
+  type UpdateCampaign,
+  type Automation,
+  type InsertAutomation,
+  type UpdateAutomation
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -79,6 +83,12 @@ export interface IStorage {
   createCampaign(campaign: InsertCampaign): Promise<Campaign>;
   updateCampaign(id: number, campaign: UpdateCampaign): Promise<Campaign | undefined>;
   deleteCampaign(id: number): Promise<boolean>;
+  
+  getAutomations(clientId: number, filters?: { status?: string; search?: string }): Promise<Automation[]>;
+  getAutomationById(id: number): Promise<Automation | undefined>;
+  createAutomation(automation: InsertAutomation): Promise<Automation>;
+  updateAutomation(id: number, automation: UpdateAutomation): Promise<Automation | undefined>;
+  deleteAutomation(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -478,6 +488,56 @@ export class DbStorage implements IStorage {
 
   async deleteCampaign(id: number): Promise<boolean> {
     const result = await db.delete(campaigns).where(eq(campaigns.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getAutomations(clientId: number, filters?: { status?: string; search?: string }): Promise<Automation[]> {
+    const conditions: SQL[] = [eq(automations.clientId, clientId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(automations.status, filters.status));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(automations.name, `%${filters.search}%`),
+        like(automations.description, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(automations).where(whereCondition);
+    }
+    
+    return await db.select().from(automations).where(eq(automations.clientId, clientId));
+  }
+
+  async getAutomationById(id: number): Promise<Automation | undefined> {
+    const result = await db.select().from(automations).where(eq(automations.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createAutomation(automation: InsertAutomation): Promise<Automation> {
+    const result = await db.insert(automations).values(automation);
+    const insertedId = Number(result[0].insertId);
+    const newAutomation = await this.getAutomationById(insertedId);
+    if (!newAutomation) {
+      throw new Error("Failed to create automation");
+    }
+    return newAutomation;
+  }
+
+  async updateAutomation(id: number, automation: UpdateAutomation): Promise<Automation | undefined> {
+    await db.update(automations).set(automation).where(eq(automations.id, id));
+    return await this.getAutomationById(id);
+  }
+
+  async deleteAutomation(id: number): Promise<boolean> {
+    const result = await db.delete(automations).where(eq(automations.id, id));
     return result[0].affectedRows > 0;
   }
 }

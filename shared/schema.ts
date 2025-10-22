@@ -107,12 +107,28 @@ export const campaigns = mysqlTable("campaigns", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const automations = mysqlTable("automations", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  trigger: varchar("trigger", { length: 100 }).notNull(),
+  conditions: text("conditions").notNull().default("{}"),
+  actions: text("actions").notNull().default("{}"),
+  status: varchar("status", { length: 50 }).notNull().default("Inactiva"),
+  executionCount: int("execution_count").notNull().default(0),
+  successRate: decimal("success_rate", { precision: 5, scale: 2 }).default("0.00"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
   leads: many(leads),
   segments: many(segments),
   campaigns: many(campaigns),
+  automations: many(automations),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -151,6 +167,13 @@ export const segmentsRelations = relations(segments, ({ one }) => ({
 export const campaignsRelations = relations(campaigns, ({ one }) => ({
   client: one(clients, {
     fields: [campaigns.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const automationsRelations = relations(automations, ({ one }) => ({
+  client: one(clients, {
+    fields: [automations.clientId],
     references: [clients.id],
   }),
 }));
@@ -229,6 +252,20 @@ export const insertCampaignSchema = createInsertSchema(campaigns).omit({
 
 export const updateCampaignSchema = insertCampaignSchema.partial();
 
+export const insertAutomationSchema = createInsertSchema(automations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  trigger: z.string().min(1, "El trigger es requerido"),
+  conditions: z.string().default("{}"),
+  actions: z.string().default("{}"),
+  status: z.string().default("Inactiva"),
+});
+
+export const updateAutomationSchema = insertAutomationSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -256,3 +293,7 @@ export type UpdateSegment = z.infer<typeof updateSegmentSchema>;
 export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type UpdateCampaign = z.infer<typeof updateCampaignSchema>;
+
+export type Automation = typeof automations.$inferSelect;
+export type InsertAutomation = z.infer<typeof insertAutomationSchema>;
+export type UpdateAutomation = z.infer<typeof updateAutomationSchema>;
