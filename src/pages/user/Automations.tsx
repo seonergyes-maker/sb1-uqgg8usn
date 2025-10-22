@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const automations = [
   {
@@ -63,6 +75,38 @@ const automations = [
 ];
 
 const Automations = () => {
+  const { toast } = useToast();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAutomation, setSelectedAutomation] = useState<string | null>(null);
+
+  const handleAction = (action: string, automationId: string) => {
+    const automation = automations.find(a => a.id === automationId);
+    
+    if (action === "delete") {
+      setSelectedAutomation(automationId);
+      setDeleteDialogOpen(true);
+    } else if (action === "pause" || action === "activate") {
+      toast({
+        title: action === "pause" ? "Automatización pausada" : "Automatización activada",
+        description: `"${automation?.name}" ha sido ${action === "pause" ? "pausada" : "activada"}.`,
+      });
+    } else {
+      toast({
+        title: `Acción: ${action}`,
+        description: `Acción "${action}" ejecutada para "${automation?.name}".`,
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    toast({
+      title: "Automatización eliminada",
+      description: "La automatización se ha eliminado correctamente.",
+    });
+    setDeleteDialogOpen(false);
+    setSelectedAutomation(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -153,22 +197,33 @@ const Automations = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Ver flujo</DropdownMenuItem>
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
-                      <DropdownMenuItem>Ver estadísticas</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAction("flujo", automation.id)}>
+                        Ver flujo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAction("editar", automation.id)}>
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAction("estadisticas", automation.id)}>
+                        Ver estadísticas
+                      </DropdownMenuItem>
                       {automation.status === "Activa" ? (
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("pause", automation.id)}>
                           <Pause className="mr-2 h-4 w-4" />
                           Pausar
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("activate", automation.id)}>
                           <Play className="mr-2 h-4 w-4" />
                           Activar
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem onClick={() => handleAction("duplicar", automation.id)}>
+                        Duplicar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => handleAction("delete", automation.id)}
+                      >
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -222,6 +277,23 @@ const Automations = () => {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La automatización será eliminada permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

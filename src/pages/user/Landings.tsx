@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const landings = [
   {
@@ -54,6 +66,45 @@ const landings = [
 ];
 
 const Landings = () => {
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [selectedLanding, setSelectedLanding] = useState<string | null>(null);
+
+  const filteredLandings = landings.filter((landing) => {
+    return landing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           landing.url.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const handleAction = (action: string, landingId: string) => {
+    const landing = landings.find(l => l.id === landingId);
+    
+    if (action === "archive") {
+      setSelectedLanding(landingId);
+      setArchiveDialogOpen(true);
+    } else if (action === "copy-url") {
+      navigator.clipboard.writeText(`https://${landing?.url}`);
+      toast({
+        title: "URL copiada",
+        description: "La URL se ha copiado al portapapeles.",
+      });
+    } else {
+      toast({
+        title: `Acción: ${action}`,
+        description: `Acción "${action}" ejecutada para "${landing?.title}".`,
+      });
+    }
+  };
+
+  const handleArchive = () => {
+    toast({
+      title: "Landing archivada",
+      description: "La landing se ha archivado correctamente.",
+    });
+    setArchiveDialogOpen(false);
+    setSelectedLanding(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -118,12 +169,14 @@ const Landings = () => {
             <Input
               placeholder="Buscar landings..."
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {landings.map((landing) => (
+            {filteredLandings.map((landing) => (
               <Card key={landing.id} className="border-border overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-md">
                 <div className="relative h-40 bg-secondary overflow-hidden">
                   <img 
@@ -148,17 +201,24 @@ const Landings = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("preview", landing.id)}>
                           <Eye className="mr-2 h-4 w-4" />
                           Vista previa
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("editar", landing.id)}>
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("duplicar", landing.id)}>
+                          Duplicar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("copy-url", landing.id)}>
                           <Copy className="mr-2 h-4 w-4" />
                           Copiar URL
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleAction("archive", landing.id)}
+                        >
                           Archivar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -202,6 +262,23 @@ const Landings = () => {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Archivar landing?</AlertDialogTitle>
+            <AlertDialogDescription>
+              La landing dejará de estar publicada y no será accesible desde su URL.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>
+              Archivar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

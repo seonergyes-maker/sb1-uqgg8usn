@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const leads = [
   {
@@ -72,6 +100,76 @@ const leads = [
 ];
 
 const Leads = () => {
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+
+  const filteredLeads = leads.filter((lead) => {
+    const matchesSearch = 
+      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.phone.includes(searchQuery);
+    
+    const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
+    const matchesSource = sourceFilter === "all" || lead.source === sourceFilter;
+    
+    return matchesSearch && matchesStatus && matchesSource;
+  });
+
+  const handleExport = () => {
+    const csvContent = [
+      ["Nombre", "Email", "Teléfono", "Origen", "Estado", "Score", "Fecha"],
+      ...filteredLeads.map(lead => [
+        lead.name,
+        lead.email,
+        lead.phone,
+        lead.source,
+        lead.status,
+        lead.score,
+        lead.date
+      ])
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    
+    toast({
+      title: "Exportación exitosa",
+      description: "Los leads se han exportado correctamente.",
+    });
+  };
+
+  const handleDelete = () => {
+    toast({
+      title: "Lead eliminado",
+      description: "El lead se ha eliminado correctamente.",
+    });
+    setDeleteDialogOpen(false);
+    setSelectedLead(null);
+  };
+
+  const handleAction = (action: string, leadId: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    
+    if (action === "delete") {
+      setSelectedLead(leadId);
+      setDeleteDialogOpen(true);
+    } else {
+      toast({
+        title: `Acción: ${action}`,
+        description: `Acción "${action}" ejecutada para ${lead?.name}.`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -82,7 +180,7 @@ const Leads = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
@@ -143,12 +241,79 @@ const Leads = () => {
               <Input
                 placeholder="Buscar por nombre, email o teléfono..."
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-            </Button>
+            <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtros
+                  {(statusFilter !== "all" || sourceFilter !== "all") && (
+                    <Badge variant="default" className="ml-2">Activos</Badge>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Filtros avanzados</DialogTitle>
+                  <DialogDescription>
+                    Filtra los leads por estado y origen
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Estado</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+                        <SelectItem value="Nuevo">Nuevo</SelectItem>
+                        <SelectItem value="Calificado">Calificado</SelectItem>
+                        <SelectItem value="Contactado">Contactado</SelectItem>
+                        <SelectItem value="Convertido">Convertido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Origen</Label>
+                    <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los orígenes</SelectItem>
+                        <SelectItem value="Landing Black Friday">Landing Black Friday</SelectItem>
+                        <SelectItem value="Campaña email">Campaña email</SelectItem>
+                        <SelectItem value="Formulario contacto">Formulario contacto</SelectItem>
+                        <SelectItem value="Landing webinar">Landing webinar</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setStatusFilter("all");
+                        setSourceFilter("all");
+                      }}
+                    >
+                      Limpiar filtros
+                    </Button>
+                    <Button 
+                      className="flex-1"
+                      onClick={() => setFilterDialogOpen(false)}
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -165,7 +330,7 @@ const Leads = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {leads.map((lead) => (
+              {filteredLeads.map((lead) => (
                 <TableRow key={lead.id}>
                   <TableCell className="font-medium">{lead.name}</TableCell>
                   <TableCell>
@@ -207,11 +372,22 @@ const Leads = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Añadir a segmento</DropdownMenuItem>
-                        <DropdownMenuItem>Enviar email</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem onClick={() => handleAction("ver", lead.id)}>
+                          Ver detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("editar", lead.id)}>
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("segmento", lead.id)}>
+                          Añadir a segmento
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("email", lead.id)}>
+                          Enviar email
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleAction("delete", lead.id)}
+                        >
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -223,6 +399,23 @@ const Leads = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El lead será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

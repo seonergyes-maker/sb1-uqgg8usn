@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Mail, MoreVertical, Send, Clock } from "lucide-react";
+import { Plus, Search, Mail, MoreVertical, Send, Clock, Filter } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +18,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const campaigns = [
   {
@@ -72,6 +100,46 @@ const campaigns = [
 ];
 
 const Campaigns = () => {
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const matchesSearch = 
+      campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      campaign.subject.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || campaign.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleAction = (action: string, campaignId: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    
+    if (action === "delete") {
+      setSelectedCampaign(campaignId);
+      setDeleteDialogOpen(true);
+    } else {
+      toast({
+        title: `Acción: ${action}`,
+        description: `Acción "${action}" ejecutada para "${campaign?.name}".`,
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    toast({
+      title: "Campaña eliminada",
+      description: "La campaña se ha eliminado correctamente.",
+    });
+    setDeleteDialogOpen(false);
+    setSelectedCampaign(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -137,9 +205,60 @@ const Campaigns = () => {
               <Input
                 placeholder="Buscar campañas..."
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">Filtros</Button>
+            <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtros
+                  {statusFilter !== "all" && (
+                    <Badge variant="default" className="ml-2">Activos</Badge>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Filtros avanzados</DialogTitle>
+                  <DialogDescription>
+                    Filtra las campañas por estado
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Estado</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+                        <SelectItem value="Enviada">Enviada</SelectItem>
+                        <SelectItem value="Programada">Programada</SelectItem>
+                        <SelectItem value="Borrador">Borrador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setStatusFilter("all")}
+                    >
+                      Limpiar filtros
+                    </Button>
+                    <Button 
+                      className="flex-1"
+                      onClick={() => setFilterDialogOpen(false)}
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -157,7 +276,7 @@ const Campaigns = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {campaigns.map((campaign) => (
+              {filteredCampaigns.map((campaign) => (
                 <TableRow key={campaign.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -213,19 +332,34 @@ const Campaigns = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver informe</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAction("informe", campaign.id)}>
+                          Ver informe
+                        </DropdownMenuItem>
                         {campaign.status === "Borrador" && (
                           <>
-                            <DropdownMenuItem>Editar</DropdownMenuItem>
-                            <DropdownMenuItem>Enviar ahora</DropdownMenuItem>
-                            <DropdownMenuItem>Programar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAction("editar", campaign.id)}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAction("enviar", campaign.id)}>
+                              Enviar ahora
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAction("programar", campaign.id)}>
+                              Programar
+                            </DropdownMenuItem>
                           </>
                         )}
                         {campaign.status === "Programada" && (
-                          <DropdownMenuItem>Cancelar envío</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAction("cancelar", campaign.id)}>
+                            Cancelar envío
+                          </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem onClick={() => handleAction("duplicar", campaign.id)}>
+                          Duplicar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleAction("delete", campaign.id)}
+                        >
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -237,6 +371,23 @@ const Campaigns = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La campaña será eliminada permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
