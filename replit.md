@@ -5,7 +5,19 @@ This is a full-stack marketing automation platform migrated from Lovable to Repl
 
 ## Recent Changes (October 22, 2025)
 
-### Latest Update - Leads Module Complete ✅ (User Panel)
+### Latest Update - Segments Module Complete ✅ (User Panel)
+- **Integrated Segments module with MySQL database** (Second user panel module!)
+- Created `segments` table with foreign key relationship to `clients`
+- Implemented full CRUD API endpoints (`/api/segments`)
+- Updated user Segments page to use real database data via TanStack Query
+- All segment operations work with real data: create, edit, delete, search
+- Implemented real-time statistics (Total segments, Leads segmentados, Promedio por segmento)
+- Segment filters system (stored as JSON)
+- 4 test segments inserted for demo purposes
+- Form validation with React Hook Form + Zod
+- **¡Dos módulos del panel de usuario completamente funcionales!**
+
+### Leads Module Complete ✅ (User Panel)
 - **Integrated Leads module with MySQL database** (First user panel module!)
 - Created `leads` table with foreign key relationship to `clients`
 - Implemented full CRUD API endpoints (`/api/leads`)
@@ -17,7 +29,6 @@ This is a full-stack marketing automation platform migrated from Lovable to Repl
 - Lead scoring system (0-100 points) with visual progress bars
 - 10 test leads inserted for demo purposes
 - Form validation with React Hook Form + Zod
-- **Panel de usuario comenzando a tomar vida con datos reales!**
 
 ### Payments Module Complete ✅
 - **Integrated Payments with MySQL database**
@@ -131,6 +142,11 @@ npx drizzle-kit push  # Push schema changes to MySQL database
   - source, status, score
   - createdAt, updatedAt
 
+- **segments** - Segment/Group management (User panel)
+  - id, clientId (FK to clients), name, description
+  - filters (JSON), leadCount
+  - createdAt, updatedAt
+
 ## Development
 ```bash
 npm run dev    # Start development server on port 5000
@@ -191,7 +207,7 @@ npm run start  # Run production build
 
 ## User Panel Features
 
-### ✅ Leads (Fully Functional) - PRIMER MÓDULO DEL PANEL DE USUARIO
+### ✅ Leads (Fully Functional)
 - View all leads from MySQL database
 - Create new leads with form validation
 - Update lead information
@@ -205,8 +221,18 @@ npm run start  # Run production build
 - Real-time data updates with TanStack Query
 - **10 test leads available for demo**
 
+### ✅ Segmentos (Fully Functional)
+- View all segments from MySQL database
+- Create new segments with form validation
+- Update segment information
+- Delete segments with confirmation
+- Search segments by name or description
+- Real-time statistics (Total segments, Leads segmentados, Promedio por segmento)
+- Filter system stored as JSON
+- Real-time data updates with TanStack Query
+- **4 test segments available for demo**
+
 ### 🚧 To Be Implemented (User Panel)
-- **Segmentos** - Organize leads into custom groups
 - **Campañas** - Email marketing campaign management
 - **Landings** - Landing page creation and management
 - **Automatizaciones** - Automated email sequences
@@ -242,7 +268,8 @@ npm run start  # Run production build
 - ✅ **Admin Dashboard page fully functional** with real-time statistics from MySQL
 - ✅ **Admin Payments page fully functional** with real database operations, Stripe/PayPal support, and transaction tracking
 - ✅ **Admin Settings page fully functional** with SMTP configuration and platform settings
-- ✅ **User Leads page fully functional** - FIRST USER PANEL MODULE with real database operations!
+- ✅ **User Leads page fully functional** with real database operations
+- ✅ **User Segments page fully functional** with real database operations - TWO USER PANEL MODULES COMPLETE!
 
 ## User Preferences
 - Always use Spanish for communication
