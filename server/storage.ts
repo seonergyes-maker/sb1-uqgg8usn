@@ -10,6 +10,7 @@ import {
   campaigns,
   automations,
   landings,
+  templates,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -36,7 +37,10 @@ import {
   type UpdateAutomation,
   type Landing,
   type InsertLanding,
-  type UpdateLanding
+  type UpdateLanding,
+  type Template,
+  type InsertTemplate,
+  type UpdateTemplate
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -118,6 +122,12 @@ export interface IStorage {
   createLanding(landing: InsertLanding): Promise<Landing>;
   updateLanding(id: number, landing: UpdateLanding): Promise<Landing | undefined>;
   deleteLanding(id: number): Promise<boolean>;
+  
+  getTemplates(clientId: number, filters?: { type?: string; category?: string; status?: string; search?: string }): Promise<Template[]>;
+  getTemplateById(id: number): Promise<Template | undefined>;
+  createTemplate(template: InsertTemplate): Promise<Template>;
+  updateTemplate(id: number, template: UpdateTemplate): Promise<Template | undefined>;
+  deleteTemplate(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -622,6 +632,59 @@ export class DbStorage implements IStorage {
 
   async deleteLanding(id: number): Promise<boolean> {
     const result = await db.delete(landings).where(eq(landings.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getTemplates(clientId: number, filters?: { type?: string; category?: string; status?: string; search?: string }): Promise<Template[]> {
+    const conditions: SQL[] = [eq(templates.clientId, clientId)];
+    
+    if (filters?.type) {
+      conditions.push(eq(templates.type, filters.type));
+    }
+    
+    if (filters?.category) {
+      conditions.push(eq(templates.category, filters.category));
+    }
+    
+    if (filters?.status) {
+      conditions.push(eq(templates.status, filters.status));
+    }
+    
+    if (filters?.search) {
+      conditions.push(
+        or(
+          like(templates.name, `%${filters.search}%`),
+          like(templates.description, `%${filters.search}%`)
+        )!
+      );
+    }
+    
+    const templatesList = await db.select().from(templates).where(and(...conditions));
+    return templatesList;
+  }
+
+  async getTemplateById(id: number): Promise<Template | undefined> {
+    const result = await db.select().from(templates).where(eq(templates.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createTemplate(template: InsertTemplate): Promise<Template> {
+    const result = await db.insert(templates).values(template);
+    const insertedId = Number(result[0].insertId);
+    const newTemplate = await this.getTemplateById(insertedId);
+    if (!newTemplate) {
+      throw new Error("Failed to create template");
+    }
+    return newTemplate;
+  }
+
+  async updateTemplate(id: number, template: UpdateTemplate): Promise<Template | undefined> {
+    await db.update(templates).set(template).where(eq(templates.id, id));
+    return await this.getTemplateById(id);
+  }
+
+  async deleteTemplate(id: number): Promise<boolean> {
+    const result = await db.delete(templates).where(eq(templates.id, id));
     return result[0].affectedRows > 0;
   }
 
