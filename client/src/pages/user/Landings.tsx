@@ -127,6 +127,7 @@ const Landings = () => {
       });
       setCreateDialogOpen(false);
       createForm.reset();
+      setSelectedTemplateId(null);
     },
   });
 
@@ -412,7 +413,13 @@ const Landings = () => {
       </Card>
 
       {/* Create Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      <Dialog open={createDialogOpen} onOpenChange={(open) => {
+        setCreateDialogOpen(open);
+        if (!open) {
+          setSelectedTemplateId(null);
+          createForm.reset();
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Crear Nueva Landing Page</DialogTitle>
