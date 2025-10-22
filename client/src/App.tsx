@@ -50,7 +50,6 @@ const App = () => (
         <Route path="/login" component={Login} />
         <Route path="/registro" component={Register} />
         
-        <Route path="/admin" component={AdminLayout} />
         <Route path="/admin/:rest*">
           {(params) => {
             const path = params.rest || "";
@@ -58,6 +57,7 @@ const App = () => (
               <AdminLayout>
                 <Switch>
                   <Route path="/admin" component={Dashboard} />
+                  <Route path="/admin/dashboard" component={Dashboard} />
                   <Route path="/admin/clientes" component={Clients} />
                   <Route path="/admin/suscripciones" component={Subscriptions} />
                   <Route path="/admin/pagos" component={Payments} />
