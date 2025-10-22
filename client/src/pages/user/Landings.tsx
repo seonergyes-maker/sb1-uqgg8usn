@@ -51,6 +51,24 @@ import { insertLandingSchema } from "@shared/schema";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { TemplateSelector } from "@/components/TemplateSelector";
+
+interface Template {
+  id: number;
+  clientId: number;
+  name: string;
+  description: string | null;
+  type: string;
+  category: string;
+  subject: string | null;
+  content: string;
+  variables: string | null;
+  thumbnail: string | null;
+  status: string;
+  timesUsed: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface Landing {
   id: number;
@@ -79,6 +97,7 @@ const Landings = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedLanding, setSelectedLanding] = useState<Landing | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
 
   // Fetch landings
   const { data: landings, isLoading } = useQuery<Landing[]>({
@@ -89,6 +108,11 @@ const Landings = () => {
       if (searchQuery) params.append("search", searchQuery);
       return fetch(`/api/landings/${clientId}?${params}`).then((res) => res.json());
     },
+  });
+
+  // Fetch templates
+  const { data: templates = [] } = useQuery<Template[]>({
+    queryKey: ["/api/templates", { type: "Landing" }],
   });
 
   // Create mutation
@@ -156,6 +180,15 @@ const Landings = () => {
   const editForm = useForm<z.infer<typeof insertLandingSchema>>({
     resolver: zodResolver(insertLandingSchema),
   });
+
+  // Handle template selection
+  const handleTemplateSelect = (templateId: number) => {
+    setSelectedTemplateId(templateId);
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      createForm.setValue("content", template.content);
+    }
+  };
 
   // Calculate statistics
   const totalLandings = landings?.length || 0;
@@ -389,6 +422,16 @@ const Landings = () => {
           </DialogHeader>
           <Form {...createForm}>
             <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+              {/* Template Selector */}
+              <div className="space-y-2">
+                <FormLabel>Selecciona una plantilla base (opcional)</FormLabel>
+                <TemplateSelector 
+                  type="Landing"
+                  onSelect={handleTemplateSelect}
+                  selectedTemplateId={selectedTemplateId}
+                />
+              </div>
+
               <FormField
                 control={createForm.control}
                 name="name"
