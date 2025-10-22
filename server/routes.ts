@@ -179,4 +179,15 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: "Failed to delete subscription" });
     }
   });
+
+  // GET /api/dashboard/stats - Get dashboard statistics
+  app.get("/api/dashboard/stats", async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard statistics" });
+    }
+  });
 }

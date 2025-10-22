@@ -11,6 +11,13 @@ import {
   type UpdateSubscription
 } from "../shared/schema.js";
 
+export interface DashboardStats {
+  totalClients: number;
+  activeSubscriptions: number;
+  monthlyRevenue: number;
+  recentClients: (Client & { daysAgo: number })[];
+}
+
 export interface IStorage {
   getClients(filters?: { plan?: string; status?: string; search?: string }): Promise<Client[]>;
   getClientById(id: number): Promise<Client | undefined>;
@@ -23,6 +30,8 @@ export interface IStorage {
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: number, subscription: UpdateSubscription): Promise<Subscription | undefined>;
   deleteSubscription(id: number): Promise<boolean>;
+  
+  getDashboardStats(): Promise<DashboardStats>;
 }
 
 export class DbStorage implements IStorage {
@@ -148,6 +157,44 @@ export class DbStorage implements IStorage {
   async deleteSubscription(id: number): Promise<boolean> {
     const result = await db.delete(subscriptions).where(eq(subscriptions.id, id));
     return result[0].affectedRows > 0;
+  }
+
+  async getDashboardStats(): Promise<DashboardStats> {
+    // Get total clients
+    const allClients = await db.select().from(clients);
+    const totalClients = allClients.length;
+
+    // Get active subscriptions
+    const activeSubs = await db.select().from(subscriptions).where(eq(subscriptions.status, "active"));
+    const activeSubscriptions = activeSubs.length;
+
+    // Calculate monthly revenue (sum of all active subscription prices)
+    const monthlyRevenue = activeSubs.reduce((sum, sub) => {
+      return sum + parseFloat(sub.price);
+    }, 0);
+
+    // Get recent clients (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentClientsData = allClients
+      .filter(client => new Date(client.registeredAt) >= sevenDaysAgo)
+      .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime())
+      .slice(0, 5)
+      .map(client => {
+        const daysAgo = Math.floor((Date.now() - new Date(client.registeredAt).getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          ...client,
+          daysAgo
+        };
+      });
+
+    return {
+      totalClients,
+      activeSubscriptions,
+      monthlyRevenue,
+      recentClients: recentClientsData,
+    };
   }
 }
 
