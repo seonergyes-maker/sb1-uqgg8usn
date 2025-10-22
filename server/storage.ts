@@ -11,6 +11,7 @@ import {
   automations,
   landings,
   templates,
+  scheduledTasks,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -40,7 +41,10 @@ import {
   type UpdateLanding,
   type Template,
   type InsertTemplate,
-  type UpdateTemplate
+  type UpdateTemplate,
+  type ScheduledTask,
+  type InsertScheduledTask,
+  type UpdateScheduledTask
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -128,6 +132,12 @@ export interface IStorage {
   createTemplate(template: InsertTemplate): Promise<Template>;
   updateTemplate(id: number, template: UpdateTemplate): Promise<Template | undefined>;
   deleteTemplate(id: number): Promise<boolean>;
+  
+  getScheduledTasks(clientId: number, filters?: { taskType?: string; status?: string; search?: string }): Promise<ScheduledTask[]>;
+  getScheduledTaskById(id: number): Promise<ScheduledTask | undefined>;
+  createScheduledTask(task: InsertScheduledTask): Promise<ScheduledTask>;
+  updateScheduledTask(id: number, task: UpdateScheduledTask): Promise<ScheduledTask | undefined>;
+  deleteScheduledTask(id: number): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -685,6 +695,60 @@ export class DbStorage implements IStorage {
 
   async deleteTemplate(id: number): Promise<boolean> {
     const result = await db.delete(templates).where(eq(templates.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getScheduledTasks(clientId: number, filters?: { taskType?: string; status?: string; search?: string }): Promise<ScheduledTask[]> {
+    const conditions: SQL[] = [eq(scheduledTasks.clientId, clientId)];
+    
+    if (filters?.taskType && filters.taskType !== 'all') {
+      conditions.push(eq(scheduledTasks.taskType, filters.taskType));
+    }
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(scheduledTasks.status, filters.status));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(scheduledTasks.name, `%${filters.search}%`),
+        like(scheduledTasks.description, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(scheduledTasks).where(whereCondition);
+    }
+    
+    return await db.select().from(scheduledTasks).where(eq(scheduledTasks.clientId, clientId));
+  }
+
+  async getScheduledTaskById(id: number): Promise<ScheduledTask | undefined> {
+    const result = await db.select().from(scheduledTasks).where(eq(scheduledTasks.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createScheduledTask(task: InsertScheduledTask): Promise<ScheduledTask> {
+    const result = await db.insert(scheduledTasks).values(task);
+    const insertedId = Number(result[0].insertId);
+    const newTask = await this.getScheduledTaskById(insertedId);
+    if (!newTask) {
+      throw new Error("Failed to create scheduled task");
+    }
+    return newTask;
+  }
+
+  async updateScheduledTask(id: number, task: UpdateScheduledTask): Promise<ScheduledTask | undefined> {
+    await db.update(scheduledTasks).set(task).where(eq(scheduledTasks.id, id));
+    return this.getScheduledTaskById(id);
+  }
+
+  async deleteScheduledTask(id: number): Promise<boolean> {
+    const result = await db.delete(scheduledTasks).where(eq(scheduledTasks.id, id));
     return result[0].affectedRows > 0;
   }
 
