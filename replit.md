@@ -5,7 +5,15 @@ This is a full-stack marketing automation platform migrated from Lovable to Repl
 
 ## Recent Changes (October 22, 2025)
 
-### Latest Update - Subscriptions Module Complete ✅
+### Latest Update - Dashboard Module Complete ✅
+- **Integrated Dashboard with MySQL database**
+- Created endpoint `/api/dashboard/stats` for real-time statistics
+- Implemented metric calculations (total clients, active subscriptions, monthly revenue)
+- Dashboard displays recent clients (last 5) with days since registration
+- Fixed routing configuration for `/admin` and `/admin/dashboard` paths
+- All dashboard statistics show real data from MySQL database
+
+### Subscriptions Module Complete ✅
 - **Integrated Subscriptions with MySQL database**
 - Created `subscriptions` table with foreign key relationship to `clients`
 - Implemented full CRUD API endpoints (`/api/subscriptions`)
@@ -115,10 +123,16 @@ npm run start  # Run production build
 - Real-time statistics (Active, Trial, Canceled)
 - Real-time data updates with TanStack Query
 
+### ✅ Dashboard (Fully Functional)
+- View real-time platform statistics from MySQL
+- Total clients, active subscriptions, monthly revenue
+- Recent clients list (last 5 registered)
+- All metrics calculated from real database data
+- Real-time data updates with TanStack Query
+
 ### 🚧 To Be Implemented
-- **Pagos** - Connect to database  
-- **Dashboard** - Connect to real statistics
-- **Configuración** - System settings
+- **Pagos** - Connect to database and implement payment tracking
+- **Configuración** - System settings and configuration management
 
 ## Migration Status
 ✅ **Migration Complete!** The project has been successfully migrated to the Replit full-stack structure on October 22, 2025.
@@ -135,6 +149,7 @@ npm run start  # Run production build
 - ✅ **Integrated MySQL database** with Drizzle ORM
 - ✅ **Admin Clients page fully functional** with real database operations
 - ✅ **Admin Subscriptions page fully functional** with real database operations and foreign key relations
+- ✅ **Admin Dashboard page fully functional** with real-time statistics from MySQL
 
 ## User Preferences
 - Always use Spanish for communication
