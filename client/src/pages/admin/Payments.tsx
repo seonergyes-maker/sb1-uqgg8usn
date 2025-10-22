@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -43,116 +45,97 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, DollarSign, CheckCircle, Clock, XCircle, Download, Filter, FileText } from "lucide-react";
+import { MoreHorizontal, DollarSign, CheckCircle, Clock, XCircle, Download, Filter, FileText, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import type { Payment } from "@shared/schema";
 
-const mockPayments = [
-  {
-    id: "PAY-001",
-    client: "María García",
-    amount: 99,
-    plan: "Growth",
-    status: "completed",
-    method: "Tarjeta",
-    date: "2024-03-15"
-  },
-  {
-    id: "PAY-002",
-    client: "Juan Martínez",
-    amount: 49,
-    plan: "Essential",
-    status: "completed",
-    method: "PayPal",
-    date: "2024-03-14"
-  },
-  {
-    id: "PAY-003",
-    client: "Ana López",
-    amount: 199,
-    plan: "Scale",
-    status: "completed",
-    method: "Tarjeta",
-    date: "2024-03-14"
-  },
-  {
-    id: "PAY-004",
-    client: "Carlos Ruiz",
-    amount: 99,
-    plan: "Growth",
-    status: "pending",
-    method: "Transferencia",
-    date: "2024-03-13"
-  },
-  {
-    id: "PAY-005",
-    client: "Laura Sánchez",
-    amount: 399,
-    plan: "Enterprise",
-    status: "completed",
-    method: "Tarjeta",
-    date: "2024-03-12"
-  },
-  {
-    id: "PAY-006",
-    client: "Pedro Fernández",
-    amount: 49,
-    plan: "Essential",
-    status: "failed",
-    method: "Tarjeta",
-    date: "2024-03-11"
-  },
-];
+type PaymentWithClient = Payment & { clientName: string };
 
 const Payments = () => {
-  const [payments, setPayments] = useState(mockPayments);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<number | null>(null);
   
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterMethod, setFilterMethod] = useState<string>("all");
 
-  const filteredPayments = payments.filter(payment => {
-    const matchesSearch = 
-      payment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.client.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || payment.status === filterStatus;
-    const matchesMethod = filterMethod === "all" || payment.method === filterMethod;
-    
-    return matchesSearch && matchesStatus && matchesMethod;
+  // Fetch payments with filters
+  const { data: payments = [], isLoading } = useQuery<PaymentWithClient[]>({
+    queryKey: ['/api/payments', { paymentMethod: filterMethod, paymentStatus: filterStatus, search: searchTerm }],
+  });
+
+  // Update payment mutation
+  const updatePaymentMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Payment> }) => {
+      return await apiRequest(`/api/payments/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/payments'] });
+    },
+  });
+
+  // Delete payment mutation
+  const deletePaymentMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/payments/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/payments'] });
+      toast.success("Pago eliminado correctamente");
+    },
   });
 
   const stats = {
-    total: payments.reduce((sum, p) => p.status === "completed" ? sum + p.amount : sum, 0),
-    completed: payments.filter(p => p.status === "completed").length,
-    pending: payments.filter(p => p.status === "pending").length,
-    failed: payments.filter(p => p.status === "failed").length,
+    total: payments.reduce((sum, p) => p.paymentStatus === "completed" ? sum + parseFloat(p.amount) : sum, 0),
+    completed: payments.filter(p => p.paymentStatus === "completed").length,
+    pending: payments.filter(p => p.paymentStatus === "pending").length,
+    failed: payments.filter(p => p.paymentStatus === "failed").length,
   };
 
   const handleRefund = () => {
     if (selectedPayment) {
-      setPayments(payments.map(p => 
-        p.id === selectedPayment ? { ...p, status: "failed" } : p
-      ));
-      toast.success("Reembolso procesado correctamente");
-      setRefundDialogOpen(false);
-      setSelectedPayment(null);
+      updatePaymentMutation.mutate({
+        id: selectedPayment,
+        data: { paymentStatus: "refunded" }
+      }, {
+        onSuccess: () => {
+          toast.success("Reembolso procesado correctamente");
+          setRefundDialogOpen(false);
+          setSelectedPayment(null);
+        }
+      });
     }
   };
 
-  const handleRetry = (id: string) => {
-    setPayments(payments.map(p => 
-      p.id === id ? { ...p, status: "completed" } : p
-    ));
-    toast.success("Pago procesado correctamente");
+  const handleRetry = (id: number) => {
+    updatePaymentMutation.mutate({
+      id,
+      data: { paymentStatus: "completed" }
+    }, {
+      onSuccess: () => {
+        toast.success("Pago procesado correctamente");
+      }
+    });
   };
 
   const handleExport = () => {
     const csv = [
-      ["ID", "Cliente", "Monto", "Plan", "Estado", "Método", "Fecha"],
-      ...filteredPayments.map(p => [
-        p.id, p.client, p.amount, p.plan, p.status, p.method, p.date
+      ["ID", "Cliente", "Monto", "Moneda", "Estado", "Método", "Fecha", "ID Transacción"],
+      ...payments.map(p => [
+        p.id,
+        p.clientName,
+        p.amount,
+        p.currency,
+        p.paymentStatus,
+        p.paymentMethod,
+        new Date(p.createdAt).toLocaleDateString(),
+        p.transactionId || ""
       ])
     ].map(row => row.join(",")).join("\n");
     
@@ -165,8 +148,8 @@ const Payments = () => {
     toast.success("Datos exportados correctamente");
   };
 
-  const handleDownloadInvoice = (id: string) => {
-    toast.success(`Descargando factura ${id}`);
+  const handleDownloadInvoice = (id: number) => {
+    toast.success(`Generando factura para pago #${id}`);
   };
 
   const applyFilters = () => {
@@ -185,15 +168,45 @@ const Payments = () => {
       completed: { variant: "default", label: "Completado", icon: CheckCircle },
       pending: { variant: "secondary", label: "Pendiente", icon: Clock },
       failed: { variant: "destructive", label: "Fallido", icon: XCircle },
+      refunded: { variant: "outline", label: "Reembolsado", icon: XCircle },
     };
-    const { variant, label, icon: Icon } = config[status];
+    const { variant, label, icon: Icon } = config[status] || config["pending"];
     return (
-      <Badge variant={variant} className="gap-1">
+      <Badge variant={variant} className="gap-1" data-testid={`badge-status-${status}`}>
         <Icon className="h-3 w-3" />
         {label}
       </Badge>
     );
   };
+
+  const getMethodBadge = (method: string) => {
+    const colors: Record<string, string> = {
+      stripe: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      paypal: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    };
+    return (
+      <Badge variant="outline" className={colors[method.toLowerCase()] || ""} data-testid={`badge-method-${method.toLowerCase()}`}>
+        <CreditCard className="h-3 w-3 mr-1" />
+        {method}
+      </Badge>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Pagos</h2>
+          <p className="text-muted-foreground">
+            Historial de transacciones y facturación
+          </p>
+        </div>
+        <div className="text-center py-8 text-muted-foreground">
+          Cargando pagos...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -204,31 +217,33 @@ const Payments = () => {
             Historial de transacciones y facturación
           </p>
         </div>
-        <Button variant="outline" onClick={handleExport}>
+        <Button variant="outline" onClick={handleExport} data-testid="button-export">
           <Download className="mr-2 h-4 w-4" />
           Exportar
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-border">
+        <Card className="border-border" data-testid="card-total-monthly">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total mensual
+              Total procesado
             </CardTitle>
             <div className="bg-primary/10 p-2 rounded-lg">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€{stats.total.toLocaleString()}</div>
+            <div className="text-2xl font-bold" data-testid="text-total-amount">
+              €{stats.total.toFixed(2)}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-primary font-medium">+15.3%</span> vs mes anterior
+              Pagos completados
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border" data-testid="card-completed">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Completados
@@ -238,11 +253,11 @@ const Payments = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="text-2xl font-bold" data-testid="text-completed-count">{stats.completed}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border" data-testid="card-pending">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Pendientes
@@ -252,11 +267,11 @@ const Payments = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="text-2xl font-bold" data-testid="text-pending-count">{stats.pending}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border" data-testid="card-failed">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Fallidos
@@ -266,7 +281,7 @@ const Payments = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.failed}</div>
+            <div className="text-2xl font-bold" data-testid="text-failed-count">{stats.failed}</div>
           </CardContent>
         </Card>
       </div>
@@ -275,18 +290,19 @@ const Payments = () => {
         <CardHeader>
           <CardTitle>Historial de pagos</CardTitle>
           <CardDescription>
-            {filteredPayments.length} pago{filteredPayments.length !== 1 ? "s" : ""} encontrado{filteredPayments.length !== 1 ? "s" : ""}
+            {payments.length} pago{payments.length !== 1 ? "s" : ""} encontrado{payments.length !== 1 ? "s" : ""}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-6">
             <Input
-              placeholder="Buscar por ID o cliente..."
+              placeholder="Buscar por cliente o ID transacción..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
+              data-testid="input-search"
             />
-            <Button variant="outline" onClick={() => setFilterDialogOpen(true)}>
+            <Button variant="outline" onClick={() => setFilterDialogOpen(true)} data-testid="button-filters">
               <Filter className="mr-2 h-4 w-4" />
               Filtros
               {(filterStatus !== "all" || filterMethod !== "all") && (
@@ -304,37 +320,40 @@ const Payments = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Monto</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Estado</TableHead>
                   <TableHead>Método</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>ID Transacción</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Factura</TableHead>
                   <TableHead className="w-[70px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPayments.length === 0 ? (
+                {payments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       No se encontraron pagos
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredPayments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-mono text-sm">{payment.id}</TableCell>
-                      <TableCell className="font-medium">{payment.client}</TableCell>
-                      <TableCell className="font-semibold">€{payment.amount}</TableCell>
-                      <TableCell>{payment.plan}</TableCell>
-                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                      <TableCell>{payment.method}</TableCell>
-                      <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
+                  payments.map((payment) => (
+                    <TableRow key={payment.id} data-testid={`row-payment-${payment.id}`}>
+                      <TableCell className="font-mono text-sm">#{payment.id}</TableCell>
+                      <TableCell className="font-medium">{payment.clientName}</TableCell>
+                      <TableCell className="font-semibold">{payment.currency} {parseFloat(payment.amount).toFixed(2)}</TableCell>
+                      <TableCell>{getMethodBadge(payment.paymentMethod)}</TableCell>
+                      <TableCell>{getStatusBadge(payment.paymentStatus)}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {payment.transactionId || "—"}
+                      </TableCell>
+                      <TableCell>{new Date(payment.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        {payment.status === "completed" && (
+                        {payment.paymentStatus === "completed" && (
                           <Button 
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleDownloadInvoice(payment.id)}
+                            data-testid={`button-invoice-${payment.id}`}
                           >
                             <FileText className="h-4 w-4" />
                           </Button>
@@ -343,25 +362,25 @@ const Payments = () => {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0" data-testid={`button-actions-${payment.id}`}>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => toast.info("Vista de detalles")}>
+                            <DropdownMenuItem onClick={() => toast.info(`Detalles del pago #${payment.id}`)}>
                               Ver detalles
                             </DropdownMenuItem>
-                            {payment.status === "completed" && (
+                            {payment.paymentStatus === "completed" && (
                               <DropdownMenuItem onClick={() => handleDownloadInvoice(payment.id)}>
                                 Descargar factura
                               </DropdownMenuItem>
                             )}
-                            {payment.status === "failed" && (
+                            {payment.paymentStatus === "failed" && (
                               <DropdownMenuItem onClick={() => handleRetry(payment.id)}>
                                 Reintentar pago
                               </DropdownMenuItem>
                             )}
-                            {payment.status === "completed" && (
+                            {payment.paymentStatus === "completed" && (
                               <DropdownMenuItem 
                                 className="text-destructive"
                                 onClick={() => {
@@ -396,7 +415,7 @@ const Payments = () => {
             <div className="space-y-2">
               <Label>Estado</Label>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-status">
                   <SelectValue placeholder="Todos los estados" />
                 </SelectTrigger>
                 <SelectContent>
@@ -404,29 +423,29 @@ const Payments = () => {
                   <SelectItem value="completed">Completado</SelectItem>
                   <SelectItem value="pending">Pendiente</SelectItem>
                   <SelectItem value="failed">Fallido</SelectItem>
+                  <SelectItem value="refunded">Reembolsado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Método de pago</Label>
               <Select value={filterMethod} onValueChange={setFilterMethod}>
-                <SelectTrigger>
+                <SelectTrigger data-testid="select-method">
                   <SelectValue placeholder="Todos los métodos" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los métodos</SelectItem>
-                  <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Transferencia">Transferencia</SelectItem>
+                  <SelectItem value="stripe">Stripe</SelectItem>
+                  <SelectItem value="paypal">PayPal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={clearFilters}>
+            <Button variant="outline" onClick={clearFilters} data-testid="button-clear-filters">
               Limpiar filtros
             </Button>
-            <Button variant="hero" onClick={applyFilters}>
+            <Button variant="hero" onClick={applyFilters} data-testid="button-apply-filters">
               Aplicar filtros
             </Button>
           </DialogFooter>
@@ -442,8 +461,12 @@ const Payments = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRefund} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel data-testid="button-cancel-refund">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleRefund} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-refund"
+            >
               Reembolsar
             </AlertDialogAction>
           </AlertDialogFooter>
