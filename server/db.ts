@@ -1,16 +1,15 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import pkg from 'pg';
-const { Pool } = pkg;
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 import * as schema from '../shared/schema.js';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set');
-}
-
-const pool = new Pool({
-  connectionString,
+const poolConnection = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'landflow',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-export const db = drizzle(pool, { schema });
+export const db = drizzle(poolConnection, { schema, mode: 'default' });

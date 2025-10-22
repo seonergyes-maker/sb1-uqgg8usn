@@ -5,6 +5,9 @@ export default {
   out: "./drizzle",
   dialect: "mysql",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    host: process.env.DB_HOST!,
+    user: process.env.DB_USER!,
+    password: process.env.DB_PASSWORD!,
+    database: process.env.DB_NAME || 'landflow',
   },
 } satisfies Config;
