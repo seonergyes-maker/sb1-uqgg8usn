@@ -22,7 +22,6 @@ import Leads from "./pages/user/Leads";
 import Segments from "./pages/user/Segments";
 import Landings from "./pages/user/Landings";
 import LandingEditor from "./pages/user/LandingEditor";
-import Campaigns from "./pages/user/Campaigns";
 import EmailEditor from "./pages/user/EmailEditor";
 import Automations from "./pages/user/Automations";
 import Statistics from "./pages/user/Statistics";
@@ -104,16 +103,6 @@ const App = () => (
         <Route path="/panel/landings/editor">
           <UserLayout>
             <LandingEditor />
-          </UserLayout>
-        </Route>
-        <Route path="/panel/campanas">
-          <UserLayout>
-            <Campaigns />
-          </UserLayout>
-        </Route>
-        <Route path="/panel/campanas/editor">
-          <UserLayout>
-            <EmailEditor />
           </UserLayout>
         </Route>
         <Route path="/panel/automatizaciones">
