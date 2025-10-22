@@ -6,7 +6,8 @@ import {
   insertSubscriptionSchema,
   updateSubscriptionSchema,
   insertPaymentSchema,
-  updatePaymentSchema
+  updatePaymentSchema,
+  updateSettingsSchema
 } from "../shared/schema.js";
 
 export function registerRoutes(app: Express) {
@@ -276,6 +277,32 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting payment:", error);
       res.status(500).json({ error: "Failed to delete payment" });
+    }
+  });
+
+  // GET /api/settings - Get application settings
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const appSettings = await storage.getSettings();
+      res.json(appSettings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  // PATCH /api/settings - Update application settings
+  app.patch("/api/settings", async (req, res) => {
+    try {
+      const validatedData = updateSettingsSchema.parse(req.body);
+      const updatedSettings = await storage.updateSettings(validatedData);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Invalid settings data", details: error });
+      }
+      res.status(500).json({ error: "Failed to update settings" });
     }
   });
 }

@@ -4,6 +4,7 @@ import {
   clients, 
   subscriptions,
   payments,
+  settings,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -12,7 +13,10 @@ import {
   type UpdateSubscription,
   type Payment,
   type InsertPayment,
-  type UpdatePayment
+  type UpdatePayment,
+  type Settings,
+  type InsertSettings,
+  type UpdateSettings
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -40,6 +44,9 @@ export interface IStorage {
   createPayment(payment: InsertPayment): Promise<Payment>;
   updatePayment(id: number, payment: UpdatePayment): Promise<Payment | undefined>;
   deletePayment(id: number): Promise<boolean>;
+  
+  getSettings(): Promise<Settings>;
+  updateSettings(settingsData: UpdateSettings): Promise<Settings>;
   
   getDashboardStats(): Promise<DashboardStats>;
 }
@@ -236,6 +243,23 @@ export class DbStorage implements IStorage {
   async deletePayment(id: number): Promise<boolean> {
     const result = await db.delete(payments).where(eq(payments.id, id));
     return result[0].affectedRows > 0;
+  }
+
+  async getSettings(): Promise<Settings> {
+    const result = await db.select().from(settings).limit(1);
+    if (result.length === 0) {
+      const defaultSettings = await db.insert(settings).values({});
+      const settingsId = Number(defaultSettings[0].insertId);
+      const newSettings = await db.select().from(settings).where(eq(settings.id, settingsId)).limit(1);
+      return newSettings[0];
+    }
+    return result[0];
+  }
+
+  async updateSettings(settingsData: UpdateSettings): Promise<Settings> {
+    const currentSettings = await this.getSettings();
+    await db.update(settings).set(settingsData).where(eq(settings.id, currentSettings.id));
+    return await this.getSettings();
   }
 
   async getDashboardStats(): Promise<DashboardStats> {

@@ -42,6 +42,31 @@ export const payments = mysqlTable("payments", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const settings = mysqlTable("settings", {
+  id: int("id").primaryKey().autoincrement(),
+  companyName: varchar("company_name", { length: 255 }).notNull().default("LandFlow"),
+  contactEmail: varchar("contact_email", { length: 255 }).notNull().default("soporte@landflow.com"),
+  phone: varchar("phone", { length: 50 }).notNull().default("+34 900 000 000"),
+  fromName: varchar("from_name", { length: 255 }).notNull().default("LandFlow"),
+  fromEmail: varchar("from_email", { length: 255 }).notNull().default("noreply@landflow.com"),
+  replyToEmail: varchar("reply_to_email", { length: 255 }).notNull().default("soporte@landflow.com"),
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: int("smtp_port").default(587),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPassword: varchar("smtp_password", { length: 255 }),
+  smtpEncryption: varchar("smtp_encryption", { length: 10 }).default("tls"),
+  smtpAuth: varchar("smtp_auth", { length: 20 }).default("login"),
+  notifyNewClients: int("notify_new_clients").notNull().default(1),
+  notifyPayments: int("notify_payments").notNull().default(1),
+  notifyFailedPayments: int("notify_failed_payments").notNull().default(1),
+  notifyCancellations: int("notify_cancellations").notNull().default(1),
+  stripeKey: varchar("stripe_key", { length: 255 }),
+  paypalClientId: varchar("paypal_client_id", { length: 255 }),
+  analyticsId: varchar("analytics_id", { length: 100 }),
+  termsAndConditions: text("terms_and_conditions"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -90,6 +115,13 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 
 export const updatePaymentSchema = insertPaymentSchema.partial();
 
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const updateSettingsSchema = insertSettingsSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -101,3 +133,7 @@ export type UpdateSubscription = z.infer<typeof updateSubscriptionSchema>;
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type UpdatePayment = z.infer<typeof updatePaymentSchema>;
+
+export type Settings = typeof settings.$inferSelect;
+export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type UpdateSettings = z.infer<typeof updateSettingsSchema>;
