@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard,
   Users, 
@@ -113,7 +113,7 @@ export function UserSidebar() {
                               <SidebarMenuSubButton asChild isActive={location.pathname === subItem.url}>
                                 <Link href={subItem.url}>
                                   <span>{subItem.title}</span>
-                                </NavLink>
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           ))}
@@ -124,10 +124,10 @@ export function UserSidebar() {
                 ) : (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <Link href={item.url} end={item.url === "/panel"}>
+                      <Link href={item.url}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
-                      </NavLink>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -146,7 +146,7 @@ export function UserSidebar() {
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
