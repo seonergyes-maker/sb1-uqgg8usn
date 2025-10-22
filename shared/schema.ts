@@ -178,16 +178,14 @@ export const insertLeadSchema = createInsertSchema(leads, {
 
 export const updateLeadSchema = insertLeadSchema.partial();
 
-export const insertSegmentSchema = createInsertSchema(segments, {
-  clientId: z.number(),
-  name: z.string().min(1, "El nombre es requerido"),
-  description: z.string().optional(),
-  filters: z.string().min(1, "Los filtros son requeridos"),
-  leadCount: z.number().min(0).default(0),
-}).omit({
+export const insertSegmentSchema = createInsertSchema(segments).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional().nullable(),
+  filters: z.string().default("{}"),
 });
 
 export const updateSegmentSchema = insertSegmentSchema.partial();
