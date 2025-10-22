@@ -493,24 +493,6 @@ const Landings = () => {
               />
               <FormField
                 control={createForm.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contenido (JSON/HTML)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder='{"hero": {"title": "...", "subtitle": "..."}}'
-                        rows={6}
-                        {...field}
-                        data-testid="input-content"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
