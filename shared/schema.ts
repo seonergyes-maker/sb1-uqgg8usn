@@ -67,6 +67,19 @@ export const settings = mysqlTable("settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const leads = mysqlTable("leads", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  source: varchar("source", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("Nuevo"),
+  score: int("score").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -88,6 +101,13 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   subscription: one(subscriptions, {
     fields: [payments.subscriptionId],
     references: [subscriptions.id],
+  }),
+}));
+
+export const leadsRelations = relations(leads, ({ one }) => ({
+  client: one(clients, {
+    fields: [leads.clientId],
+    references: [clients.id],
   }),
 }));
 
@@ -122,6 +142,14 @@ export const insertSettingsSchema = createInsertSchema(settings).omit({
 
 export const updateSettingsSchema = insertSettingsSchema.partial();
 
+export const insertLeadSchema = createInsertSchema(leads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateLeadSchema = insertLeadSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -137,3 +165,7 @@ export type UpdatePayment = z.infer<typeof updatePaymentSchema>;
 export type Settings = typeof settings.$inferSelect;
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 export type UpdateSettings = z.infer<typeof updateSettingsSchema>;
+
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type UpdateLead = z.infer<typeof updateLeadSchema>;
