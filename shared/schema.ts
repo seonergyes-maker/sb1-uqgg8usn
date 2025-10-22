@@ -122,6 +122,23 @@ export const automations = mysqlTable("automations", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const landings = mysqlTable("landings", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  title: varchar("title", { length: 500 }),
+  description: text("description"),
+  content: text("content").notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("Borrador"),
+  publishedAt: timestamp("published_at"),
+  views: int("views").notNull().default(0),
+  conversions: int("conversions").notNull().default(0),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }).default("0.00"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -129,6 +146,7 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   segments: many(segments),
   campaigns: many(campaigns),
   automations: many(automations),
+  landings: many(landings),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -174,6 +192,13 @@ export const campaignsRelations = relations(campaigns, ({ one }) => ({
 export const automationsRelations = relations(automations, ({ one }) => ({
   client: one(clients, {
     fields: [automations.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const landingsRelations = relations(landings, ({ one }) => ({
+  client: one(clients, {
+    fields: [landings.clientId],
     references: [clients.id],
   }),
 }));
@@ -266,6 +291,22 @@ export const insertAutomationSchema = createInsertSchema(automations).omit({
 
 export const updateAutomationSchema = insertAutomationSchema.partial();
 
+export const insertLandingSchema = createInsertSchema(landings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  slug: z.string().min(1, "El slug es requerido"),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  content: z.string().min(1, "El contenido es requerido"),
+  status: z.string().default("Borrador"),
+});
+
+export const updateLandingSchema = insertLandingSchema.partial();
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -297,3 +338,7 @@ export type UpdateCampaign = z.infer<typeof updateCampaignSchema>;
 export type Automation = typeof automations.$inferSelect;
 export type InsertAutomation = z.infer<typeof insertAutomationSchema>;
 export type UpdateAutomation = z.infer<typeof updateAutomationSchema>;
+
+export type Landing = typeof landings.$inferSelect;
+export type InsertLanding = z.infer<typeof insertLandingSchema>;
+export type UpdateLanding = z.infer<typeof updateLandingSchema>;
