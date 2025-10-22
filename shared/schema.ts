@@ -91,22 +91,6 @@ export const segments = mysqlTable("segments", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const campaigns = mysqlTable("campaigns", {
-  id: int("id").primaryKey().autoincrement(),
-  clientId: int("client_id").notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
-  subject: varchar("subject", { length: 500 }).notNull(),
-  content: text("content").notNull(),
-  status: varchar("status", { length: 50 }).notNull().default("Borrador"),
-  scheduledAt: timestamp("scheduled_at"),
-  sentAt: timestamp("sent_at"),
-  recipientCount: int("recipient_count").notNull().default(0),
-  openRate: decimal("open_rate", { precision: 5, scale: 2 }).default("0.00"),
-  clickRate: decimal("click_rate", { precision: 5, scale: 2 }).default("0.00"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
 export const automations = mysqlTable("automations", {
   id: int("id").primaryKey().autoincrement(),
   clientId: int("client_id").notNull(),
@@ -178,7 +162,6 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   payments: many(payments),
   leads: many(leads),
   segments: many(segments),
-  campaigns: many(campaigns),
   automations: many(automations),
   landings: many(landings),
   templates: many(templates),
@@ -214,13 +197,6 @@ export const leadsRelations = relations(leads, ({ one }) => ({
 export const segmentsRelations = relations(segments, ({ one }) => ({
   client: one(clients, {
     fields: [segments.clientId],
-    references: [clients.id],
-  }),
-}));
-
-export const campaignsRelations = relations(campaigns, ({ one }) => ({
-  client: one(clients, {
-    fields: [campaigns.clientId],
     references: [clients.id],
   }),
 }));
@@ -312,21 +288,6 @@ export const insertSegmentSchema = createInsertSchema(segments).omit({
 
 export const updateSegmentSchema = insertSegmentSchema.partial();
 
-export const insertCampaignSchema = createInsertSchema(campaigns).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  sentAt: true,
-}).extend({
-  name: z.string().min(1, "El nombre es requerido"),
-  subject: z.string().min(1, "El asunto es requerido"),
-  content: z.string().min(1, "El contenido es requerido"),
-  status: z.string().default("Borrador"),
-  scheduledAt: z.string().optional().nullable(),
-});
-
-export const updateCampaignSchema = insertCampaignSchema.partial();
-
 export const insertAutomationSchema = createInsertSchema(automations).omit({
   id: true,
   createdAt: true,
@@ -417,10 +378,6 @@ export type UpdateLead = z.infer<typeof updateLeadSchema>;
 export type Segment = typeof segments.$inferSelect;
 export type InsertSegment = z.infer<typeof insertSegmentSchema>;
 export type UpdateSegment = z.infer<typeof updateSegmentSchema>;
-
-export type Campaign = typeof campaigns.$inferSelect;
-export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
-export type UpdateCampaign = z.infer<typeof updateCampaignSchema>;
 
 export type Automation = typeof automations.$inferSelect;
 export type InsertAutomation = z.infer<typeof insertAutomationSchema>;
