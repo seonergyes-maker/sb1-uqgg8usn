@@ -12,8 +12,6 @@ import {
   updateLeadSchema,
   insertSegmentSchema,
   updateSegmentSchema,
-  insertCampaignSchema,
-  updateCampaignSchema,
   insertAutomationSchema,
   updateAutomationSchema,
   insertLandingSchema,
@@ -495,96 +493,6 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting segment:", error);
       res.status(500).json({ error: "Failed to delete segment" });
-    }
-  });
-
-  // GET /api/campaigns - List all campaigns for a client with optional filters
-  app.get("/api/campaigns", async (req, res) => {
-    try {
-      const { clientId, status, search } = req.query;
-      
-      if (!clientId) {
-        return res.status(400).json({ error: "clientId is required" });
-      }
-      
-      const campaigns = await storage.getCampaigns(parseInt(clientId as string), {
-        status: status as string,
-        search: search as string,
-      });
-      res.json(campaigns);
-    } catch (error) {
-      console.error("Error fetching campaigns:", error);
-      res.status(500).json({ error: "Failed to fetch campaigns" });
-    }
-  });
-
-  // GET /api/campaigns/:id - Get a single campaign by ID
-  app.get("/api/campaigns/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const campaign = await storage.getCampaignById(id);
-      
-      if (!campaign) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
-      
-      res.json(campaign);
-    } catch (error) {
-      console.error("Error fetching campaign:", error);
-      res.status(500).json({ error: "Failed to fetch campaign" });
-    }
-  });
-
-  // POST /api/campaigns - Create a new campaign
-  app.post("/api/campaigns", async (req, res) => {
-    try {
-      const validatedData = insertCampaignSchema.parse(req.body);
-      const newCampaign = await storage.createCampaign(validatedData);
-      res.status(201).json(newCampaign);
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      if (error instanceof Error && error.name === 'ZodError') {
-        return res.status(400).json({ error: "Invalid campaign data", details: error });
-      }
-      res.status(500).json({ error: "Failed to create campaign" });
-    }
-  });
-
-  // PATCH /api/campaigns/:id - Update a campaign
-  app.patch("/api/campaigns/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const validatedData = updateCampaignSchema.parse(req.body);
-      const updatedCampaign = await storage.updateCampaign(id, validatedData);
-      
-      if (!updatedCampaign) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
-      
-      res.json(updatedCampaign);
-    } catch (error) {
-      console.error("Error updating campaign:", error);
-      if (error instanceof Error && error.name === 'ZodError') {
-        return res.status(400).json({ error: "Invalid campaign data", details: error });
-      }
-      res.status(500).json({ error: "Failed to update campaign" });
-    }
-  });
-
-  // DELETE /api/campaigns/:id - Delete a campaign
-  app.delete("/api/campaigns/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteCampaign(id);
-      
-      if (!deleted) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting campaign:", error);
-      res.status(500).json({ error: "Failed to delete campaign" });
     }
   });
 
