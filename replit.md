@@ -52,11 +52,20 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos
     -   ✅ Landings: 5 landing pages con tracking, 9,670 visitas totales, 1,623 conversiones, 15.91% tasa promedio
     -   ✅ Templates: 8 plantillas (5 email, 3 landing), 14,064 usos totales, sistema de variables dinámicas
+-   **Templates Base System:**
+    -   ✅ Sistema de templates base implementado (clientId = 0 para identificar templates base)
+    -   ✅ TemplateSelector component con grid visual, filtros y búsqueda
+    -   ✅ Ruta pública /l/:slug para visualizar landings sin autenticación
+    -   ✅ Tracking automático de visitas en landings públicas
+    -   ✅ Endpoints API públicos para landings (/api/public/landings/:slug)
+    -   📝 Pendiente: Insertar 12 templates base HTML (6 email + 6 landing) en BD
+    -   📝 Pendiente: Integrar selector en formularios de Automatizaciones y Landings
+    -   📝 Pendiente: Editor visual con preview side-by-side
 -   **Architecture Changes:**
     -   🗑️ Campaigns module eliminated (replaced by Scheduler + Amazon SES architecture)
     -   📅 Scheduler schema created for scheduled email campaigns
     -   📧 Multi-tenant SES architecture defined (sender identities, configuration sets, event tracking)
--   **Next Steps:** A/B Testing, Scheduler implementation, Sender Identities, Webhooks, Integrations
+-   **Next Steps:** Completar templates base, A/B Testing, Scheduler implementation, Sender Identities, Webhooks, Integrations
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (external instance configured via environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).
