@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +90,7 @@ interface Landing {
 
 const Landings = () => {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const clientId = 1;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,15 +121,18 @@ const Landings = () => {
   const createMutation = useMutation({
     mutationFn: (data: z.infer<typeof insertLandingSchema>) =>
       apiRequest("/api/landings", "POST", data),
-    onSuccess: () => {
+    onSuccess: (newLanding: Landing) => {
       queryClient.invalidateQueries({ queryKey: ["/api/landings", clientId] });
       toast({
         title: "Landing creada",
-        description: "La landing page se ha creado correctamente.",
+        description: "Redirigiendo a tu nueva landing...",
       });
       setCreateDialogOpen(false);
       createForm.reset();
       setSelectedTemplateId(null);
+      
+      // Redirect to public landing page for editing
+      setLocation(`/l/${newLanding.slug}`);
     },
   });
 
