@@ -3,9 +3,12 @@ import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Landing } from "@/lib/types";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
+import FloatingEditor from "@/components/FloatingEditor";
 
 export default function PublicLanding() {
   const { slug } = useParams();
+  const { user } = useAuth();
 
   const { data: landing, isLoading } = useQuery<Landing>({
     queryKey: ["/api/public/landings", slug],
@@ -58,12 +61,19 @@ export default function PublicLanding() {
     );
   }
 
+  // Check if current user is the owner of the landing
+  const isOwner = user && user.id === landing.clientId;
+
   return (
     <div className="min-h-screen bg-white" data-testid="public-landing">
       <div
         dangerouslySetInnerHTML={{ __html: landing.content }}
         data-testid="landing-content"
       />
+      
+      {isOwner && (
+        <FloatingEditor landingId={landing.id} landingSlug={slug!} />
+      )}
     </div>
   );
 }
