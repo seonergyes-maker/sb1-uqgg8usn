@@ -50,11 +50,7 @@ export default function FloatingEditor({ landingId, landingSlug }: FloatingEdito
       
       const updatedContent = contentElement.innerHTML;
       
-      await apiRequest(`/api/landings/${landingId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ content: updatedContent }),
-        headers: { "Content-Type": "application/json" }
-      });
+      await apiRequest(`/api/landings/${landingId}`, "PATCH", { content: updatedContent });
       
       return updatedContent;
     },
@@ -125,11 +121,7 @@ export default function FloatingEditor({ landingId, landingSlug }: FloatingEdito
 
   const handleTemplateSelect = async (template: Template) => {
     try {
-      await apiRequest(`/api/landings/${landingId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ content: template.content }),
-        headers: { "Content-Type": "application/json" }
-      });
+      await apiRequest(`/api/landings/${landingId}`, "PATCH", { content: template.content });
 
       queryClient.invalidateQueries({ queryKey: ["/api/public/landings", landingSlug] });
       
