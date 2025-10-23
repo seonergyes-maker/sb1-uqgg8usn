@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { storage } from "./storage.js";
+import { DEFAULT_LANDING_TEMPLATE } from "../shared/defaultLandingTemplate.js";
 import { 
   insertClientSchema, 
   updateClientSchema,
@@ -980,29 +981,137 @@ export function registerRoutes(app: Express) {
   // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
   app.post("/api/seed/base-templates", async (req, res) => {
     try {
-      console.log('🎨 Insertando template base de prueba...');
+      console.log('🎨 Insertando templates base optimizadas para landing pages...');
       
-      const baseTemplate = {
-        clientId: 0,
-        name: "Email Bienvenida Moderna",
-        description: "Template moderno de bienvenida con diseño limpio y profesional",
-        type: "Email",
-        category: "Transaccional",
-        subject: "¡Bienvenido/a a {{company}}!",
-        content: `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4}.container{max-width:600px;margin:0 auto;background:#fff}.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 20px;text-align:center}.header h1{color:#fff;margin:0;font-size:28px}.content{padding:40px 30px}.content h2{color:#333;font-size:24px;margin-bottom:20px}.content p{color:#666;line-height:1.6;font-size:16px}.cta-button{display:inline-block;padding:15px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-decoration:none;border-radius:5px;margin:20px 0;font-weight:bold}.footer{background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>¡Bienvenido/a!</h1></div><div class="content"><h2>Hola {{name}},</h2><p>Nos alegra tenerte con nosotros en {{company}}.</p><a href="{{dashboard_url}}" class="cta-button">Ir a mi panel</a></div><div class="footer"><p>© {{year}} {{company}}</p></div></div></body></html>`,
-        variables: '{"name":"Nombre del usuario","company":"Nombre de la empresa","dashboard_url":"URL del panel","year":"Año actual"}',
-        thumbnail: null,
-        status: "Activa",
-        timesUsed: 0,
-      };
+      const landingTemplates = [
+        {
+          clientId: 0,
+          name: "Landing Producto Moderno",
+          description: "Template de landing page moderna con gradiente vibrante, hero section impactante y call-to-actions destacados",
+          type: "Landing",
+          category: "Producto",
+          subject: null,
+          content: DEFAULT_LANDING_TEMPLATE,
+          variables: null,
+          thumbnail: null,
+          status: "Activa",
+          timesUsed: 0,
+        },
+        {
+          clientId: 0,
+          name: "Landing Minimalista",
+          description: "Diseño minimalista y elegante con fondo blanco y tipografía limpia, ideal para servicios profesionales",
+          type: "Landing",
+          category: "Servicios",
+          subject: null,
+          content: `<div style="min-height: 100vh; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem;">
+    <header style="text-align: center; margin-bottom: 5rem;">
+      <h1 style="font-size: 4rem; font-weight: 300; color: #000; margin-bottom: 1rem;" contenteditable="false">Tu Marca</h1>
+      <p style="font-size: 1.25rem; color: #666;" contenteditable="false">Servicios profesionales de alta calidad</p>
+    </header>
+    
+    <section style="text-align: center; margin-bottom: 5rem;">
+      <h2 style="font-size: 2.5rem; font-weight: 300; color: #000; margin-bottom: 2rem;" contenteditable="false">Lo que hacemos</h2>
+      <p style="font-size: 1.125rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.8;" contenteditable="false">
+        Ofrecemos soluciones innovadoras y personalizadas para impulsar tu negocio al siguiente nivel.
+      </p>
+    </section>
+    
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 5rem;">
+      <div style="text-align: center;">
+        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Consultoría</h3>
+        <p style="color: #666;" contenteditable="false">Estrategias personalizadas para tu éxito</p>
+      </div>
+      <div style="text-align: center;">
+        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Desarrollo</h3>
+        <p style="color: #666;" contenteditable="false">Soluciones tecnológicas a medida</p>
+      </div>
+      <div style="text-align: center;">
+        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Soporte</h3>
+        <p style="color: #666;" contenteditable="false">Acompañamiento continuo</p>
+      </div>
+    </section>
+    
+    <section style="text-align: center;">
+      <button style="background: #000; color: #fff; padding: 1rem 3rem; border: none; font-size: 1.125rem; cursor: pointer;" contenteditable="false">
+        Contactar
+      </button>
+    </section>
+  </div>
+</div>`,
+          variables: null,
+          thumbnail: null,
+          status: "Activa",
+          timesUsed: 0,
+        },
+        {
+          clientId: 0,
+          name: "Landing App Móvil",
+          description: "Template diseñada para promocionar aplicaciones móviles con screenshots y características destacadas",
+          type: "Landing",
+          category: "App",
+          subject: null,
+          content: `<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="max-width: 1200px; text-align: center;">
+      <div style="font-size: 5rem; margin-bottom: 1rem;" contenteditable="false">📱</div>
+      <h1 style="font-size: 4rem; font-weight: bold; color: white; margin-bottom: 1.5rem;" contenteditable="false">Tu App Aquí</h1>
+      <p style="font-size: 1.5rem; color: rgba(255,255,255,0.9); margin-bottom: 2rem;" contenteditable="false">
+        La aplicación que necesitas para simplificar tu vida
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem;">
+        <button style="background: white; color: #667eea; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; border: none; cursor: pointer;" contenteditable="false">
+          Descargar iOS
+        </button>
+        <button style="background: transparent; color: white; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; border: 2px solid white; cursor: pointer;" contenteditable="false">
+          Descargar Android
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div style="background: white; padding: 5rem 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+      <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 3rem; color: #1a202c;" contenteditable="false">Características</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div>
+          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">⚡</div>
+          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Rápida</h3>
+          <p style="color: #718096;" contenteditable="false">Optimizada para máximo rendimiento</p>
+        </div>
+        <div>
+          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">🔒</div>
+          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Segura</h3>
+          <p style="color: #718096;" contenteditable="false">Tus datos protegidos siempre</p>
+        </div>
+        <div>
+          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">🎨</div>
+          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Hermosa</h3>
+          <p style="color: #718096;" contenteditable="false">Diseño intuitivo y moderno</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`,
+          variables: null,
+          thumbnail: null,
+          status: "Activa",
+          timesUsed: 0,
+        }
+      ];
       
-      const newTemplate = await storage.createTemplate(baseTemplate);
+      const createdTemplates = [];
+      for (const template of landingTemplates) {
+        const newTemplate = await storage.createTemplate(template);
+        createdTemplates.push(newTemplate);
+      }
       
-      console.log('✅ Template base insertado exitosamente');
-      res.json({ success: true, template: newTemplate });
+      console.log(`✅ ${createdTemplates.length} templates base insertadas exitosamente`);
+      res.json({ success: true, count: createdTemplates.length, templates: createdTemplates });
     } catch (error) {
-      console.error("Error al insertar template base:", error);
-      res.status(500).json({ error: "Failed to seed base template" });
+      console.error("Error al insertar templates base:", error);
+      res.status(500).json({ error: "Failed to seed base templates" });
     }
   });
 }
