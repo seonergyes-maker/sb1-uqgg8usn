@@ -171,16 +171,8 @@ const Landings = () => {
   const createForm = useForm<z.infer<typeof insertLandingSchema>>({
     resolver: zodResolver(insertLandingSchema),
     defaultValues: {
-      clientId,
       name: "",
       slug: "",
-      title: "",
-      description: "",
-      content: "",
-      status: "Borrador",
-      views: 0,
-      conversions: 0,
-      conversionRate: "0.00",
     },
   });
 
@@ -439,24 +431,14 @@ const Landings = () => {
           </DialogHeader>
           <Form {...createForm}>
             <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-              {/* Template Selector */}
-              <div className="space-y-2">
-                <FormLabel>Selecciona una plantilla base (opcional)</FormLabel>
-                <TemplateSelector 
-                  type="Landing"
-                  onSelect={handleTemplateSelect}
-                  selectedTemplateId={selectedTemplateId}
-                />
-              </div>
-
               <FormField
                 control={createForm.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel>Nombre de la landing</FormLabel>
                     <FormControl>
-                      <Input placeholder="Black Friday 2025" {...field} data-testid="input-name" />
+                      <Input placeholder="Ej: Promoción Black Friday" {...field} data-testid="input-name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -467,58 +449,10 @@ const Landings = () => {
                 name="slug"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slug (URL)</FormLabel>
+                    <FormLabel>URL de la landing</FormLabel>
                     <FormControl>
-                      <Input placeholder="black-friday-2025" {...field} data-testid="input-slug" />
+                      <Input placeholder="promocion-black-friday" {...field} data-testid="input-slug" />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título SEO</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ofertas Black Friday - Hasta 70% Off" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descripción SEO</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Descripción para motores de búsqueda..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-status">
-                          <SelectValue placeholder="Selecciona un estado" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Borrador">Borrador</SelectItem>
-                        <SelectItem value="Publicada">Publicada</SelectItem>
-                        <SelectItem value="Programada">Programada</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

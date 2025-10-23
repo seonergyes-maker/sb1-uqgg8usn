@@ -325,13 +325,17 @@ export const insertLandingSchema = createInsertSchema(landings).omit({
   createdAt: true,
   updatedAt: true,
   publishedAt: true,
+  views: true,
+  conversions: true,
+  conversionRate: true,
 }).extend({
+  clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   slug: z.string().min(1, "El slug es requerido"),
-  title: z.string().optional(),
-  description: z.string().optional(),
+  title: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
   content: z.string().optional(),
-  status: z.string().default("Borrador"),
+  status: z.string().optional().default("Borrador"),
 });
 
 export const updateLandingSchema = insertLandingSchema.partial();
