@@ -89,6 +89,12 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Página de precios actualizada con ventajas competitivas vs Mailchimp/Brevo
     -   ✅ Registro asigna plan Starter por defecto
     -   ✅ 5 clientes existentes migrados a plan Starter
+-   **Multi-Tenant Data Isolation (✅ CRITICAL FIX - Oct 23, 2025):**
+    -   ✅ **SEGURIDAD:** Reemplazado `clientId = 1` hardcodeado por `user.id` dinámico del AuthContext
+    -   ✅ Todos los módulos del panel actualizados: Landings, Leads, Segments, Automations, Templates
+    -   ✅ Cada usuario ahora solo ve/edita su propio contenido (aislamiento total de datos)
+    -   ✅ Formularios de creación incluyen automáticamente el clientId del usuario autenticado
+    -   ✅ Patrón implementado: `const { user } = useAuth(); const clientId = user?.id || 0;`
 -   **Architecture Changes:**
     -   🗑️ Campaigns module eliminated (replaced by Scheduler + Amazon SES architecture)
     -   📅 Scheduler schema created for scheduled email campaigns
