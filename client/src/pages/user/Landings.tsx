@@ -240,6 +240,9 @@ const Landings = () => {
   };
 
   const onCreateSubmit = (data: z.infer<typeof insertLandingSchema>) => {
+    console.log("onCreateSubmit called with data:", data);
+    console.log("clientId:", clientId);
+    console.log("Form errors:", createForm.formState.errors);
     createMutation.mutate({ ...data, clientId });
   };
 
