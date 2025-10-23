@@ -130,7 +130,11 @@ const Landings = () => {
         description: "Redirigiendo a tu nueva landing...",
       });
       setCreateDialogOpen(false);
-      createForm.reset();
+      createForm.reset({
+        clientId: clientId,
+        name: "",
+        slug: "",
+      });
       setSelectedTemplateId(null);
       
       // Redirect to public landing page for editing
@@ -171,6 +175,7 @@ const Landings = () => {
   const createForm = useForm<z.infer<typeof insertLandingSchema>>({
     resolver: zodResolver(insertLandingSchema),
     defaultValues: {
+      clientId: clientId,
       name: "",
       slug: "",
     },
@@ -219,9 +224,6 @@ const Landings = () => {
       description: landing.description || "",
       content: landing.content,
       status: landing.status,
-      views: landing.views,
-      conversions: landing.conversions,
-      conversionRate: landing.conversionRate,
     });
     setEditDialogOpen(true);
   };
@@ -419,7 +421,11 @@ const Landings = () => {
         setCreateDialogOpen(open);
         if (!open) {
           setSelectedTemplateId(null);
-          createForm.reset();
+          createForm.reset({
+            clientId: clientId,
+            name: "",
+            slug: "",
+          });
         }
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
