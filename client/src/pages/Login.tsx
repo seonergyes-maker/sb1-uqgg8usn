@@ -11,10 +11,33 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí iría la lógica de autenticación
-    toast.success("Inicio de sesión exitoso");
+    
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Error al iniciar sesión");
+      }
+
+      toast.success("Bienvenido a LandFlow");
+      
+      // Redirect based on role
+      if (result.user.role === "admin") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/panel";
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Error al iniciar sesión");
+    }
   };
 
   return (

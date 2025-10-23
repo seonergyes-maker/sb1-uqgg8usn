@@ -15,16 +15,43 @@ const Register = () => {
     confirmPassword: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
       toast.error("Las contraseñas no coinciden");
       return;
     }
+
+    if (formData.password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
     
-    // Aquí iría la lógica de registro
-    toast.success("Cuenta creada exitosamente");
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Error al crear la cuenta");
+      }
+
+      toast.success("¡Cuenta creada exitosamente! Bienvenido a LandFlow");
+      
+      // Redirect to user panel
+      window.location.href = "/panel";
+    } catch (error: any) {
+      toast.error(error.message || "Error al crear la cuenta");
+    }
   };
 
   return (

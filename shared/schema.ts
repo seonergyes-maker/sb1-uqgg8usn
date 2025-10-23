@@ -7,6 +7,9 @@ export const clients = mysqlTable("clients", {
   id: int("id").primaryKey().autoincrement(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  role: varchar("role", { length: 20 }).notNull().default("user"),
+  isActive: int("is_active").notNull().default(1),
   plan: varchar("plan", { length: 50 }).notNull().default("Essential"),
   status: varchar("status", { length: 50 }).notNull().default("active"),
   contacts: int("contacts").notNull().default(0),
@@ -233,9 +236,24 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
   registeredAt: true,
   updatedAt: true,
+}).extend({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  name: z.string().min(1, "El nombre es requerido"),
 });
 
 export const updateClientSchema = insertClientSchema.partial();
+
+export const registerSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+});
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
   id: true,

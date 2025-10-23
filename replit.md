@@ -45,6 +45,16 @@ The project is structured into a `client/` for the frontend, a `server/` for the
 -   Modular design for both frontend components and backend API routes.
 
 ## Recent Progress
+-   **Authentication System (✅ Completed):**
+    -   ✅ JWT-based authentication with bcryptjs for password hashing
+    -   ✅ Schema clients actualizado: campos password, role, isActive
+    -   ✅ Rutas de autenticación: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout
+    -   ✅ Admin login via environment secrets (ADMIN_EMAIL, ADMIN_PASSWORD, JWT_SECRET)
+    -   ✅ User registration and login funcionales
+    -   ✅ AuthContext y ProtectedRoute para manejo de estado y rutas protegidas
+    -   ✅ /panel/* requiere autenticación (role: user)
+    -   ✅ /admin/* requiere autenticación (role: admin)
+    -   ✅ Páginas Login y Register conectadas a API real
 -   **User Panel Modules Completed (6/11 modules):**
     -   ✅ Leads: CRUD completo, 10 leads de prueba, estadísticas en tiempo real (30% calificados, 20% convertidos)
     -   ✅ Segmentos: 4 segmentos de prueba, 14 leads segmentados, filtros JSON
@@ -55,17 +65,18 @@ The project is structured into a `client/` for the frontend, a `server/` for the
 -   **Templates Base System:**
     -   ✅ Sistema de templates base implementado (clientId = 0 para identificar templates base)
     -   ✅ TemplateSelector component con grid visual, filtros y búsqueda
+    -   ✅ Endpoint GET /api/templates/base para templates base
     -   ✅ Ruta pública /l/:slug para visualizar landings sin autenticación
     -   ✅ Tracking automático de visitas en landings públicas
-    -   ✅ Endpoints API públicos para landings (/api/public/landings/:slug)
-    -   📝 Pendiente: Insertar 12 templates base HTML (6 email + 6 landing) en BD
-    -   📝 Pendiente: Integrar selector en formularios de Automatizaciones y Landings
+    -   ✅ 2 templates base creados: Email Bienvenida Moderna, Landing Producto Moderno
+    -   📝 Pendiente: Insertar 10 templates base adicionales (4 email + 6 landing) en BD
+    -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
     -   📝 Pendiente: Editor visual con preview side-by-side
 -   **Architecture Changes:**
     -   🗑️ Campaigns module eliminated (replaced by Scheduler + Amazon SES architecture)
     -   📅 Scheduler schema created for scheduled email campaigns
     -   📧 Multi-tenant SES architecture defined (sender identities, configuration sets, event tracking)
--   **Next Steps:** Completar templates base, A/B Testing, Scheduler implementation, Sender Identities, Webhooks, Integrations
+-   **Next Steps:** Formulario captura de leads en landings públicas, Activar automatizaciones al capturar leads, Completar templates base, A/B Testing, Scheduler implementation
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (external instance configured via environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).

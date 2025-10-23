@@ -17,10 +17,166 @@ import {
   insertLandingSchema,
   updateLandingSchema,
   insertTemplateSchema,
-  updateTemplateSchema
+  updateTemplateSchema,
+  registerSchema,
+  loginSchema
 } from "../shared/schema.js";
+import { 
+  hashPassword, 
+  comparePassword, 
+  generateToken, 
+  authenticateAdmin, 
+  authMiddleware,
+  requireAdmin,
+  requireUser,
+  type AuthRequest 
+} from "./auth.js";
+import { db } from "./db.js";
+import { clients } from "../shared/schema.js";
+import { eq } from "drizzle-orm";
 
 export function registerRoutes(app: Express) {
+  // AUTH ROUTES - Public
+  
+  // POST /api/auth/register - Register a new user
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = registerSchema.parse(req.body);
+      
+      // Check if email already exists
+      const existingClient = await db.select().from(clients).where(eq(clients.email, validatedData.email)).limit(1);
+      if (existingClient.length > 0) {
+        return res.status(400).json({ error: "El email ya está registrado" });
+      }
+      
+      // Hash password
+      const hashedPassword = await hashPassword(validatedData.password);
+      
+      // Create client
+      const newClient = await storage.createClient({
+        ...validatedData,
+        password: hashedPassword,
+        role: "user",
+        isActive: 1,
+        plan: "Essential",
+        status: "active",
+        contacts: 0,
+        emailsSent: 0
+      });
+      
+      // Generate token
+      const token = generateToken({
+        id: newClient.id,
+        email: newClient.email,
+        role: newClient.role,
+        name: newClient.name
+      });
+      
+      // Set cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      
+      // Return user data (without password)
+      const { password, ...clientData } = newClient;
+      res.status(201).json({ user: clientData, token });
+    } catch (error) {
+      console.error("Error registering user:", error);
+      res.status(400).json({ error: "Error al registrar usuario" });
+    }
+  });
+  
+  // POST /api/auth/login - Login user or admin
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      // Check if admin login
+      if (await authenticateAdmin(validatedData.email, validatedData.password)) {
+        const token = generateToken({
+          id: 0,
+          email: validatedData.email,
+          role: "admin",
+          name: "Administrador"
+        });
+        
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+        
+        return res.json({
+          user: {
+            id: 0,
+            email: validatedData.email,
+            role: "admin",
+            name: "Administrador"
+          },
+          token
+        });
+      }
+      
+      // Check regular user
+      const client = await db.select().from(clients).where(eq(clients.email, validatedData.email)).limit(1);
+      if (client.length === 0) {
+        return res.status(401).json({ error: "Credenciales inválidas" });
+      }
+      
+      const user = client[0];
+      
+      // Check if user is active
+      if (!user.isActive) {
+        return res.status(403).json({ error: "Cuenta desactivada" });
+      }
+      
+      // Verify password
+      const isValidPassword = await comparePassword(validatedData.password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Credenciales inválidas" });
+      }
+      
+      // Generate token
+      const token = generateToken({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name
+      });
+      
+      // Set cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+      
+      // Return user data (without password)
+      const { password, ...userData } = user;
+      res.json({ user: userData, token });
+    } catch (error) {
+      console.error("Error logging in:", error);
+      res.status(400).json({ error: "Error al iniciar sesión" });
+    }
+  });
+  
+  // GET /api/auth/me - Get current user
+  app.get("/api/auth/me", authMiddleware, (req: AuthRequest, res) => {
+    res.json({ user: req.user });
+  });
+  
+  // POST /api/auth/logout - Logout user
+  app.post("/api/auth/logout", (req, res) => {
+    res.clearCookie("token");
+    res.json({ message: "Sesión cerrada exitosamente" });
+  });
+  
+  // PROTECTED ROUTES - Require authentication
   // GET /api/clients - List all clients with optional filters
   app.get("/api/clients", async (req, res) => {
     try {
