@@ -228,7 +228,16 @@ const Landings = () => {
     console.log("onCreateSubmit called with data:", data);
     console.log("clientId:", clientId);
     console.log("Form errors:", createForm.formState.errors);
-    createMutation.mutate({ ...data, clientId });
+    console.log("About to call createMutation.mutate");
+    
+    const landingData = {
+      ...data,
+      clientId,
+      status: "Borrador",
+    };
+    
+    console.log("Sending to API:", landingData);
+    createMutation.mutate(landingData);
   };
 
   const onEditSubmit = (data: z.infer<typeof insertLandingSchema>) => {

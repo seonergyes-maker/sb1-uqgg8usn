@@ -62,24 +62,34 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos
     -   ✅ Landings: 5 landing pages con tracking, 9,670 visitas totales, 1,623 conversiones, 15.91% tasa promedio
     -   ✅ Templates: 8 plantillas (5 email, 3 landing), 14,064 usos totales, sistema de variables dinámicas
--   **Templates Base System:**
+-   **Templates Base System (✅ Completed - Oct 23, 2025):**
     -   ✅ Sistema de templates base implementado (clientId = 0 para identificar templates base)
     -   ✅ TemplateSelector component con grid visual, filtros y búsqueda
     -   ✅ Endpoint GET /api/templates/base para templates base
     -   ✅ Ruta pública /l/:slug para visualizar landings sin autenticación
     -   ✅ Tracking automático de visitas en landings públicas
-    -   ✅ 2 templates base creados: Email Bienvenida Moderna, Landing Producto Moderno
-    -   📝 Pendiente: Insertar 10 templates base adicionales (4 email + 6 landing) en BD
+    -   ✅ 3 templates base optimizadas insertadas: Landing Producto Moderno, Landing Minimalista, Landing App Móvil
+    -   ✅ Todos los elementos con `contenteditable="false"` por defecto para sistema de edición visual
+    -   ✅ FloatingEditor activa/desactiva `contenteditable` dinámicamente al editar/guardar
+    -   ✅ Botón "Cambiar Template" integrado en FloatingEditor
+    -   📝 Pendiente: Insertar 7 templates base adicionales (4 email + 3 landing) en BD
     -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
 -   **Editor In-Place para Landings (✅ Completed):**
     -   ✅ Template HTML predeterminado para landings nuevas (hero, features, CTA, footer)
     -   ✅ Endpoint POST /api/landings usa template por defecto si no se proporciona contenido
-    -   ✅ FloatingEditor component: botones flotantes Editar/Guardar/Cancelar (bottom-right)
+    -   ✅ FloatingEditor component: botones flotantes Editar/Guardar/Cancelar/Cambiar Template/Volver al Panel (bottom-right)
     -   ✅ Modo edición: contentEditable activado con outline visual
     -   ✅ Detección automática de propietario en /l/:slug (user.id === landing.clientId)
     -   ✅ Guardar cambios: PATCH /api/landings/:id actualiza contenido HTML
     -   ✅ Redirección a /l/:slug después de crear landing para edición inmediata
     -   ✅ Auto-invalidación de cache y reload al guardar cambios
+-   **Landings UI Improvements (✅ Completed - Oct 23, 2025):**
+    -   ✅ Estados actualizados: "Activa" y "Borrador" (eliminado "Desactivada")
+    -   ✅ Estado por defecto: "Borrador" para todas las landings nuevas
+    -   ✅ Badge "New" verde para landings creadas en los últimos 7 días
+    -   ✅ Menú dropdown simplificado: solo Toggle Activar/Desactivar (con iconos Eye/EyeOff), Editar y Eliminar
+    -   ✅ Botones con `e.stopPropagation()` para evitar conflictos con navegación de cards
+    -   ✅ Filtro de estado actualizado a "Activa/Borrador"
 -   **Pricing & Plans (✅ Completed):**
     -   ✅ 4 planes escalados: Starter (gratuito), Essential (€15), Professional (€49), Business (€99)
     -   ✅ Plan Starter: 1k contactos, 3k emails/mes, 2 landings, 1 automatización
