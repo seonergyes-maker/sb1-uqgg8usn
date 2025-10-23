@@ -68,12 +68,20 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Endpoint GET /api/templates/base para templates base
     -   ✅ Ruta pública /l/:slug para visualizar landings sin autenticación
     -   ✅ Tracking automático de visitas en landings públicas
-    -   ✅ 3 templates base optimizadas insertadas: Landing Producto Moderno, Landing Minimalista, Landing App Móvil
+    -   ✅ 6 templates base insertadas: 3 para sector servicios + 3 originales
     -   ✅ Todos los elementos con `contenteditable="false"` por defecto para sistema de edición visual
     -   ✅ FloatingEditor activa/desactiva `contenteditable` dinámicamente al editar/guardar
     -   ✅ Botón "Cambiar Template" integrado en FloatingEditor
-    -   📝 Pendiente: Insertar 7 templates base adicionales (4 email + 3 landing) en BD
     -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
+-   **Sistema de Captura de Leads (✅ Completed - Oct 23, 2025):**
+    -   ✅ Endpoint POST /api/public/leads (sin autenticación) para captura desde landings públicas
+    -   ✅ Validación de campos requeridos: clientId, name, email
+    -   ✅ Tracking automático de conversiones: actualiza landing.conversions y landing.conversionRate
+    -   ✅ Inyección de variables globales en PublicLanding: LANDING_CLIENT_ID y LANDING_SLUG
+    -   ✅ 3 templates mobile-first con formularios integrados (Consultoría, Agencia Digital, Servicios Profesionales)
+    -   ✅ JavaScript inline para envío de formularios con fetch API
+    -   ✅ Mensajes de éxito/error visuales en cada formulario
+    -   ✅ Corrección crítica: firma de apiRequest actualizada en FloatingEditor (url, method, data)
 -   **Editor In-Place para Landings (✅ Completed):**
     -   ✅ Template HTML predeterminado para landings nuevas (hero, features, CTA, footer)
     -   ✅ Endpoint POST /api/landings usa template por defecto si no se proporciona contenido
