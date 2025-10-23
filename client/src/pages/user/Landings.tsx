@@ -110,9 +110,9 @@ const Landings = () => {
     },
   });
 
-  // Fetch templates
+  // Fetch base templates
   const { data: templates = [] } = useQuery<Template[]>({
-    queryKey: ["/api/templates", { type: "Landing" }],
+    queryKey: ["/api/templates/base", { type: "Landing" }],
   });
 
   // Create mutation
