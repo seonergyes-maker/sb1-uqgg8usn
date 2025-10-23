@@ -678,6 +678,23 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // GET /api/templates/base - List all base templates (clientId = 0)
+  app.get("/api/templates/base", async (req, res) => {
+    try {
+      const { type, category, status, search } = req.query;
+      const templates = await storage.getTemplates(0, {
+        type: type as string,
+        category: category as string,
+        status: status as string,
+        search: search as string,
+      });
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching base templates:", error);
+      res.status(500).json({ error: "Failed to fetch base templates" });
+    }
+  });
+
   // GET /api/templates/:clientId - List all templates with optional filters
   app.get("/api/templates/:clientId", async (req, res) => {
     try {
