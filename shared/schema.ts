@@ -320,15 +320,7 @@ export const insertAutomationSchema = createInsertSchema(automations).omit({
 
 export const updateAutomationSchema = insertAutomationSchema.partial();
 
-export const insertLandingSchema = createInsertSchema(landings).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  publishedAt: true,
-  views: true,
-  conversions: true,
-  conversionRate: true,
-}).extend({
+export const insertLandingSchema = z.object({
   clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   slug: z.string().min(1, "El slug es requerido"),
