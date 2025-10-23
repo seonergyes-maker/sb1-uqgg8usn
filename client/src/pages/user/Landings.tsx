@@ -215,17 +215,8 @@ const Landings = () => {
   };
 
   const handleEdit = (landing: Landing) => {
-    setSelectedLanding(landing);
-    editForm.reset({
-      clientId: landing.clientId,
-      name: landing.name,
-      slug: landing.slug,
-      title: landing.title || "",
-      description: landing.description || "",
-      content: landing.content,
-      status: landing.status,
-    });
-    setEditDialogOpen(true);
+    // Redirect to the public landing page where the floating editor will appear
+    setLocation(`/l/${landing.slug}`);
   };
 
   const handleDelete = (landing: Landing) => {
@@ -350,7 +341,7 @@ const Landings = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {landings.map((landing) => (
-                <Card key={landing.id} className="border-border">
+                <Card key={landing.id} className="border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setLocation(`/l/${landing.slug}`)}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -359,7 +350,7 @@ const Landings = () => {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid={`button-menu-${landing.id}`}>
+                          <Button variant="ghost" size="icon" data-testid={`button-menu-${landing.id}`} onClick={(e) => e.stopPropagation()}>
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -372,7 +363,7 @@ const Landings = () => {
                             <Copy className="mr-2 h-4 w-4" />
                             Copiar URL
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setLocation(`/l/${landing.slug}`)}>
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Ver landing
                           </DropdownMenuItem>
