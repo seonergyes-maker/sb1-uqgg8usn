@@ -330,7 +330,7 @@ export const insertLandingSchema = createInsertSchema(landings).omit({
   slug: z.string().min(1, "El slug es requerido"),
   title: z.string().optional(),
   description: z.string().optional(),
-  content: z.string().min(1, "El contenido es requerido"),
+  content: z.string().optional(),
   status: z.string().default("Borrador"),
 });
 

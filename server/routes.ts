@@ -791,7 +791,15 @@ export function registerRoutes(app: Express) {
   app.post("/api/landings", async (req, res) => {
     try {
       const validatedData = insertLandingSchema.parse(req.body);
-      const landing = await storage.createLanding(validatedData);
+      
+      // Use default template if no content provided
+      const { DEFAULT_LANDING_TEMPLATE } = await import("../shared/defaultLandingTemplate.js");
+      const landingData = {
+        ...validatedData,
+        content: validatedData.content || DEFAULT_LANDING_TEMPLATE
+      };
+      
+      const landing = await storage.createLanding(landingData);
       res.status(201).json(landing);
     } catch (error) {
       console.error("Error creating landing:", error);
