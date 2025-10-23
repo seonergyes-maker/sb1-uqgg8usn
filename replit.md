@@ -71,7 +71,15 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ 2 templates base creados: Email Bienvenida Moderna, Landing Producto Moderno
     -   📝 Pendiente: Insertar 10 templates base adicionales (4 email + 6 landing) en BD
     -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
-    -   📝 Pendiente: Editor visual con preview side-by-side
+-   **Editor In-Place para Landings (✅ Completed):**
+    -   ✅ Template HTML predeterminado para landings nuevas (hero, features, CTA, footer)
+    -   ✅ Endpoint POST /api/landings usa template por defecto si no se proporciona contenido
+    -   ✅ FloatingEditor component: botones flotantes Editar/Guardar/Cancelar (bottom-right)
+    -   ✅ Modo edición: contentEditable activado con outline visual
+    -   ✅ Detección automática de propietario en /l/:slug (user.id === landing.clientId)
+    -   ✅ Guardar cambios: PATCH /api/landings/:id actualiza contenido HTML
+    -   ✅ Redirección a /l/:slug después de crear landing para edición inmediata
+    -   ✅ Auto-invalidación de cache y reload al guardar cambios
 -   **Pricing & Plans (✅ Completed):**
     -   ✅ 4 planes escalados: Starter (gratuito), Essential (€15), Professional (€49), Business (€99)
     -   ✅ Plan Starter: 1k contactos, 3k emails/mes, 2 landings, 1 automatización

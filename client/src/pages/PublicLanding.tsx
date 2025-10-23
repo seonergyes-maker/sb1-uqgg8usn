@@ -1,13 +1,29 @@
 import { useEffect } from "react";
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import type { Landing } from "@/lib/types";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import FloatingEditor from "@/components/FloatingEditor";
 
+interface Landing {
+  id: number;
+  clientId: number;
+  name: string;
+  slug: string;
+  title: string | null;
+  description: string | null;
+  content: string;
+  status: string;
+  publishedAt: string | null;
+  views: number;
+  conversions: number;
+  conversionRate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function PublicLanding() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
 
   const { data: landing, isLoading } = useQuery<Landing>({
