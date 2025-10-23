@@ -327,7 +327,7 @@ export const insertLandingSchema = z.object({
   title: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   content: z.string().optional(),
-  status: z.string().optional().default("Borrador"),
+  status: z.string().optional().default("Desactivada"),
 });
 
 export const updateLandingSchema = insertLandingSchema.partial();

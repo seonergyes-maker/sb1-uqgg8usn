@@ -108,6 +108,7 @@ export interface IStorage {
   
   getLandings(clientId: number, filters?: { status?: string; search?: string }): Promise<Landing[]>;
   getLandingById(id: number): Promise<Landing | undefined>;
+  getLandingBySlug(slug: string): Promise<Landing | undefined>;
   createLanding(landing: InsertLanding): Promise<Landing>;
   updateLanding(id: number, landing: UpdateLanding): Promise<Landing | undefined>;
   deleteLanding(id: number): Promise<boolean>;
@@ -557,6 +558,11 @@ export class DbStorage implements IStorage {
 
   async getLandingById(id: number): Promise<Landing | undefined> {
     const result = await db.select().from(landings).where(eq(landings.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getLandingBySlug(slug: string): Promise<Landing | undefined> {
+    const result = await db.select().from(landings).where(eq(landings.slug, slug)).limit(1);
     return result[0];
   }
 

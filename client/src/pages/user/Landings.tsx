@@ -197,13 +197,13 @@ const Landings = () => {
 
   // Calculate statistics
   const totalLandings = landings?.length || 0;
-  const publishedLandings = landings?.filter(l => l.status === "Publicada").length || 0;
+  const activeLandings = landings?.filter(l => l.status === "Activa").length || 0;
   const totalViews = landings?.reduce((sum, l) => sum + l.views, 0) || 0;
   const totalConversions = landings?.reduce((sum, l) => sum + l.conversions, 0) || 0;
-  const avgConversionRate = publishedLandings > 0
-    ? (landings?.filter(l => l.status === "Publicada").reduce((sum, l) => sum + parseFloat(l.conversionRate), 0) || 0) / publishedLandings
+  const avgConversionRate = activeLandings > 0
+    ? (landings?.filter(l => l.status === "Activa").reduce((sum, l) => sum + parseFloat(l.conversionRate), 0) || 0) / activeLandings
     : 0;
-  const bestLanding = landings?.filter(l => l.status === "Publicada").sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))[0];
+  const bestLanding = landings?.filter(l => l.status === "Activa").sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))[0];
 
   const handleCopyUrl = (landing: Landing) => {
     const url = `https://${landing.slug}.landflow.app`;
@@ -239,11 +239,10 @@ const Landings = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      "Publicada": "default",
-      "Borrador": "secondary",
-      "Programada": "outline",
+      "Activa": "default",
+      "Desactivada": "secondary",
     };
-    return <Badge variant={variants[status] || "default"} data-testid={`badge-status-${status.toLowerCase()}`}>{status}</Badge>;
+    return <Badge variant={variants[status] || "secondary"} data-testid={`badge-status-${status.toLowerCase()}`}>{status}</Badge>;
   };
 
   return (
@@ -269,7 +268,7 @@ const Landings = () => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold" data-testid="text-total-landings">{totalLandings}</p>
-            <p className="text-xs text-muted-foreground mt-1">{publishedLandings} publicadas</p>
+            <p className="text-xs text-muted-foreground mt-1">{activeLandings} activas</p>
           </CardContent>
         </Card>
 
@@ -279,7 +278,7 @@ const Landings = () => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold" data-testid="text-total-views">{totalViews.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">De {publishedLandings} landings publicadas</p>
+            <p className="text-xs text-muted-foreground mt-1">De {activeLandings} landings activas</p>
           </CardContent>
         </Card>
 
@@ -324,9 +323,8 @@ const Landings = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="Publicada">Publicada</SelectItem>
-                <SelectItem value="Borrador">Borrador</SelectItem>
-                <SelectItem value="Programada">Programada</SelectItem>
+                <SelectItem value="Activa">Activa</SelectItem>
+                <SelectItem value="Desactivada">Desactivada</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -556,9 +554,8 @@ const Landings = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Borrador">Borrador</SelectItem>
-                        <SelectItem value="Publicada">Publicada</SelectItem>
-                        <SelectItem value="Programada">Programada</SelectItem>
+                        <SelectItem value="Activa">Activa</SelectItem>
+                        <SelectItem value="Desactivada">Desactivada</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

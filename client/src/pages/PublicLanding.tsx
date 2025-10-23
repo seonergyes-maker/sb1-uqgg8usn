@@ -28,6 +28,7 @@ export default function PublicLanding() {
 
   const { data: landing, isLoading } = useQuery<Landing>({
     queryKey: ["/api/public/landings", slug],
+    queryFn: () => fetch(`/api/public/landings/${slug}`).then((res) => res.json()),
   });
 
   const trackVisitMutation = useMutation({
@@ -66,7 +67,11 @@ export default function PublicLanding() {
     );
   }
 
-  if (landing.status !== "Activa") {
+  // Check if current user is the owner of the landing
+  const isOwner = user && user.id === landing.clientId;
+
+  // Only show inactive landings to the owner
+  if (landing.status !== "Activa" && !isOwner) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="text-center max-w-md px-6">
@@ -76,9 +81,6 @@ export default function PublicLanding() {
       </div>
     );
   }
-
-  // Check if current user is the owner of the landing
-  const isOwner = user && user.id === landing.clientId;
 
   return (
     <div className="min-h-screen bg-white" data-testid="public-landing">

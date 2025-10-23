@@ -945,8 +945,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/public/landings/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const landings = await storage.getLandings(0);
-      const landing = landings.find(l => l.slug === slug);
+      const landing = await storage.getLandingBySlug(slug);
       
       if (!landing) {
         return res.status(404).json({ error: "Landing not found" });
@@ -963,8 +962,7 @@ export function registerRoutes(app: Express) {
   app.post("/api/public/landings/:slug/track-visit", async (req, res) => {
     try {
       const { slug } = req.params;
-      const landings = await storage.getLandings(0);
-      const landing = landings.find(l => l.slug === slug);
+      const landing = await storage.getLandingBySlug(slug);
       
       if (landing) {
         await storage.updateLanding(landing.id, {
