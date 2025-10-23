@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Template {
   id: number;
@@ -73,7 +74,8 @@ interface Template {
 
 const Templates = () => {
   const { toast } = useToast();
-  const clientId = 1;
+  const { user } = useAuth();
+  const clientId = user?.id || 0;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");

@@ -41,17 +41,18 @@ import { insertAutomationSchema, type Automation } from "@shared/schema";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Automations = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const clientId = user?.id || 0;
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
-
-  const clientId = 1;
 
   // Fetch automations
   const { data: automations = [], isLoading } = useQuery<Automation[]>({

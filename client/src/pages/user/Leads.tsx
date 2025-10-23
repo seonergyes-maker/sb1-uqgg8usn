@@ -49,6 +49,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Lead } from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertLeadSchema } from "@shared/schema";
@@ -64,6 +65,8 @@ import {
 
 const Leads = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const clientId = user?.id || 0;
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -72,9 +75,6 @@ const Leads = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-
-  // Por ahora usamos clientId = 1 como demo. En producción esto vendría de la sesión del usuario
-  const clientId = 1;
 
   // Fetch leads
   const { data: leads = [], isLoading } = useQuery<Lead[]>({

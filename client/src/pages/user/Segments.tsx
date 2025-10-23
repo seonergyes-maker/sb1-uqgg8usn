@@ -35,17 +35,17 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Segments = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const clientId = user?.id || 0;
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<Segment | null>(null);
-
-  // Por ahora usamos clientId = 1 como demo. En producción esto vendría de la sesión del usuario
-  const clientId = 1;
 
   // Fetch segments
   const { data: segments = [], isLoading } = useQuery<Segment[]>({
