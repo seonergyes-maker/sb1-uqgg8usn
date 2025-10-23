@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Eye, MoreVertical, ExternalLink, Copy, Pencil, Trash2, FileText } from "lucide-react";
+import { Plus, Search, Eye, EyeOff, MoreVertical, ExternalLink, Copy, Pencil, Trash2, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -237,10 +237,17 @@ const Landings = () => {
     }
   };
 
+  const isLandingNew = (createdAt: string) => {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const daysDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+    return daysDiff <= 7;
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       "Activa": "default",
-      "Desactivada": "secondary",
+      "Borrador": "secondary",
     };
     return <Badge variant={variants[status] || "secondary"} data-testid={`badge-status-${status.toLowerCase()}`}>{status}</Badge>;
   };
@@ -324,7 +331,7 @@ const Landings = () => {
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
                 <SelectItem value="Activa">Activa</SelectItem>
-                <SelectItem value="Desactivada">Desactivada</SelectItem>
+                <SelectItem value="Borrador">Borrador</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -344,7 +351,12 @@ const Landings = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-lg mb-2">{landing.name}</CardTitle>
-                        {getStatusBadge(landing.status)}
+                        <div className="flex gap-2 items-center">
+                          {getStatusBadge(landing.status)}
+                          {landing.createdAt && isLandingNew(landing.createdAt) && (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">New</Badge>
+                          )}
+                        </div>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -353,21 +365,38 @@ const Landings = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(landing)}>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            updateMutation.mutate({
+                              id: landing.id,
+                              data: { status: landing.status === "Activa" ? "Borrador" : "Activa" }
+                            });
+                          }}>
+                            {landing.status === "Activa" ? (
+                              <>
+                                <EyeOff className="mr-2 h-4 w-4" />
+                                Desactivar
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Activar
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(landing);
+                          }}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopyUrl(landing)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copiar URL
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setLocation(`/l/${landing.slug}`)}>
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Ver landing
-                          </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => handleDelete(landing)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(landing);
+                            }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
@@ -555,7 +584,7 @@ const Landings = () => {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Activa">Activa</SelectItem>
-                        <SelectItem value="Desactivada">Desactivada</SelectItem>
+                        <SelectItem value="Borrador">Borrador</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
