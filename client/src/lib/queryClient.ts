@@ -51,7 +51,16 @@ export const queryClient = new QueryClient({
 
 export async function apiRequest(
   url: string,
-  options?: RequestInit
+  method?: string,
+  data?: any
 ): Promise<any> {
+  const options: RequestInit = {
+    method: method || "GET",
+  };
+  
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+  
   return fetchData(url, options);
 }

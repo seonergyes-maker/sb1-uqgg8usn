@@ -1,0 +1,37 @@
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-T2SWDQEL.js?v=f4ce9a56:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+Landings.tsx:228 onCreateSubmit called with data: {clientId: 7, name: 'Enrique', slug: 'sneep-crew', status: 'Borrador'}
+Landings.tsx:229 clientId: 7
+Landings.tsx:230 Form errors: {}
+Landings.tsx:231 About to call createMutation.mutate
+Landings.tsx:239 Sending to API: {clientId: 7, name: 'Enrique', slug: 'sneep-crew', status: 'Borrador'}
+queryClient.ts:27  GET https://484001d7-fe82-4dd8-8da8-694f8453bb52-00-1jrx8vfxcb65n.worf.replit.dev:5000/api/landings 404 (Not Found)
+fetchData @ queryClient.ts:27
+apiRequest @ queryClient.ts:56
+mutationFn @ Landings.tsx:125
+fn @ @tanstack_react-query.js?v=f4ce9a56:1236
+run @ @tanstack_react-query.js?v=f4ce9a56:513
+start @ @tanstack_react-query.js?v=f4ce9a56:555
+execute @ @tanstack_react-query.js?v=f4ce9a56:1272
+await in execute
+mutate @ @tanstack_react-query.js?v=f4ce9a56:2692
+(anonymous) @ @tanstack_react-query.js?v=f4ce9a56:3415
+onCreateSubmit @ Landings.tsx:240
+(anonymous) @ chunk-Z4Z5NBTV.js?v=f4ce9a56:1504
+await in (anonymous)
+callCallback2 @ chunk-T2SWDQEL.js?v=f4ce9a56:3674
+invokeGuardedCallbackDev @ chunk-T2SWDQEL.js?v=f4ce9a56:3699
+invokeGuardedCallback @ chunk-T2SWDQEL.js?v=f4ce9a56:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-T2SWDQEL.js?v=f4ce9a56:3736
+executeDispatch @ chunk-T2SWDQEL.js?v=f4ce9a56:7014
+processDispatchQueueItemsInOrder @ chunk-T2SWDQEL.js?v=f4ce9a56:7034
+processDispatchQueue @ chunk-T2SWDQEL.js?v=f4ce9a56:7043
+dispatchEventsForPlugins @ chunk-T2SWDQEL.js?v=f4ce9a56:7051
+(anonymous) @ chunk-T2SWDQEL.js?v=f4ce9a56:7174
+batchedUpdates$1 @ chunk-T2SWDQEL.js?v=f4ce9a56:18913
+batchedUpdates @ chunk-T2SWDQEL.js?v=f4ce9a56:3579
+dispatchEventForPluginEventSystem @ chunk-T2SWDQEL.js?v=f4ce9a56:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-T2SWDQEL.js?v=f4ce9a56:5478
+dispatchEvent @ chunk-T2SWDQEL.js?v=f4ce9a56:5472
+dispatchDiscreteEvent @ chunk-T2SWDQEL.js?v=f4ce9a56:5449
