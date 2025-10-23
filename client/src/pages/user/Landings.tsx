@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +92,8 @@ interface Landing {
 const Landings = () => {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const clientId = 1;
+  const { user } = useAuth();
+  const clientId = user?.id || 0;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -238,7 +240,7 @@ const Landings = () => {
   };
 
   const onCreateSubmit = (data: z.infer<typeof insertLandingSchema>) => {
-    createMutation.mutate(data);
+    createMutation.mutate({ ...data, clientId });
   };
 
   const onEditSubmit = (data: z.infer<typeof insertLandingSchema>) => {
