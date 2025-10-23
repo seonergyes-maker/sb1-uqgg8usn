@@ -1029,65 +1029,26 @@ export function registerRoutes(app: Express) {
   // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
   app.post("/api/seed/base-templates", async (req, res) => {
     try {
-      console.log('🎨 Insertando templates base optimizadas para landing pages...');
+      console.log('🎨 Insertando templates base para sector servicios...');
+      
+      // First, delete existing templates with clientId = 0
+      const existingTemplates = await storage.getTemplates(0, {});
+      for (const template of existingTemplates) {
+        await storage.deleteTemplate(template.id);
+      }
+      console.log(`🗑️  ${existingTemplates.length} templates anteriores eliminadas`);
+      
+      const { CONSULTORIA_TEMPLATE, AGENCIA_DIGITAL_TEMPLATE, SERVICIOS_PROFESIONALES_TEMPLATE } = await import('@shared/serviceTemplates');
       
       const landingTemplates = [
         {
           clientId: 0,
-          name: "Landing Producto Moderno",
-          description: "Template de landing page moderna con gradiente vibrante, hero section impactante y call-to-actions destacados",
-          type: "Landing",
-          category: "Producto",
-          subject: null,
-          content: DEFAULT_LANDING_TEMPLATE,
-          variables: null,
-          thumbnail: null,
-          status: "Activa",
-          timesUsed: 0,
-        },
-        {
-          clientId: 0,
-          name: "Landing Minimalista",
-          description: "Diseño minimalista y elegante con fondo blanco y tipografía limpia, ideal para servicios profesionales",
+          name: "Consultoría Profesional",
+          description: "Landing optimizada para móvil con formulario de captura de leads. Ideal para consultores y servicios B2B.",
           type: "Landing",
           category: "Servicios",
           subject: null,
-          content: `<div style="min-height: 100vh; background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <div style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem;">
-    <header style="text-align: center; margin-bottom: 5rem;">
-      <h1 style="font-size: 4rem; font-weight: 300; color: #000; margin-bottom: 1rem;" contenteditable="false">Tu Marca</h1>
-      <p style="font-size: 1.25rem; color: #666;" contenteditable="false">Servicios profesionales de alta calidad</p>
-    </header>
-    
-    <section style="text-align: center; margin-bottom: 5rem;">
-      <h2 style="font-size: 2.5rem; font-weight: 300; color: #000; margin-bottom: 2rem;" contenteditable="false">Lo que hacemos</h2>
-      <p style="font-size: 1.125rem; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.8;" contenteditable="false">
-        Ofrecemos soluciones innovadoras y personalizadas para impulsar tu negocio al siguiente nivel.
-      </p>
-    </section>
-    
-    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 5rem;">
-      <div style="text-align: center;">
-        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Consultoría</h3>
-        <p style="color: #666;" contenteditable="false">Estrategias personalizadas para tu éxito</p>
-      </div>
-      <div style="text-align: center;">
-        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Desarrollo</h3>
-        <p style="color: #666;" contenteditable="false">Soluciones tecnológicas a medida</p>
-      </div>
-      <div style="text-align: center;">
-        <h3 style="font-size: 1.5rem; font-weight: 400; color: #000; margin-bottom: 1rem;" contenteditable="false">Soporte</h3>
-        <p style="color: #666;" contenteditable="false">Acompañamiento continuo</p>
-      </div>
-    </section>
-    
-    <section style="text-align: center;">
-      <button style="background: #000; color: #fff; padding: 1rem 3rem; border: none; font-size: 1.125rem; cursor: pointer;" contenteditable="false">
-        Contactar
-      </button>
-    </section>
-  </div>
-</div>`,
+          content: CONSULTORIA_TEMPLATE,
           variables: null,
           thumbnail: null,
           status: "Activa",
@@ -1095,53 +1056,25 @@ export function registerRoutes(app: Express) {
         },
         {
           clientId: 0,
-          name: "Landing App Móvil",
-          description: "Template diseñada para promocionar aplicaciones móviles con screenshots y características destacadas",
+          name: "Agencia Digital",
+          description: "Diseño moderno y minimalista con formulario integrado. Perfecto para agencias de marketing y desarrollo web.",
           type: "Landing",
-          category: "App",
+          category: "Servicios",
           subject: null,
-          content: `<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
-    <div style="max-width: 1200px; text-align: center;">
-      <div style="font-size: 5rem; margin-bottom: 1rem;" contenteditable="false">📱</div>
-      <h1 style="font-size: 4rem; font-weight: bold; color: white; margin-bottom: 1.5rem;" contenteditable="false">Tu App Aquí</h1>
-      <p style="font-size: 1.5rem; color: rgba(255,255,255,0.9); margin-bottom: 2rem;" contenteditable="false">
-        La aplicación que necesitas para simplificar tu vida
-      </p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem;">
-        <button style="background: white; color: #667eea; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; border: none; cursor: pointer;" contenteditable="false">
-          Descargar iOS
-        </button>
-        <button style="background: transparent; color: white; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; border: 2px solid white; cursor: pointer;" contenteditable="false">
-          Descargar Android
-        </button>
-      </div>
-    </div>
-  </div>
-  
-  <div style="background: white; padding: 5rem 2rem;">
-    <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-      <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 3rem; color: #1a202c;" contenteditable="false">Características</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-        <div>
-          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">⚡</div>
-          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Rápida</h3>
-          <p style="color: #718096;" contenteditable="false">Optimizada para máximo rendimiento</p>
-        </div>
-        <div>
-          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">🔒</div>
-          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Segura</h3>
-          <p style="color: #718096;" contenteditable="false">Tus datos protegidos siempre</p>
-        </div>
-        <div>
-          <div style="font-size: 3rem; margin-bottom: 1rem;" contenteditable="false">🎨</div>
-          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;" contenteditable="false">Hermosa</h3>
-          <p style="color: #718096;" contenteditable="false">Diseño intuitivo y moderno</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>`,
+          content: AGENCIA_DIGITAL_TEMPLATE,
+          variables: null,
+          thumbnail: null,
+          status: "Activa",
+          timesUsed: 0,
+        },
+        {
+          clientId: 0,
+          name: "Servicios Profesionales",
+          description: "Landing elegante y profesional con formulario de contacto. Ideal para servicios B2B y consultorías.",
+          type: "Landing",
+          category: "Servicios",
+          subject: null,
+          content: SERVICIOS_PROFESIONALES_TEMPLATE,
           variables: null,
           thumbnail: null,
           status: "Activa",

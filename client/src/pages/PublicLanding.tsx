@@ -84,6 +84,11 @@ export default function PublicLanding() {
 
   return (
     <div className="min-h-screen bg-white" data-testid="public-landing">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.LANDING_CLIENT_ID = ${landing.clientId}; window.LANDING_SLUG = '${slug}';`
+        }}
+      />
       <div
         dangerouslySetInnerHTML={{ __html: landing.content }}
         data-testid="landing-content"
