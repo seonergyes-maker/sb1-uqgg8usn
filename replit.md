@@ -72,11 +72,20 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   📝 Pendiente: Insertar 10 templates base adicionales (4 email + 6 landing) en BD
     -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
     -   📝 Pendiente: Editor visual con preview side-by-side
+-   **Pricing & Plans (✅ Completed):**
+    -   ✅ 4 planes escalados: Starter (gratuito), Essential (€15), Professional (€49), Business (€99)
+    -   ✅ Plan Starter: 1k contactos, 3k emails/mes, 2 landings, 1 automatización
+    -   ✅ Plan Essential: 2.5k contactos, 10k emails/mes, 5 landings, 3 automatizaciones
+    -   ✅ Plan Professional: 10k contactos, 50k emails/mes, landings ilimitadas, 10 automatizaciones, A/B Testing
+    -   ✅ Plan Business: 25k contactos, 150k emails/mes, todo ilimitado, API completa
+    -   ✅ Página de precios actualizada con ventajas competitivas vs Mailchimp/Brevo
+    -   ✅ Registro asigna plan Starter por defecto
+    -   ✅ 5 clientes existentes migrados a plan Starter
 -   **Architecture Changes:**
     -   🗑️ Campaigns module eliminated (replaced by Scheduler + Amazon SES architecture)
     -   📅 Scheduler schema created for scheduled email campaigns
     -   📧 Multi-tenant SES architecture defined (sender identities, configuration sets, event tracking)
--   **Next Steps:** Formulario captura de leads en landings públicas, Activar automatizaciones al capturar leads, Completar templates base, A/B Testing, Scheduler implementation
+-   **Next Steps:** Formulario captura de leads en landings públicas, Activar automatizaciones al capturar leads, Completar templates base, A/B Testing, Scheduler implementation, Sistema de límites por plan
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (external instance configured via environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).
