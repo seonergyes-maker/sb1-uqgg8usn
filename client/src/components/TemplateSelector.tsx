@@ -18,12 +18,9 @@ export function TemplateSelector({ type, onSelect, selectedTemplateId }: Templat
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
 
-  const { data: templates = [], isLoading } = useQuery<Template[]>({
-    queryKey: ["/api/templates", { type }],
+  const { data: baseTemplates = [], isLoading } = useQuery<Template[]>({
+    queryKey: ["/api/templates/base", { type }],
   });
-
-  // Templates base son los que tienen clientId = 0
-  const baseTemplates = templates.filter((t) => t.clientId === 0);
   
   const filteredTemplates = baseTemplates.filter((template) => {
     const matchesSearch = template.name.toLowerCase().includes(search.toLowerCase()) ||
