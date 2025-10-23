@@ -10,7 +10,7 @@ export const clients = mysqlTable("clients", {
   password: varchar("password", { length: 255 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("user"),
   isActive: int("is_active").notNull().default(1),
-  plan: varchar("plan", { length: 50 }).notNull().default("Essential"),
+  plan: varchar("plan", { length: 50 }).notNull().default("Starter"),
   status: varchar("status", { length: 50 }).notNull().default("active"),
   contacts: int("contacts").notNull().default(0),
   emailsSent: int("emails_sent").notNull().default(0),

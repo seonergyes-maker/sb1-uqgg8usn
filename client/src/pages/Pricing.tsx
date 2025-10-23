@@ -7,70 +7,73 @@ import { Link } from "wouter";
 
 const plans = [
   {
-    name: "Essential",
-    price: "49",
+    name: "Starter",
+    price: "0",
     contacts: "1.000",
-    emails: "5.000",
+    emails: "3.000",
     features: [
-      "Hasta 1.000 contactos activos",
-      "5.000 emails/mes incluidos",
-      "Landings ilimitadas",
-      "Embudos básicos",
-      "Segmentación de contactos",
-      "Analíticas básicas",
+      "1.000 contactos",
+      "3.000 emails/mes (150/día)",
+      "2 landing pages",
+      "1 automatización",
+      "Templates base incluidos",
+      "Estadísticas 7 días",
+      "Branding LandFlow"
+    ],
+    popular: false,
+    cta: "Comenzar gratis"
+  },
+  {
+    name: "Essential",
+    price: "15",
+    contacts: "2.500",
+    emails: "10.000",
+    features: [
+      "2.500 contactos",
+      "10.000 emails/mes",
+      "5 landing pages",
+      "3 automatizaciones",
+      "Sin branding",
+      "Estadísticas 30 días",
       "Soporte por email"
     ],
-    popular: false
+    popular: false,
+    cta: "Empezar ahora"
   },
   {
-    name: "Growth",
-    price: "99",
-    contacts: "5.000",
-    emails: "20.000",
+    name: "Professional",
+    price: "49",
+    contacts: "10.000",
+    emails: "50.000",
     features: [
-      "Hasta 5.000 contactos activos",
-      "20.000 emails/mes incluidos",
+      "10.000 contactos",
+      "50.000 emails/mes",
       "Landings ilimitadas",
-      "Embudos avanzados",
-      "Segmentación avanzada",
-      "Analíticas completas",
-      "A/B testing",
-      "Soporte prioritario"
+      "10 automatizaciones",
+      "A/B Testing",
+      "Estadísticas ilimitadas",
+      "Soporte prioritario",
+      "Webhooks"
     ],
-    popular: true
+    popular: true,
+    cta: "Comenzar prueba"
   },
   {
-    name: "Scale",
-    price: "199",
-    contacts: "20.000",
-    emails: "60.000",
+    name: "Business",
+    price: "99",
+    contacts: "25.000",
+    emails: "150.000",
     features: [
-      "Hasta 20.000 contactos activos",
-      "60.000 emails/mes incluidos",
-      "Todo de Growth +",
-      "API personalizada",
-      "Integraciones avanzadas",
-      "Automatizaciones ilimitadas",
-      "Gerente de cuenta dedicado"
-    ],
-    popular: false
-  },
-  {
-    name: "Enterprise",
-    price: "399",
-    contacts: "+20.000",
-    emails: "+60.000",
-    features: [
-      "Contactos ilimitados",
-      "Emails ilimitados",
-      "Todo de Scale +",
-      "Servidor dedicado",
-      "SLA garantizado",
+      "25.000 contactos",
+      "150.000 emails/mes",
+      "Todo ilimitado",
+      "API completa",
+      "Subdominios custom",
       "Soporte 24/7",
-      "Onboarding personalizado",
-      "Consultoría estratégica"
+      "Account manager"
     ],
-    popular: false
+    popular: false,
+    cta: "Contactar ventas"
   }
 ];
 
@@ -113,8 +116,14 @@ const Pricing = () => {
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-foreground">€{plan.price}</span>
-                      <span className="text-muted-foreground">/mes</span>
+                      {plan.price === "0" ? (
+                        <span className="text-4xl font-bold text-foreground">Gratis</span>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-bold text-foreground">€{plan.price}</span>
+                          <span className="text-muted-foreground">/mes</span>
+                        </>
+                      )}
                     </div>
                     <div className="mt-2 text-sm">
                       <div>{plan.contacts} contactos</div>
@@ -140,7 +149,7 @@ const Pricing = () => {
                       variant={plan.popular ? "hero" : "outline"} 
                       className="w-full"
                     >
-                      Empezar ahora
+                      {plan.cta}
                     </Button>
                   </Link>
                 </CardFooter>

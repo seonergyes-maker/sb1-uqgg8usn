@@ -58,7 +58,7 @@ export function registerRoutes(app: Express) {
         password: hashedPassword,
         role: "user",
         isActive: 1,
-        plan: "Essential",
+        plan: "Starter",
         status: "active",
         contacts: 0,
         emailsSent: 0
