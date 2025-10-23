@@ -978,6 +978,54 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // POST /api/public/leads - Create lead from public landing (no auth required)
+  app.post("/api/public/leads", async (req, res) => {
+    try {
+      const { clientId, name, email, phone, company, message, source } = req.body;
+      
+      if (!clientId || !name || !email) {
+        return res.status(400).json({ error: "clientId, name y email son requeridos" });
+      }
+      
+      const leadData = {
+        clientId: parseInt(clientId),
+        name,
+        email,
+        phone: phone || null,
+        company: company || null,
+        tags: source ? source : null,
+        notes: message || null,
+        status: "Nuevo",
+        score: 0,
+        source: source || "Landing Page",
+      };
+      
+      const newLead = await storage.createLead(leadData);
+      
+      // Track conversion on the landing if source contains landing slug
+      if (source && source.startsWith("landing-")) {
+        const landingSlug = source.replace("landing-", "");
+        const landing = await storage.getLandingBySlug(landingSlug);
+        if (landing) {
+          const currentConversions = landing.conversions || 0;
+          const currentViews = landing.views || 1;
+          const newConversions = currentConversions + 1;
+          const newConversionRate = ((newConversions / currentViews) * 100).toFixed(2);
+          
+          await storage.updateLanding(landing.id, {
+            conversions: newConversions,
+            conversionRate: newConversionRate
+          });
+        }
+      }
+      
+      res.status(201).json({ success: true, lead: newLead });
+    } catch (error) {
+      console.error("Error creating public lead:", error);
+      res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
   // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
   app.post("/api/seed/base-templates", async (req, res) => {
     try {
