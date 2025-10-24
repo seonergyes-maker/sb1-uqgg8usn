@@ -44,6 +44,7 @@ const menuItems = [
     ]
   },
   { title: "Landings", url: "/panel/landings", icon: FileText },
+  { title: "Emails", url: "/panel/emails", icon: Mail },
   { title: "Automatizaciones", url: "/panel/automatizaciones", icon: Workflow },
   { title: "Estadísticas", url: "/panel/estadisticas", icon: BarChart3 },
 ];
