@@ -66,16 +66,27 @@ export function registerRoutes(app: Express) {
       // Hash password
       const hashedPassword = await hashPassword(validatedData.password);
       
-      // Create client
+      // Create client with Free plan
       const newClient = await storage.createClient({
         ...validatedData,
         password: hashedPassword,
         role: "user",
         isActive: 1,
-        plan: "Starter",
+        plan: "Free",
         status: "active",
         contacts: 0,
         emailsSent: 0
+      });
+      
+      // Initialize usage tracking for new user
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      await storage.createUsageTracking({
+        clientId: newClient.id,
+        month: currentMonth,
+        emailsSent: 0,
+        contactsCount: 0,
+        landingsCount: 0,
+        automationsCount: 0
       });
       
       // Generate token

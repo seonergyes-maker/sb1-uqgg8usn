@@ -62,6 +62,15 @@ async function initPlanLimits() {
   
   const plans = [
     {
+      planName: 'Free',
+      maxContacts: 100,
+      maxEmailsPerMonth: 500,
+      maxLandingPages: 1,
+      maxAutomations: 2,
+      customDomainAllowed: 0,
+      prioritySupport: 0
+    },
+    {
       planName: 'Starter',
       maxContacts: 500,
       maxEmailsPerMonth: 1000,
