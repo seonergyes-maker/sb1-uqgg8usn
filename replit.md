@@ -46,10 +46,10 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 -   **Visual Editors:** Features in-place visual editors for Landing Pages and Email Templates, supporting dynamic variables and requiring specific elements like unsubscribe links for emails.
 -   **Lead Capture System:** Public endpoint for capturing leads from landing pages, automatically tracking conversions.
 -   **Pricing & Plans:** Implements a tiered pricing structure with 5 plans (Free, Starter, Essential, Professional, Business):
-    -   Free ($0/mo): 100 contacts, 500 emails/mo, 2 automations, 1 landing page - **Assigned automatically on registration**
-    -   Starter ($9.99/mo): 500 contacts, 1,000 emails/mo, 1 automation, 2 landing pages
-    -   Essential ($29.99/mo): 2,000 contacts, 5,000 emails/mo, 5 automations, 10 landing pages
-    -   Professional ($79.99/mo): 10,000 contacts, 25,000 emails/mo, 20 automations, 50 landing pages
+    -   Free ($0/mo): 100 contacts, 300 emails/mo, 1 automation, 1 landing page - **Assigned automatically on registration**
+    -   Starter ($9.99/mo): 500 contacts, 1,500 emails/mo, 3 automations, 3 landing pages
+    -   Essential ($29.99/mo): 2,500 contacts, 7,500 emails/mo, 10 automations, 10 landing pages
+    -   Professional ($79.99/mo): 10,000 contacts, 25,000 emails/mo, 25 automations, 25 landing pages
     -   Business ($199.99/mo): Unlimited contacts/emails/automations/landing pages + custom domains + priority support
 -   **Custom Domains:** Business plan users can configure custom domains for their landing pages via X-Forwarded-Host header detection.
 -   **Tracking Integration:** Automatic injection of Google Analytics and Meta Pixel scripts in public landing pages when configured by the user.
