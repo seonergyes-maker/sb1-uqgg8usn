@@ -167,13 +167,23 @@ export const emails = mysqlTable("emails", {
   subject: varchar("subject", { length: 500 }).notNull(),
   content: text("content").notNull(),
   type: varchar("type", { length: 50 }).notNull().default("Campaña"),
-  status: varchar("status", { length: 50 }).notNull().default("Borrador"),
-  scheduledFor: timestamp("scheduled_for"),
-  sentAt: timestamp("sent_at"),
-  opens: int("opens").notNull().default(0),
-  clicks: int("clicks").notNull().default(0),
-  bounces: int("bounces").notNull().default(0),
-  unsubscribes: int("unsubscribes").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const automationExecutions = mysqlTable("automation_executions", {
+  id: int("id").primaryKey().autoincrement(),
+  automationId: int("automation_id").notNull(),
+  leadId: int("lead_id").notNull(),
+  currentStep: int("current_step").notNull().default(0),
+  status: varchar("status", { length: 50 }).notNull().default("En proceso"),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+  nextExecutionAt: timestamp("next_execution_at"),
+  emailsSent: int("emails_sent").notNull().default(0),
+  emailsOpened: int("emails_opened").notNull().default(0),
+  emailsBounced: int("emails_bounced").notNull().default(0),
+  emailsUnsubscribed: int("emails_unsubscribed").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -198,6 +208,7 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   scheduledTasks: many(scheduledTasks),
   emails: many(emails),
   unsubscribes: many(unsubscribes),
+  automationExecutions: many(automationExecutions),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -233,10 +244,22 @@ export const segmentsRelations = relations(segments, ({ one }) => ({
   }),
 }));
 
-export const automationsRelations = relations(automations, ({ one }) => ({
+export const automationsRelations = relations(automations, ({ one, many }) => ({
   client: one(clients, {
     fields: [automations.clientId],
     references: [clients.id],
+  }),
+  executions: many(automationExecutions),
+}));
+
+export const automationExecutionsRelations = relations(automationExecutions, ({ one }) => ({
+  automation: one(automations, {
+    fields: [automationExecutions.automationId],
+    references: [automations.id],
+  }),
+  lead: one(leads, {
+    fields: [automationExecutions.leadId],
+    references: [leads.id],
   }),
 }));
 
@@ -424,10 +447,23 @@ export const insertEmailSchema = createInsertSchema(emails).omit({
   name: z.string().min(1, "El nombre es requerido"),
   subject: z.string().min(1, "El asunto es requerido"),
   content: z.string().min(1, "El contenido es requerido"),
-  status: z.string().default("Borrador"),
+  type: z.string().default("Campaña"),
 });
 
 export const updateEmailSchema = insertEmailSchema.partial();
+
+export const insertAutomationExecutionSchema = createInsertSchema(automationExecutions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  automationId: z.number().min(1, "El ID de automatización es requerido"),
+  leadId: z.number().min(1, "El ID de lead es requerido"),
+  currentStep: z.number().default(0),
+  status: z.string().default("En proceso"),
+});
+
+export const updateAutomationExecutionSchema = insertAutomationExecutionSchema.partial();
 
 export const insertUnsubscribeSchema = createInsertSchema(unsubscribes).omit({
   id: true,
@@ -480,6 +516,10 @@ export type UpdateScheduledTask = z.infer<typeof updateScheduledTaskSchema>;
 export type Email = typeof emails.$inferSelect;
 export type InsertEmail = z.infer<typeof insertEmailSchema>;
 export type UpdateEmail = z.infer<typeof updateEmailSchema>;
+
+export type AutomationExecution = typeof automationExecutions.$inferSelect;
+export type InsertAutomationExecution = z.infer<typeof insertAutomationExecutionSchema>;
+export type UpdateAutomationExecution = z.infer<typeof updateAutomationExecutionSchema>;
 
 export type Unsubscribe = typeof unsubscribes.$inferSelect;
 export type InsertUnsubscribe = z.infer<typeof insertUnsubscribeSchema>;

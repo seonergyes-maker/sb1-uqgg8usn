@@ -714,12 +714,23 @@ export function registerRoutes(app: Express) {
     try {
       const id = parseInt(req.params.id);
       const validatedData = updateAutomationSchema.parse(req.body);
-      const updatedAutomation = await storage.updateAutomation(id, validatedData);
       
-      if (!updatedAutomation) {
+      // Check if automation exists
+      const currentAutomation = await storage.getAutomationById(id);
+      if (!currentAutomation) {
         return res.status(404).json({ error: "Automation not found" });
       }
       
+      // Block edit if automation is active (unless we're just changing status)
+      const isChangingOnlyStatus = Object.keys(validatedData).length === 1 && 'status' in validatedData;
+      if (currentAutomation.status === "Activa" && !isChangingOnlyStatus) {
+        return res.status(400).json({ 
+          error: "No se puede editar una automatización activa",
+          message: "Pausa la automatización antes de editarla para mantener la integridad del flujo de leads"
+        });
+      }
+      
+      const updatedAutomation = await storage.updateAutomation(id, validatedData);
       res.json(updatedAutomation);
     } catch (error) {
       console.error("Error updating automation:", error);
@@ -744,6 +755,58 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting automation:", error);
       res.status(500).json({ error: "Failed to delete automation" });
+    }
+  });
+
+  // GET /api/automations/:id/preview - Get automation preview with real-time metrics
+  app.get("/api/automations/:id/preview", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get automation details
+      const automation = await storage.getAutomationById(id);
+      if (!automation) {
+        return res.status(404).json({ error: "Automation not found" });
+      }
+      
+      // Get metrics from automation_executions
+      const metrics = await storage.getAutomationMetrics(id);
+      
+      // Parse actions to calculate metrics per step
+      const actions = JSON.parse(automation.actions || '[]');
+      
+      res.json({
+        automation: {
+          id: automation.id,
+          name: automation.name,
+          description: automation.description,
+          trigger: automation.trigger,
+          conditions: JSON.parse(automation.conditions || '{}'),
+          actions: actions,
+          status: automation.status,
+        },
+        metrics: {
+          total: metrics.totalExecutions,
+          active: metrics.activeExecutions,
+          completed: metrics.completedExecutions,
+          emailsSent: metrics.emailsSent,
+          emailsOpened: metrics.emailsOpened,
+          emailsBounced: metrics.emailsBounced,
+          emailsUnsubscribed: metrics.emailsUnsubscribed,
+          openRate: metrics.emailsSent > 0 
+            ? ((metrics.emailsOpened / metrics.emailsSent) * 100).toFixed(2) 
+            : "0.00",
+          bounceRate: metrics.emailsSent > 0 
+            ? ((metrics.emailsBounced / metrics.emailsSent) * 100).toFixed(2) 
+            : "0.00",
+          unsubscribeRate: metrics.emailsSent > 0 
+            ? ((metrics.emailsUnsubscribed / metrics.emailsSent) * 100).toFixed(2) 
+            : "0.00",
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching automation preview:", error);
+      res.status(500).json({ error: "Failed to fetch automation preview" });
     }
   });
 

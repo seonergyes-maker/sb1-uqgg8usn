@@ -8,6 +8,7 @@ import {
   leads,
   segments,
   automations,
+  automationExecutions,
   landings,
   templates,
   scheduledTasks,
@@ -34,6 +35,9 @@ import {
   type Automation,
   type InsertAutomation,
   type UpdateAutomation,
+  type AutomationExecution,
+  type InsertAutomationExecution,
+  type UpdateAutomationExecution,
   type Landing,
   type InsertLanding,
   type UpdateLanding,
@@ -141,6 +145,22 @@ export interface IStorage {
   getUnsubscribes(clientId: number, filters?: { search?: string }): Promise<Unsubscribe[]>;
   getUnsubscribeByEmail(email: string, clientId: number): Promise<Unsubscribe | undefined>;
   createUnsubscribe(unsubscribe: InsertUnsubscribe): Promise<Unsubscribe>;
+  
+  getAutomationExecutions(automationId: number, filters?: { status?: string }): Promise<AutomationExecution[]>;
+  getAutomationExecutionById(id: number): Promise<AutomationExecution | undefined>;
+  getAutomationExecutionByLeadAndAutomation(leadId: number, automationId: number): Promise<AutomationExecution | undefined>;
+  createAutomationExecution(execution: InsertAutomationExecution): Promise<AutomationExecution>;
+  updateAutomationExecution(id: number, execution: UpdateAutomationExecution): Promise<AutomationExecution | undefined>;
+  deleteAutomationExecution(id: number): Promise<boolean>;
+  getAutomationMetrics(automationId: number): Promise<{
+    totalExecutions: number;
+    activeExecutions: number;
+    completedExecutions: number;
+    emailsSent: number;
+    emailsOpened: number;
+    emailsBounced: number;
+    emailsUnsubscribed: number;
+  }>;
 }
 
 export class DbStorage implements IStorage {
@@ -796,6 +816,75 @@ export class DbStorage implements IStorage {
       throw new Error("Failed to create unsubscribe");
     }
     return newUnsubscribe[0];
+  }
+
+  async getAutomationExecutions(automationId: number, filters?: { status?: string }): Promise<AutomationExecution[]> {
+    const conditions: SQL[] = [eq(automationExecutions.automationId, automationId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(automationExecutions.status, filters.status));
+    }
+    
+    const whereCondition = and(...conditions);
+    if (whereCondition) {
+      return await db.select().from(automationExecutions).where(whereCondition).orderBy(automationExecutions.createdAt);
+    }
+    
+    return await db.select().from(automationExecutions).where(eq(automationExecutions.automationId, automationId)).orderBy(automationExecutions.createdAt);
+  }
+
+  async getAutomationExecutionById(id: number): Promise<AutomationExecution | undefined> {
+    const result = await db.select().from(automationExecutions).where(eq(automationExecutions.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getAutomationExecutionByLeadAndAutomation(leadId: number, automationId: number): Promise<AutomationExecution | undefined> {
+    const result = await db.select().from(automationExecutions)
+      .where(and(eq(automationExecutions.leadId, leadId), eq(automationExecutions.automationId, automationId)))
+      .limit(1);
+    return result[0];
+  }
+
+  async createAutomationExecution(execution: InsertAutomationExecution): Promise<AutomationExecution> {
+    const result = await db.insert(automationExecutions).values(execution);
+    const insertedId = Number(result[0].insertId);
+    const newExecution = await this.getAutomationExecutionById(insertedId);
+    if (!newExecution) {
+      throw new Error("Failed to create automation execution");
+    }
+    return newExecution;
+  }
+
+  async updateAutomationExecution(id: number, execution: UpdateAutomationExecution): Promise<AutomationExecution | undefined> {
+    await db.update(automationExecutions).set(execution).where(eq(automationExecutions.id, id));
+    return await this.getAutomationExecutionById(id);
+  }
+
+  async deleteAutomationExecution(id: number): Promise<boolean> {
+    const result = await db.delete(automationExecutions).where(eq(automationExecutions.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getAutomationMetrics(automationId: number): Promise<{
+    totalExecutions: number;
+    activeExecutions: number;
+    completedExecutions: number;
+    emailsSent: number;
+    emailsOpened: number;
+    emailsBounced: number;
+    emailsUnsubscribed: number;
+  }> {
+    const executions = await db.select().from(automationExecutions).where(eq(automationExecutions.automationId, automationId));
+    
+    return {
+      totalExecutions: executions.length,
+      activeExecutions: executions.filter(e => e.status === "En proceso").length,
+      completedExecutions: executions.filter(e => e.status === "Completado").length,
+      emailsSent: executions.reduce((sum, e) => sum + e.emailsSent, 0),
+      emailsOpened: executions.reduce((sum, e) => sum + e.emailsOpened, 0),
+      emailsBounced: executions.reduce((sum, e) => sum + e.emailsBounced, 0),
+      emailsUnsubscribed: executions.reduce((sum, e) => sum + e.emailsUnsubscribed, 0),
+    };
   }
 
   async getUserStats(clientId: number): Promise<UserStats> {
