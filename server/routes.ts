@@ -793,11 +793,16 @@ export function registerRoutes(app: Express) {
     try {
       const validatedData = insertLandingSchema.parse(req.body);
       
-      // Use default template if no content provided
-      const { DEFAULT_LANDING_TEMPLATE } = await import("../shared/defaultLandingTemplate.js");
+      // Use default template from filesystem if no content provided
+      let content = validatedData.content;
+      if (!content) {
+        const { loadTemplateContent } = await import('./templates/index');
+        content = loadTemplateContent('consultoria'); // Default to consultoria template
+      }
+      
       const landingData = {
         ...validatedData,
-        content: validatedData.content || DEFAULT_LANDING_TEMPLATE
+        content
       };
       
       const landing = await storage.createLanding(landingData);
@@ -1065,76 +1070,6 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error creating public lead:", error);
       res.status(500).json({ error: "Failed to create lead" });
-    }
-  });
-
-  // POST /api/seed/base-templates - Seed base templates (temporary endpoint)
-  app.post("/api/seed/base-templates", async (req, res) => {
-    try {
-      console.log('🎨 Insertando templates base para sector servicios...');
-      
-      // First, delete existing templates with clientId = 0
-      const existingTemplates = await storage.getTemplates(0, {});
-      for (const template of existingTemplates) {
-        await storage.deleteTemplate(template.id);
-      }
-      console.log(`🗑️  ${existingTemplates.length} templates anteriores eliminadas`);
-      
-      const { CONSULTORIA_TEMPLATE, AGENCIA_DIGITAL_TEMPLATE, SERVICIOS_PROFESIONALES_TEMPLATE } = await import('@shared/serviceTemplates');
-      
-      const landingTemplates = [
-        {
-          clientId: 0,
-          name: "Consultoría Profesional",
-          description: "Landing optimizada para móvil con formulario de captura de leads. Ideal para consultores y servicios B2B.",
-          type: "Landing",
-          category: "Servicios",
-          subject: null,
-          content: CONSULTORIA_TEMPLATE,
-          variables: null,
-          thumbnail: null,
-          status: "Activa",
-          timesUsed: 0,
-        },
-        {
-          clientId: 0,
-          name: "Agencia Digital",
-          description: "Diseño moderno y minimalista con formulario integrado. Perfecto para agencias de marketing y desarrollo web.",
-          type: "Landing",
-          category: "Servicios",
-          subject: null,
-          content: AGENCIA_DIGITAL_TEMPLATE,
-          variables: null,
-          thumbnail: null,
-          status: "Activa",
-          timesUsed: 0,
-        },
-        {
-          clientId: 0,
-          name: "Servicios Profesionales",
-          description: "Landing elegante y profesional con formulario de contacto. Ideal para servicios B2B y consultorías.",
-          type: "Landing",
-          category: "Servicios",
-          subject: null,
-          content: SERVICIOS_PROFESIONALES_TEMPLATE,
-          variables: null,
-          thumbnail: null,
-          status: "Activa",
-          timesUsed: 0,
-        }
-      ];
-      
-      const createdTemplates = [];
-      for (const template of landingTemplates) {
-        const newTemplate = await storage.createTemplate(template);
-        createdTemplates.push(newTemplate);
-      }
-      
-      console.log(`✅ ${createdTemplates.length} templates base insertadas exitosamente`);
-      res.json({ success: true, count: createdTemplates.length, templates: createdTemplates });
-    } catch (error) {
-      console.error("Error al insertar templates base:", error);
-      res.status(500).json({ error: "Failed to seed base templates" });
     }
   });
 }
