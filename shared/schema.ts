@@ -15,6 +15,12 @@ export const clients = mysqlTable("clients", {
   contacts: int("contacts").notNull().default(0),
   emailsSent: int("emails_sent").notNull().default(0),
   
+  // Profile information
+  company: varchar("company", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  location: varchar("location", { length: 255 }),
+  avatarUrl: varchar("avatar_url", { length: 500 }),
+  
   // Email configuration
   fromName: varchar("from_name", { length: 255 }),
   fromEmail: varchar("from_email", { length: 255 }),
