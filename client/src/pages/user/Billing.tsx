@@ -95,6 +95,18 @@ interface PlanFeature {
 }
 
 const PLANS: Record<string, PlanFeature> = {
+  "Free": {
+    name: "Free",
+    price: 0,
+    features: {
+      contacts: "100 contactos",
+      emails: "500 emails/mes",
+      landings: "1 landing page",
+      automations: "2 automatizaciones",
+      customDomain: false,
+      prioritySupport: false,
+    }
+  },
   "Starter": {
     name: "Starter",
     price: 9,
@@ -508,8 +520,11 @@ const Billing = () => {
           </DialogHeader>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            {Object.values(PLANS).map((plan) => {
+            {Object.values(PLANS)
+              .filter(plan => plan.name !== "Free" || subscription?.plan === "Free")
+              .map((plan) => {
               const isCurrentPlan = subscription?.plan === plan.name;
+              const isFreeCurrentPlan = plan.name === "Free" && isCurrentPlan;
               return (
                 <Card 
                   key={plan.name} 
@@ -523,8 +538,8 @@ const Billing = () => {
                       )}
                     </div>
                     <div className="text-3xl font-bold">
-                      €{plan.price}
-                      <span className="text-lg font-normal text-muted-foreground">/mes</span>
+                      {plan.price === 0 ? "Gratis" : `€${plan.price}`}
+                      {plan.price > 0 && <span className="text-lg font-normal text-muted-foreground">/mes</span>}
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -569,11 +584,11 @@ const Billing = () => {
                     <Button 
                       variant={isCurrentPlan ? "outline" : "default"}
                       className="w-full mt-4"
-                      disabled={isCurrentPlan}
+                      disabled={isCurrentPlan || isFreeCurrentPlan}
                       onClick={() => handleChangePlan(plan.name)}
                       data-testid={`button-select-plan-${plan.name}`}
                     >
-                      {isCurrentPlan ? "Plan actual" : "Seleccionar plan"}
+                      {isCurrentPlan ? "Plan actual" : (isFreeCurrentPlan ? "Plan actual" : "Seleccionar plan")}
                     </Button>
                   </CardContent>
                 </Card>
