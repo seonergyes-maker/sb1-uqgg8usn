@@ -62,17 +62,21 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos
     -   ✅ Landings: 5 landing pages con tracking, 9,670 visitas totales, 1,623 conversiones, 15.91% tasa promedio
     -   ✅ Templates: 8 plantillas (5 email, 3 landing), 14,064 usos totales, sistema de variables dinámicas
--   **Templates Base System (✅ Completed - Oct 23, 2025):**
-    -   ✅ Sistema de templates base implementado (clientId = 0 para identificar templates base)
-    -   ✅ TemplateSelector component con grid visual, filtros y búsqueda
-    -   ✅ Endpoint GET /api/templates/base para templates base
-    -   ✅ Ruta pública /l/:slug para visualizar landings sin autenticación
-    -   ✅ Tracking automático de visitas en landings públicas
-    -   ✅ 6 templates base insertadas: 3 para sector servicios + 3 originales
-    -   ✅ Todos los elementos con `contenteditable="false"` por defecto para sistema de edición visual
+-   **Templates Base System (✅ Completed - Oct 24, 2025):**
+    -   ✅ **MIGRACIÓN ARQUITECTÓNICA:** Templates base movidas de BD a archivos estáticos en `/server/templates/`
+    -   ✅ Estructura de carpetas: `/server/templates/landings/` y `/server/templates/emails/`
+    -   ✅ Sistema de metadata centralizado en `/server/templates/index.ts`
+    -   ✅ 3 templates HTML base para sector servicios: consultoria.html, agencia-digital.html, servicios-profesionales.html
+    -   ✅ Endpoint GET `/api/templates/base` devuelve lista con metadata (sin content para performance)
+    -   ✅ Endpoint GET `/api/templates/base/:id` devuelve template específica con HTML completo
+    -   ✅ TemplateSelector actualizado para carga asíncrona de contenido al seleccionar
+    -   ✅ POST `/api/landings` usa `loadTemplateContent('consultoria')` como template por defecto
+    -   ✅ Corrección ESM: `fileURLToPath(import.meta.url)` para resolver `__dirname` en módulos ES
+    -   ✅ Endpoint temporal `/api/seed/base-templates` eliminado
+    -   ✅ Archivo `shared/serviceTemplates.ts` eliminado (obsoleto)
     -   ✅ FloatingEditor activa/desactiva `contenteditable` dinámicamente al editar/guardar
     -   ✅ Botón "Cambiar Template" integrado en FloatingEditor
-    -   📝 Pendiente: Integrar selector en formularios de Automatizaciones
+    -   📝 **VENTAJAS:** Templates versionadas con Git, sin duplicación en BD, updates centralizados, ideal para SaaS multi-tenant
 -   **Sistema de Captura de Leads (✅ Completed - Oct 23, 2025):**
     -   ✅ Endpoint POST /api/public/leads (sin autenticación) para captura desde landings públicas
     -   ✅ Validación de campos requeridos: clientId, name, email
