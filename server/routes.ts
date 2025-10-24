@@ -1142,11 +1142,35 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // GET /api/public/landings/:slug - Get landing by slug (public, no auth)
+  // GET /api/public/landings/:slug - Get landing by slug or custom domain (public, no auth)
   app.get("/api/public/landings/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const landing = await storage.getLandingBySlug(slug);
+      const forwardedHost = req.headers['x-forwarded-host'] as string;
+      
+      let landing = null;
+      
+      // First, try to resolve by custom domain if X-Forwarded-Host is present
+      if (forwardedHost) {
+        // Find client with matching custom domain
+        const [clientWithDomain] = await db.select()
+          .from(clients)
+          .where(eq(clients.customDomain, forwardedHost))
+          .limit(1);
+        
+        if (clientWithDomain) {
+          // Get the first active landing for this client
+          const landings = await storage.getLandings(clientWithDomain.id, { status: "Activa" });
+          if (landings.length > 0) {
+            landing = landings[0];
+          }
+        }
+      }
+      
+      // If not found by domain, try by slug (default behavior)
+      if (!landing) {
+        landing = await storage.getLandingBySlug(slug);
+      }
       
       if (!landing) {
         return res.status(404).json({ error: "Landing not found" });
