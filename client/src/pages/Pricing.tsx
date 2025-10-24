@@ -10,12 +10,12 @@ const plans = [
     name: "Free",
     price: "0",
     contacts: "100",
-    emails: "500",
+    emails: "300",
     features: [
       "100 contactos",
-      "500 emails/mes",
+      "300 emails/mes",
       "1 landing page",
-      "2 automatizaciones",
+      "1 automatización",
       "Templates base incluidos",
       "Estadísticas básicas"
     ],
@@ -26,12 +26,12 @@ const plans = [
     name: "Starter",
     price: "9.99",
     contacts: "500",
-    emails: "1.000",
+    emails: "1.500",
     features: [
       "500 contactos",
-      "1.000 emails/mes",
-      "2 landing pages",
-      "1 automatización",
+      "1.500 emails/mes",
+      "3 landing pages",
+      "3 automatizaciones",
       "Templates base incluidos",
       "Estadísticas avanzadas",
       "Soporte por email"
@@ -42,13 +42,13 @@ const plans = [
   {
     name: "Essential",
     price: "29.99",
-    contacts: "2.000",
-    emails: "5.000",
+    contacts: "2.500",
+    emails: "7.500",
     features: [
-      "2.000 contactos",
-      "5.000 emails/mes",
+      "2.500 contactos",
+      "7.500 emails/mes",
       "10 landing pages",
-      "5 automatizaciones",
+      "10 automatizaciones",
       "Editor visual avanzado",
       "Estadísticas en tiempo real",
       "Soporte prioritario"
@@ -64,8 +64,8 @@ const plans = [
     features: [
       "10.000 contactos",
       "25.000 emails/mes",
-      "50 landing pages",
-      "20 automatizaciones",
+      "25 landing pages",
+      "25 automatizaciones",
       "A/B Testing",
       "Integraciones avanzadas",
       "Soporte prioritario",

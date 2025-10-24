@@ -64,27 +64,27 @@ async function initPlanLimits() {
     {
       planName: 'Free',
       maxContacts: 100,
-      maxEmailsPerMonth: 500,
+      maxEmailsPerMonth: 300,
       maxLandingPages: 1,
-      maxAutomations: 2,
+      maxAutomations: 1,
       customDomainAllowed: 0,
       prioritySupport: 0
     },
     {
       planName: 'Starter',
       maxContacts: 500,
-      maxEmailsPerMonth: 1000,
-      maxLandingPages: 2,
-      maxAutomations: 1,
+      maxEmailsPerMonth: 1500,
+      maxLandingPages: 3,
+      maxAutomations: 3,
       customDomainAllowed: 0,
       prioritySupport: 0
     },
     {
       planName: 'Essential',
-      maxContacts: 2000,
-      maxEmailsPerMonth: 5000,
+      maxContacts: 2500,
+      maxEmailsPerMonth: 7500,
       maxLandingPages: 10,
-      maxAutomations: 5,
+      maxAutomations: 10,
       customDomainAllowed: 0,
       prioritySupport: 0
     },
@@ -92,8 +92,8 @@ async function initPlanLimits() {
       planName: 'Professional',
       maxContacts: 10000,
       maxEmailsPerMonth: 25000,
-      maxLandingPages: 50,
-      maxAutomations: 20,
+      maxLandingPages: 25,
+      maxAutomations: 25,
       customDomainAllowed: 0,
       prioritySupport: 1
     },

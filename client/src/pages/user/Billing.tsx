@@ -100,52 +100,52 @@ const PLANS: Record<string, PlanFeature> = {
     price: 0,
     features: {
       contacts: "100 contactos",
-      emails: "500 emails/mes",
+      emails: "300 emails/mes",
       landings: "1 landing page",
-      automations: "2 automatizaciones",
+      automations: "1 automatización",
       customDomain: false,
       prioritySupport: false,
     }
   },
   "Starter": {
     name: "Starter",
-    price: 9,
+    price: 9.99,
     features: {
       contacts: "500 contactos",
-      emails: "1,000 emails/mes",
-      landings: "2 landing pages",
-      automations: "1 automatización",
+      emails: "1,500 emails/mes",
+      landings: "3 landing pages",
+      automations: "3 automatizaciones",
       customDomain: false,
       prioritySupport: false,
     }
   },
   "Essential": {
     name: "Essential",
-    price: 29,
+    price: 29.99,
     features: {
-      contacts: "2,000 contactos",
-      emails: "5,000 emails/mes",
+      contacts: "2,500 contactos",
+      emails: "7,500 emails/mes",
       landings: "10 landing pages",
-      automations: "5 automatizaciones",
+      automations: "10 automatizaciones",
       customDomain: false,
       prioritySupport: false,
     }
   },
   "Professional": {
     name: "Professional",
-    price: 79,
+    price: 79.99,
     features: {
       contacts: "10,000 contactos",
       emails: "25,000 emails/mes",
-      landings: "50 landing pages",
-      automations: "20 automatizaciones",
+      landings: "25 landing pages",
+      automations: "25 automatizaciones",
       customDomain: false,
       prioritySupport: true,
     }
   },
   "Business": {
     name: "Business",
-    price: 199,
+    price: 199.99,
     features: {
       contacts: "Contactos ilimitados",
       emails: "100,000 emails/mes",
