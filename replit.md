@@ -23,12 +23,15 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 **UI/UX and Features:**
 -   **Admin Panel:** Includes CRUD operations for Clients, Subscriptions, and Payments. Features a Dashboard for real-time statistics and a Settings module for platform configuration.
 -   **User Panel:** Offers CRUD operations and management for Leads, Segments, Automations, Templates (email and landing), and Landings. Includes a Scheduler for task management.
+-   **User Settings:** Comprehensive configuration panel for each user including email settings (fromName, fromEmail, replyTo, signature), notification preferences, tracking integration (Google Analytics, Meta Pixel), and custom domain setup (Business plan only).
 -   **System Design Choices:** Employs a database-driven approach, real-time data updates via `TanStack Query`, robust form validation, and a modular design.
 -   **Authentication:** JWT-based authentication with `bcryptjs` for password hashing, supporting user and admin roles with protected routes.
 -   **Multi-Tenancy:** Critical data isolation ensures each user only accesses and manages their own content by linking data to the authenticated user's ID.
 -   **Visual Editors:** Features in-place visual editors for Landing Pages and Email Templates, supporting dynamic variables and requiring specific elements like unsubscribe links for emails.
 -   **Lead Capture System:** Public endpoint for capturing leads from landing pages, automatically tracking conversions.
 -   **Pricing & Plans:** Implements a tiered pricing structure (Starter, Essential, Professional, Business) with varying feature limits.
+-   **Custom Domains:** Business plan users can configure custom domains for their landing pages via X-Forwarded-Host header detection.
+-   **Tracking Integration:** Automatic injection of Google Analytics and Meta Pixel scripts in public landing pages when configured by the user.
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (configured via environment variables).
