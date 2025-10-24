@@ -14,6 +14,27 @@ export const clients = mysqlTable("clients", {
   status: varchar("status", { length: 50 }).notNull().default("active"),
   contacts: int("contacts").notNull().default(0),
   emailsSent: int("emails_sent").notNull().default(0),
+  
+  // Email configuration
+  fromName: varchar("from_name", { length: 255 }),
+  fromEmail: varchar("from_email", { length: 255 }),
+  replyTo: varchar("reply_to", { length: 255 }),
+  emailSignature: text("email_signature"),
+  
+  // Notification preferences
+  notifyNewLeads: int("notify_new_leads").notNull().default(1),
+  notifyCampaigns: int("notify_campaigns").notNull().default(1),
+  notifyWeekly: int("notify_weekly").notNull().default(1),
+  notifyTips: int("notify_tips").notNull().default(0),
+  
+  // Tracking IDs
+  googleAnalyticsId: varchar("google_analytics_id", { length: 50 }),
+  metaPixelId: varchar("meta_pixel_id", { length: 50 }),
+  
+  // Custom domain (Business plan only)
+  customDomain: varchar("custom_domain", { length: 255 }),
+  domainVerified: int("domain_verified").notNull().default(0),
+  
   registeredAt: timestamp("registered_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
