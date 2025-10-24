@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1761291982312,
+      "tag": "0000_wakeful_earthquake",
+      "breakpoints": true
+    }
+  ]
+}
