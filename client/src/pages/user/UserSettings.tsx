@@ -57,6 +57,7 @@ const UserSettings = () => {
   // Fetch user settings
   const { data: settings, isLoading } = useQuery<UserSettings>({
     queryKey: ["/api/user-settings", clientId],
+    queryFn: () => apiRequest(`/api/user-settings/${clientId}`),
     enabled: !!clientId,
   });
 

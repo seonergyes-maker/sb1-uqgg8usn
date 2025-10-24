@@ -29,15 +29,12 @@ export default function PublicLanding() {
   const { user } = useAuth();
 
   const { data: landing, isLoading } = useQuery<Landing>({
-    queryKey: ["/api/public/landings", slug],
-    queryFn: () => fetch(`/api/public/landings/${slug}`).then((res) => res.json()),
+    queryKey: [`/api/public/landings/${slug}`],
   });
 
   const trackVisitMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/public/landings/${slug}/track-visit`, {
-        method: "POST",
-      });
+      await apiRequest(`/api/public/landings/${slug}/track-visit`, "POST");
     },
   });
 
