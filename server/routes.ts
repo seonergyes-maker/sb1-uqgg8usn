@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage.js";
 import { DEFAULT_LANDING_TEMPLATE } from "../shared/defaultLandingTemplate.js";
+import { z } from "zod";
 import { 
   insertClientSchema, 
   updateClientSchema,
@@ -1169,6 +1170,153 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting email:", error);
       res.status(500).json({ error: "Failed to delete email" });
+    }
+  });
+
+  // POST /api/emails/:id/send - Send personalized email to leads
+  app.post("/api/emails/:id/send", requireUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Validate recipients
+      const recipientsSchema = z.object({
+        recipients: z.array(z.object({
+          email: z.string().email("Email inválido"),
+          name: z.string().optional(),
+          empresa: z.string().optional(),
+        })).min(1, "Debe haber al menos un destinatario"),
+      });
+      
+      const { recipients } = recipientsSchema.parse(req.body);
+      
+      const email = await storage.getEmailById(id);
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+      
+      const { replaceEmailVariables, generateUnsubscribeLink } = await import('./utils/emailVariables.js');
+      
+      const results = [];
+      for (const recipient of recipients) {
+        const variables = {
+          nombre: recipient.name || '',
+          email: recipient.email,
+          empresa: recipient.empresa || '',
+          unsubscribe_link: generateUnsubscribeLink(recipient.email, email.clientId),
+        };
+        
+        const personalizedContent = replaceEmailVariables(email.content, variables);
+        const personalizedSubject = replaceEmailVariables(email.subject, variables);
+        
+        // TODO: Replace with actual SES sending logic
+        console.log(`[SIMULATED] Sending email to: ${recipient.email}`);
+        console.log(`Subject: ${personalizedSubject}`);
+        
+        results.push({
+          email: recipient.email,
+          status: 'sent',
+          personalizedSubject,
+        });
+      }
+      
+      // Update email statistics
+      await storage.updateEmail(id, {
+        status: "Enviado",
+        sentAt: new Date().toISOString(),
+      });
+      
+      res.json({
+        success: true,
+        sent: results.length,
+        results,
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Datos de destinatarios inválidos", details: error });
+      }
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
+  // GET /api/public/unsubscribe - Unsubscribe from emails via link (no auth required)
+  app.get("/api/public/unsubscribe", async (req, res) => {
+    try {
+      const { email, clientId } = req.query;
+      
+      if (!email || !clientId) {
+        return res.status(400).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Error - LandFlow</title></head>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h1>❌ Error</h1>
+              <p>Link de desuscripción inválido.</p>
+            </body>
+          </html>
+        `);
+      }
+      
+      const parsedClientId = parseInt(clientId as string);
+      
+      if (isNaN(parsedClientId)) {
+        return res.status(400).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Error - LandFlow</title></head>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h1>❌ Error</h1>
+              <p>Link de desuscripción inválido.</p>
+            </body>
+          </html>
+        `);
+      }
+      
+      // Check if already unsubscribed
+      const existing = await storage.getUnsubscribeByEmail(email as string, parsedClientId);
+      if (existing) {
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Ya Desuscrito - LandFlow</title></head>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h1>✓ Ya Desuscrito</h1>
+              <p>El email <strong>${email}</strong> ya estaba desuscrito de nuestras comunicaciones.</p>
+            </body>
+          </html>
+        `);
+      }
+      
+      // Create unsubscribe record
+      await storage.createUnsubscribe({
+        email: email as string,
+        clientId: parsedClientId,
+        reason: null,
+      });
+      
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Desuscrito Exitosamente - LandFlow</title></head>
+          <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h1>✓ Desuscrito Exitosamente</h1>
+            <p>El email <strong>${email}</strong> ha sido eliminado de nuestras comunicaciones.</p>
+            <p>Lamentamos verte partir.</p>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Error - LandFlow</title></head>
+          <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h1>❌ Error</h1>
+            <p>Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.</p>
+          </body>
+        </html>
+      `);
     }
   });
 
