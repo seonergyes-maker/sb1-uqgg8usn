@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #2563eb;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            color: #e0e7ff;
+            margin: 10px 0 0 0;
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .content h2 {
+            color: #1e293b;
+            font-size: 20px;
+            margin-top: 0;
+        }
+        .content p {
+            color: #475569;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        .article-section {
+            border-left: 4px solid #2563eb;
+            padding-left: 20px;
+            margin: 25px 0;
+        }
+        .article-section h3 {
+            color: #1e293b;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .read-more {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 25px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .social-links {
+            margin: 15px 0;
+        }
+        .social-links a {
+            margin: 0 10px;
+            color: #64748b;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📬 Newsletter Mensual</h1>
+            <p>Las últimas novedades y actualizaciones</p>
+        </div>
+        
+        <div class="content">
+            <p>Hola {{nombre}},</p>
+            <p>Aquí están las noticias más importantes de este mes:</p>
+            
+            <div class="article-section">
+                <h3>🚀 Nueva Funcionalidad Lanzada</h3>
+                <p>Hemos añadido una increíble nueva característica que te ayudará a aumentar tu productividad.</p>
+                <a href="#" class="read-more">Leer más →</a>
+            </div>
+            
+            <div class="article-section">
+                <h3>📊 Consejos y Trucos</h3>
+                <p>Descubre cómo optimizar tus campañas y obtener mejores resultados con estos consejos expertos.</p>
+                <a href="#" class="read-more">Leer más →</a>
+            </div>
+            
+            <div class="article-section">
+                <h3>💡 Casos de Éxito</h3>
+                <p>Conoce cómo nuestros clientes están logrando resultados extraordinarios.</p>
+                <a href="#" class="read-more">Leer más →</a>
+            </div>
+            
+            <p>¿Tienes alguna pregunta o sugerencia? Responde a este email, ¡nos encantaría saber de ti!</p>
+            <p>Hasta la próxima,<br>El equipo</p>
+        </div>
+        
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">Twitter</a> •
+                <a href="#">LinkedIn</a> •
+                <a href="#">Facebook</a>
+            </div>
+            <p>Estás recibiendo este newsletter porque te suscribiste a nuestras actualizaciones.</p>
+            <p><a href="{{unsubscribe_link}}">Cancelar suscripción</a> | <a href="#">Gestionar preferencias</a></p>
+            <p>© 2025 Tu Empresa. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

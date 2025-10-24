@@ -11,6 +11,8 @@ import {
   landings,
   templates,
   scheduledTasks,
+  emails,
+  unsubscribes,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -40,7 +42,12 @@ import {
   type UpdateTemplate,
   type ScheduledTask,
   type InsertScheduledTask,
-  type UpdateScheduledTask
+  type UpdateScheduledTask,
+  type Email,
+  type InsertEmail,
+  type UpdateEmail,
+  type Unsubscribe,
+  type InsertUnsubscribe
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -124,6 +131,16 @@ export interface IStorage {
   createScheduledTask(task: InsertScheduledTask): Promise<ScheduledTask>;
   updateScheduledTask(id: number, task: UpdateScheduledTask): Promise<ScheduledTask | undefined>;
   deleteScheduledTask(id: number): Promise<boolean>;
+  
+  getEmails(clientId: number, filters?: { status?: string; search?: string }): Promise<Email[]>;
+  getEmailById(id: number): Promise<Email | undefined>;
+  createEmail(email: InsertEmail): Promise<Email>;
+  updateEmail(id: number, email: UpdateEmail): Promise<Email | undefined>;
+  deleteEmail(id: number): Promise<boolean>;
+  
+  getUnsubscribes(clientId: number, filters?: { search?: string }): Promise<Unsubscribe[]>;
+  getUnsubscribeByEmail(email: string, clientId: number): Promise<Unsubscribe | undefined>;
+  createUnsubscribe(unsubscribe: InsertUnsubscribe): Promise<Unsubscribe>;
 }
 
 export class DbStorage implements IStorage {
@@ -691,6 +708,91 @@ export class DbStorage implements IStorage {
   async deleteScheduledTask(id: number): Promise<boolean> {
     const result = await db.delete(scheduledTasks).where(eq(scheduledTasks.id, id));
     return result[0].affectedRows > 0;
+  }
+
+  async getEmails(clientId: number, filters?: { status?: string; search?: string }): Promise<Email[]> {
+    const conditions: SQL[] = [eq(emails.clientId, clientId)];
+    
+    if (filters?.status && filters.status !== 'all') {
+      conditions.push(eq(emails.status, filters.status));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        like(emails.name, `%${filters.search}%`),
+        like(emails.subject, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (!whereCondition) {
+      return db.select().from(emails).orderBy(emails.createdAt);
+    }
+    
+    return db.select().from(emails).where(whereCondition).orderBy(emails.createdAt);
+  }
+
+  async getEmailById(id: number): Promise<Email | undefined> {
+    const result = await db.select().from(emails).where(eq(emails.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createEmail(email: InsertEmail): Promise<Email> {
+    const result = await db.insert(emails).values(email);
+    const insertedId = Number(result[0].insertId);
+    const newEmail = await this.getEmailById(insertedId);
+    if (!newEmail) {
+      throw new Error("Failed to create email");
+    }
+    return newEmail;
+  }
+
+  async updateEmail(id: number, email: UpdateEmail): Promise<Email | undefined> {
+    await db.update(emails).set(email).where(eq(emails.id, id));
+    return this.getEmailById(id);
+  }
+
+  async deleteEmail(id: number): Promise<boolean> {
+    const result = await db.delete(emails).where(eq(emails.id, id));
+    return result[0].affectedRows > 0;
+  }
+
+  async getUnsubscribes(clientId: number, filters?: { search?: string }): Promise<Unsubscribe[]> {
+    const conditions: SQL[] = [eq(unsubscribes.clientId, clientId)];
+    
+    if (filters?.search) {
+      const searchCondition = like(unsubscribes.email, `%${filters.search}%`);
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    const whereCondition = and(...conditions);
+    if (!whereCondition) {
+      return db.select().from(unsubscribes).orderBy(unsubscribes.unsubscribedAt);
+    }
+    
+    return db.select().from(unsubscribes).where(whereCondition).orderBy(unsubscribes.unsubscribedAt);
+  }
+
+  async getUnsubscribeByEmail(email: string, clientId: number): Promise<Unsubscribe | undefined> {
+    const result = await db.select().from(unsubscribes)
+      .where(and(eq(unsubscribes.email, email), eq(unsubscribes.clientId, clientId)))
+      .limit(1);
+    return result[0];
+  }
+
+  async createUnsubscribe(unsubscribe: InsertUnsubscribe): Promise<Unsubscribe> {
+    const result = await db.insert(unsubscribes).values(unsubscribe);
+    const insertedId = Number(result[0].insertId);
+    const newUnsubscribe = await db.select().from(unsubscribes).where(eq(unsubscribes.id, insertedId)).limit(1);
+    if (!newUnsubscribe[0]) {
+      throw new Error("Failed to create unsubscribe");
+    }
+    return newUnsubscribe[0];
   }
 
   async getUserStats(clientId: number): Promise<UserStats> {

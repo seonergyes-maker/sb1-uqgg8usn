@@ -160,6 +160,27 @@ export const scheduledTasks = mysqlTable("scheduled_tasks", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const emails = mysqlTable("emails", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  content: text("content").notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("Borrador"),
+  timesSent: int("times_sent").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const unsubscribes = mysqlTable("unsubscribes", {
+  id: int("id").primaryKey().autoincrement(),
+  leadId: int("lead_id"),
+  clientId: int("client_id").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  reason: text("reason"),
+  unsubscribedAt: timestamp("unsubscribed_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -169,6 +190,8 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   landings: many(landings),
   templates: many(templates),
   scheduledTasks: many(scheduledTasks),
+  emails: many(emails),
+  unsubscribes: many(unsubscribes),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -229,6 +252,24 @@ export const scheduledTasksRelations = relations(scheduledTasks, ({ one }) => ({
   client: one(clients, {
     fields: [scheduledTasks.clientId],
     references: [clients.id],
+  }),
+}));
+
+export const emailsRelations = relations(emails, ({ one }) => ({
+  client: one(clients, {
+    fields: [emails.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const unsubscribesRelations = relations(unsubscribes, ({ one }) => ({
+  client: one(clients, {
+    fields: [unsubscribes.clientId],
+    references: [clients.id],
+  }),
+  lead: one(leads, {
+    fields: [unsubscribes.leadId],
+    references: [leads.id],
   }),
 }));
 
@@ -369,6 +410,27 @@ export const insertScheduledTaskSchema = createInsertSchema(scheduledTasks).omit
 
 export const updateScheduledTaskSchema = insertScheduledTaskSchema.partial();
 
+export const insertEmailSchema = createInsertSchema(emails).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es requerido"),
+  subject: z.string().min(1, "El asunto es requerido"),
+  content: z.string().min(1, "El contenido es requerido"),
+  status: z.string().default("Borrador"),
+});
+
+export const updateEmailSchema = insertEmailSchema.partial();
+
+export const insertUnsubscribeSchema = createInsertSchema(unsubscribes).omit({
+  id: true,
+  unsubscribedAt: true,
+}).extend({
+  email: z.string().email("Email inválido"),
+  reason: z.string().optional().nullable(),
+});
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;
@@ -408,3 +470,10 @@ export type UpdateTemplate = z.infer<typeof updateTemplateSchema>;
 export type ScheduledTask = typeof scheduledTasks.$inferSelect;
 export type InsertScheduledTask = z.infer<typeof insertScheduledTaskSchema>;
 export type UpdateScheduledTask = z.infer<typeof updateScheduledTaskSchema>;
+
+export type Email = typeof emails.$inferSelect;
+export type InsertEmail = z.infer<typeof insertEmailSchema>;
+export type UpdateEmail = z.infer<typeof updateEmailSchema>;
+
+export type Unsubscribe = typeof unsubscribes.$inferSelect;
+export type InsertUnsubscribe = z.infer<typeof insertUnsubscribeSchema>;

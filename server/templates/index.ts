@@ -40,6 +40,30 @@ export const BASE_TEMPLATES: BaseTemplate[] = [
     category: 'Servicios',
     filePath: 'landings/servicios-profesionales.html',
   },
+  {
+    id: 'bienvenida',
+    name: 'Email de Bienvenida',
+    description: 'Email profesional de bienvenida con diseño atractivo. Perfecto para dar la bienvenida a nuevos usuarios.',
+    type: 'Email',
+    category: 'Transaccional',
+    filePath: 'emails/bienvenida.html',
+  },
+  {
+    id: 'newsletter',
+    name: 'Newsletter',
+    description: 'Template limpio y organizado para boletines informativos. Ideal para enviar noticias y actualizaciones periódicas.',
+    type: 'Email',
+    category: 'Marketing',
+    filePath: 'emails/newsletter.html',
+  },
+  {
+    id: 'promocion',
+    name: 'Email Promocional',
+    description: 'Template llamativo para ofertas y promociones. Diseñado para maximizar conversiones en campañas de venta.',
+    type: 'Email',
+    category: 'Marketing',
+    filePath: 'emails/promocion.html',
+  },
 ];
 
 /**

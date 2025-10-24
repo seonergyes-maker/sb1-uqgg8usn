@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oferta Especial</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fef2f2;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .banner {
+            background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+            padding: 50px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .banner h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .banner .discount {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .banner p {
+            font-size: 18px;
+            margin: 10px 0 0 0;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .content h2 {
+            color: #dc2626;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+        }
+        .content p {
+            color: #374151;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .features {
+            text-align: left;
+            margin: 30px auto;
+            max-width: 400px;
+        }
+        .features li {
+            color: #374151;
+            margin: 12px 0;
+            padding-left: 10px;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 30px 0;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+        }
+        .urgency {
+            background-color: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
+            margin: 30px 0;
+            color: #991b1b;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 25px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer a {
+            color: #dc2626;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="banner">
+            <h1>🎉 Oferta Exclusiva</h1>
+            <div class="discount">50% OFF</div>
+            <p>Solo por tiempo limitado</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hola {{nombre}}, ¡esta es tu oportunidad!</h2>
+            <p>Hemos preparado una oferta especial exclusiva para ti. No dejes pasar esta increíble oportunidad de ahorrar mientras mejoras tus resultados.</p>
+            
+            <div class="features">
+                <ul>
+                    <li>✓ Acceso completo a todas las funcionalidades premium</li>
+                    <li>✓ Soporte prioritario 24/7</li>
+                    <li>✓ Recursos y plantillas exclusivas</li>
+                    <li>✓ Sin costos ocultos ni cargos adicionales</li>
+                </ul>
+            </div>
+            
+            <div class="urgency">
+                ⏰ ¡Apúrate! Esta oferta expira en 48 horas
+            </div>
+            
+            <a href="#" class="cta-button">APROVECHAR OFERTA</a>
+            
+            <p style="font-size: 14px; color: #6b7280;">Usa el código <strong>SAVE50</strong> al momento de pagar</p>
+            <p>Si tienes alguna pregunta, nuestro equipo está listo para ayudarte.</p>
+            <p>¡No te lo pierdas!<br>El equipo de ventas</p>
+        </div>
+        
+        <div class="footer">
+            <p>Esta oferta es exclusiva para ti, {{nombre}}.</p>
+            <p>Si no estás interesado en ofertas especiales, puedes <a href="{{unsubscribe_link}}">darte de baja aquí</a>.</p>
+            <p>© 2025 Tu Empresa. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
