@@ -23,6 +23,7 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 **UI/UX and Features:**
 -   **Admin Panel:** Includes CRUD operations for Clients, Subscriptions, and Payments. Features a Dashboard for real-time statistics and a Settings module for platform configuration.
 -   **User Panel:** Offers CRUD operations and management for Leads, Segments, Automations, Templates (email and landing), and Landings. Includes a Scheduler for task management.
+-   **User Profile:** Complete profile management for users to update personal information (name, email, company, phone, location, avatar), change password securely with current password validation, and view account details.
 -   **User Settings:** Comprehensive configuration panel for each user including email settings (fromName, fromEmail, replyTo, signature), notification preferences, tracking integration (Google Analytics, Meta Pixel), and custom domain setup (Business plan only).
 -   **System Design Choices:** Employs a database-driven approach, real-time data updates via `TanStack Query`, robust form validation, and a modular design.
 -   **Authentication:** JWT-based authentication with `bcryptjs` for password hashing, supporting user and admin roles with protected routes.
