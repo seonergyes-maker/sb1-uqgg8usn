@@ -843,20 +843,62 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // GET /api/templates/base - List all base templates (clientId = 0)
+  // GET /api/templates/base - List all base templates from filesystem
   app.get("/api/templates/base", async (req, res) => {
     try {
-      const { type, category, status, search } = req.query;
-      const templates = await storage.getTemplates(0, {
+      const { getBaseTemplates } = await import('./templates/index');
+      const { type, category, search } = req.query;
+      
+      const templates = getBaseTemplates({
         type: type as string,
         category: category as string,
-        status: status as string,
         search: search as string,
       });
-      res.json(templates);
+      
+      // Transform to match expected API format
+      const formattedTemplates = templates.map(t => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        type: t.type,
+        category: t.category,
+        status: 'Activa',
+        // Don't send content in list view for performance
+        content: null,
+      }));
+      
+      res.json(formattedTemplates);
     } catch (error) {
       console.error("Error fetching base templates:", error);
       res.status(500).json({ error: "Failed to fetch base templates" });
+    }
+  });
+
+  // GET /api/templates/base/:id - Get a specific base template with content
+  app.get("/api/templates/base/:id", async (req, res) => {
+    try {
+      const { loadTemplateContent, BASE_TEMPLATES } = await import('./templates/index');
+      const { id } = req.params;
+      
+      const template = BASE_TEMPLATES.find(t => t.id === id);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      
+      const content = loadTemplateContent(id);
+      
+      res.json({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        type: template.type,
+        category: template.category,
+        status: 'Activa',
+        content,
+      });
+    } catch (error) {
+      console.error("Error loading template content:", error);
+      res.status(500).json({ error: "Failed to load template" });
     }
   });
 

@@ -17,10 +17,27 @@ interface TemplateSelectorProps {
 export function TemplateSelector({ type, onSelect, selectedTemplateId }: TemplateSelectorProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
+  const [loadingTemplateId, setLoadingTemplateId] = useState<string | number | null>(null);
 
   const { data: baseTemplates = [], isLoading } = useQuery<Template[]>({
     queryKey: ["/api/templates/base", { type }],
   });
+
+  const handleSelect = async (template: Template) => {
+    try {
+      setLoadingTemplateId(template.id);
+      // Load full template content from API
+      const response = await fetch(`/api/templates/base/${template.id}`);
+      if (!response.ok) throw new Error("Failed to load template");
+      
+      const fullTemplate = await response.json();
+      onSelect(fullTemplate);
+    } catch (error) {
+      console.error("Error loading template:", error);
+    } finally {
+      setLoadingTemplateId(null);
+    }
+  };
   
   const filteredTemplates = baseTemplates.filter((template) => {
     const matchesSearch = template.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,8 +89,8 @@ export function TemplateSelector({ type, onSelect, selectedTemplateId }: Templat
               key={template.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
                 selectedTemplateId === template.id ? "border-primary border-2" : ""
-              }`}
-              onClick={() => onSelect(template)}
+              } ${loadingTemplateId === template.id ? "opacity-50" : ""}`}
+              onClick={() => handleSelect(template)}
               data-testid={`card-template-${template.id}`}
             >
               <CardHeader>
