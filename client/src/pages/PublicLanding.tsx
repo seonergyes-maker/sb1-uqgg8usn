@@ -20,6 +20,8 @@ interface Landing {
   conversionRate: string;
   createdAt: string;
   updatedAt: string;
+  googleAnalyticsId: string | null;
+  metaPixelId: string | null;
 }
 
 export default function PublicLanding() {
@@ -39,11 +41,66 @@ export default function PublicLanding() {
     },
   });
 
+  // Track visit
   useEffect(() => {
     if (landing && slug) {
       trackVisitMutation.mutate();
     }
   }, [landing, slug]);
+
+  // Inject Google Analytics script
+  useEffect(() => {
+    if (landing?.googleAnalyticsId) {
+      const gaScript = document.createElement('script');
+      gaScript.async = true;
+      gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${landing.googleAnalyticsId}`;
+      document.head.appendChild(gaScript);
+
+      const gaConfigScript = document.createElement('script');
+      gaConfigScript.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${landing.googleAnalyticsId}');
+      `;
+      document.head.appendChild(gaConfigScript);
+
+      return () => {
+        document.head.removeChild(gaScript);
+        document.head.removeChild(gaConfigScript);
+      };
+    }
+  }, [landing?.googleAnalyticsId]);
+
+  // Inject Meta Pixel script
+  useEffect(() => {
+    if (landing?.metaPixelId) {
+      const fbScript = document.createElement('script');
+      fbScript.innerHTML = `
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '${landing.metaPixelId}');
+        fbq('track', 'PageView');
+      `;
+      document.head.appendChild(fbScript);
+
+      const fbNoScript = document.createElement('noscript');
+      fbNoScript.innerHTML = `<img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=${landing.metaPixelId}&ev=PageView&noscript=1" />`;
+      document.body.appendChild(fbNoScript);
+
+      return () => {
+        document.head.removeChild(fbScript);
+        document.body.removeChild(fbNoScript);
+      };
+    }
+  }, [landing?.metaPixelId]);
 
   if (isLoading) {
     return (

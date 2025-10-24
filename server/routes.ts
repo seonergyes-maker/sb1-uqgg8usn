@@ -1176,7 +1176,17 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Landing not found" });
       }
       
-      res.json(landing);
+      // Get client tracking IDs for script injection
+      const [client] = await db.select({
+        googleAnalyticsId: clients.googleAnalyticsId,
+        metaPixelId: clients.metaPixelId,
+      }).from(clients).where(eq(clients.id, landing.clientId)).limit(1);
+      
+      res.json({
+        ...landing,
+        googleAnalyticsId: client?.googleAnalyticsId || null,
+        metaPixelId: client?.metaPixelId || null,
+      });
     } catch (error) {
       console.error("Error fetching public landing:", error);
       res.status(500).json({ error: "Failed to fetch landing" });
