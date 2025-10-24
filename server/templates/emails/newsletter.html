@@ -92,8 +92,8 @@
         </div>
         
         <div class="content">
-            <p>Hola {{nombre}},</p>
-            <p>Aquí están las noticias más importantes de este mes:</p>
+            <p>Hola {{lead_name}},</p>
+            <p>Aquí están las noticias más importantes de este mes desde {{company_name}}:</p>
             
             <div class="article-section">
                 <h3>🚀 Nueva Funcionalidad Lanzada</h3>
@@ -113,8 +113,8 @@
                 <a href="#" class="read-more">Leer más →</a>
             </div>
             
-            <p>¿Tienes alguna pregunta o sugerencia? Responde a este email, ¡nos encantaría saber de ti!</p>
-            <p>Hasta la próxima,<br>El equipo</p>
+            <p>¿Tienes alguna pregunta o sugerencia? Responde a este email o escríbenos a {{company_email}}, ¡nos encantaría saber de ti!</p>
+            <p>Hasta la próxima,<br>El equipo de {{company_name}}</p>
         </div>
         
         <div class="footer">
@@ -123,9 +123,9 @@
                 <a href="#">LinkedIn</a> •
                 <a href="#">Facebook</a>
             </div>
-            <p>Estás recibiendo este newsletter porque te suscribiste a nuestras actualizaciones.</p>
+            <p>Estás recibiendo este newsletter porque te suscribiste a {{company_name}}.</p>
             <p><a href="{{unsubscribe_link}}">Cancelar suscripción</a> | <a href="#">Gestionar preferencias</a></p>
-            <p>© 2025 Tu Empresa. Todos los derechos reservados.</p>
+            <p>{{company_name}} | {{company_address}}</p>
         </div>
     </div>
 </body>

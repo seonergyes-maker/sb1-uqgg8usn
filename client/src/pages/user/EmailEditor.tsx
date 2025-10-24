@@ -1,173 +1,332 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Save, Eye, Send, Image, Type, Layout, Square, 
-  AlignLeft, Code, Smartphone, Monitor, Tablet 
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ArrowLeft, Save, X, Eye, EyeOff, RefreshCw, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TemplateSelector } from "@/components/TemplateSelector";
+
+interface Email {
+  id: number;
+  clientId: number;
+  name: string;
+  subject: string;
+  content: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface EmailVariable {
+  name: string;
+  variable: string;
+  description: string;
+  example: string;
+}
+
+// Variables disponibles para los emails
+const EMAIL_VARIABLES: EmailVariable[] = [
+  {
+    name: 'Nombre del Lead',
+    variable: '{{lead_name}}',
+    description: 'Nombre del contacto',
+    example: 'Juan Pérez',
+  },
+  {
+    name: 'Email del Lead',
+    variable: '{{lead_email}}',
+    description: 'Dirección de email del contacto',
+    example: 'juan@ejemplo.com',
+  },
+  {
+    name: 'Nombre de la Empresa',
+    variable: '{{company_name}}',
+    description: 'Nombre de tu empresa',
+    example: 'Mi Empresa SL',
+  },
+  {
+    name: 'Email de la Empresa',
+    variable: '{{company_email}}',
+    description: 'Email de contacto de tu empresa',
+    example: 'contacto@miempresa.com',
+  },
+  {
+    name: 'Dirección de la Empresa',
+    variable: '{{company_address}}',
+    description: 'Dirección física de tu empresa',
+    example: 'Calle Principal 123, Madrid',
+  },
+  {
+    name: 'Link de Desuscripción',
+    variable: '{{unsubscribe_link}}',
+    description: 'Link para que el usuario se dé de baja (OBLIGATORIO)',
+    example: 'https://tudominio.com/unsubscribe/...',
+  },
+];
 
 const EmailEditor = () => {
-  const [subject, setSubject] = useState("");
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const [, params] = useRoute<{ id: string }>("/panel/emails/:id/edit");
+  const emailId = params && params.id ? parseInt(params.id) : null;
+  const clientId = user?.id || 0;
 
-  const components = [
-    { icon: Type, label: "Texto", type: "text" },
-    { icon: Image, label: "Imagen", type: "image" },
-    { icon: Square, label: "Botón", type: "button" },
-    { icon: Layout, label: "Columnas", type: "columns" },
-    { icon: AlignLeft, label: "Espaciador", type: "spacer" },
-    { icon: Code, label: "HTML", type: "html" },
-  ];
+  const [isEditing, setIsEditing] = useState(false);
+  const [content, setContent] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
+
+  // Fetch email data
+  const { data: email, isLoading } = useQuery<Email>({
+    queryKey: ["/api/emails", clientId, emailId],
+    queryFn: () => fetch(`/api/emails/${clientId}/${emailId}`).then(res => res.json()),
+    enabled: !!emailId && !!clientId,
+  });
+
+  // Update content when email loads
+  useEffect(() => {
+    if (email) {
+      setContent(email.content);
+      setOriginalContent(email.content);
+    }
+  }, [email]);
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: (data: { content: string }) =>
+      apiRequest(`/api/emails/${emailId}`, "PATCH", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/emails", clientId, emailId] });
+      setIsEditing(false);
+      setOriginalContent(content);
+      toast({
+        title: "Email guardado",
+        description: "Los cambios se han guardado correctamente.",
+      });
+      // Reload page to show updated content
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al guardar",
+        description: error?.message || "No se pudieron guardar los cambios.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSave = () => {
+    if (!content.includes('{{unsubscribe_link}}')) {
+      toast({
+        title: "Variable obligatoria faltante",
+        description: "El email debe incluir la variable {{unsubscribe_link}} para cumplir con las normativas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateMutation.mutate({ content });
+  };
+
+  const handleCancel = () => {
+    setContent(originalContent);
+    setIsEditing(false);
+    // Remove contentEditable from all elements
+    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+    editableElements.forEach((el) => {
+      el.setAttribute('contenteditable', 'false');
+    });
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    // Enable contentEditable on the preview container
+    setTimeout(() => {
+      const previewContainer = document.getElementById('email-preview-container');
+      if (previewContainer) {
+        previewContainer.setAttribute('contenteditable', 'true');
+        previewContainer.focus();
+      }
+    }, 100);
+  };
+
+  const copyVariable = (variable: string) => {
+    navigator.clipboard.writeText(variable);
+    toast({
+      title: "Variable copiada",
+      description: `${variable} copiado al portapapeles.`,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Cargando email...</p>
+      </div>
+    );
+  }
+
+  if (!email) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Email no encontrado</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Editor de Emails</h1>
-          <p className="text-muted-foreground mt-2">
-            Crea emails profesionales con drag & drop
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" />
-            Vista Previa
+    <div className="min-h-screen bg-background">
+      {/* Barra superior con variables */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container flex items-center gap-4 py-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setLocation("/panel/emails")}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm">
-            <Save className="h-4 w-4 mr-2" />
-            Guardar
-          </Button>
-          <Button size="sm">
-            <Send className="h-4 w-4 mr-2" />
-            Enviar Prueba
-          </Button>
+          <div className="flex-1">
+            <h2 className="text-sm font-semibold">Variables Disponibles:</h2>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {EMAIL_VARIABLES.map((variable) => (
+                <Badge
+                  key={variable.variable}
+                  variant={variable.variable === '{{unsubscribe_link}}' ? "destructive" : "secondary"}
+                  className={`cursor-pointer transition-colors ${
+                    variable.variable === '{{unsubscribe_link}}' 
+                      ? "font-semibold hover:bg-destructive/80" 
+                      : "hover:bg-secondary/80"
+                  }`}
+                  onClick={() => copyVariable(variable.variable)}
+                  title={`${variable.description} - Click para copiar`}
+                >
+                  <Copy className="h-3 w-3 mr-1" />
+                  {variable.variable}
+                  {variable.variable === '{{unsubscribe_link}}' && " (OBLIGATORIA)"}
+                </Badge>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        {/* Componentes */}
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm">Componentes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {components.map((component) => (
-              <Button
-                key={component.type}
-                variant="outline"
-                className="w-full justify-start"
-                size="sm"
-              >
-                <component.icon className="h-4 w-4 mr-2" />
-                {component.label}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Editor */}
-        <div className="col-span-7 space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Asunto del Email</Label>
-                  <Input
-                    placeholder="Ej: ¡Oferta especial solo para ti!"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          <Card className="min-h-[600px]">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm">Canvas de Diseño</CardTitle>
-              <div className="flex gap-1">
-                <Button
-                  variant={previewDevice === "desktop" ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => setPreviewDevice("desktop")}
-                >
-                  <Monitor className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={previewDevice === "tablet" ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => setPreviewDevice("tablet")}
-                >
-                  <Tablet className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={previewDevice === "mobile" ? "default" : "ghost"}
-                  size="icon"
-                  onClick={() => setPreviewDevice("mobile")}
-                >
-                  <Smartphone className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6">
-              <div className={`mx-auto bg-white border-2 border-dashed border-muted-foreground/20 rounded-lg p-8 min-h-[500px] transition-all ${
-                previewDevice === "desktop" ? "max-w-full" : 
-                previewDevice === "tablet" ? "max-w-2xl" : "max-w-sm"
-              }`}>
-                <div className="text-center text-muted-foreground">
-                  <Layout className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Arrastra componentes aquí</p>
-                  <p className="text-sm mt-2">
-                    Usa los componentes de la izquierda para construir tu email
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Contenido del email */}
+      <div className="container max-w-4xl mx-auto py-8">
+        <div className="mb-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">{email.name}</h1>
+            <p className="text-sm text-muted-foreground mt-1">Asunto: {email.subject}</p>
+          </div>
         </div>
 
-        {/* Propiedades */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle className="text-sm">Propiedades</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="style" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="style">Estilo</TabsTrigger>
-                <TabsTrigger value="content">Contenido</TabsTrigger>
-              </TabsList>
-              <TabsContent value="style" className="space-y-4 mt-4">
-                <div>
-                  <Label className="text-xs">Color de fondo</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input type="color" defaultValue="#ffffff" className="h-10" />
-                    <Input placeholder="#ffffff" className="flex-1" />
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Padding</Label>
-                  <Input type="number" placeholder="20" />
-                </div>
-                <div>
-                  <Label className="text-xs">Tamaño de fuente</Label>
-                  <Input type="number" placeholder="16" />
-                </div>
-              </TabsContent>
-              <TabsContent value="content" className="space-y-4 mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Selecciona un componente para editar su contenido
-                </p>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        {/* Preview del email */}
+        <div className="bg-white border rounded-lg shadow-sm p-8">
+          <div
+            id="email-preview-container"
+            className={`min-h-[600px] ${isEditing ? 'outline outline-2 outline-primary' : ''}`}
+            dangerouslySetInnerHTML={{ __html: content }}
+            onInput={(e) => {
+              if (isEditing) {
+                setContent(e.currentTarget.innerHTML);
+              }
+            }}
+            contentEditable={isEditing}
+            suppressContentEditableWarning
+          />
+        </div>
       </div>
+
+      {/* Floating Editor Buttons */}
+      <div className="fixed bottom-6 right-6 flex flex-col gap-2">
+        {!isEditing ? (
+          <>
+            <Button
+              onClick={handleEdit}
+              size="lg"
+              data-testid="button-edit"
+              className="shadow-lg"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setTemplateSelectorOpen(true)}
+              size="lg"
+              data-testid="button-change-template"
+              className="shadow-lg"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Cambiar Template
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setLocation("/panel/emails")}
+              size="lg"
+              data-testid="button-back-panel"
+              className="shadow-lg"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver al Panel
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+              size="lg"
+              data-testid="button-save"
+              className="shadow-lg"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {updateMutation.isPending ? "Guardando..." : "Guardar"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              size="lg"
+              data-testid="button-cancel"
+              className="shadow-lg"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* Template Selector Dialog */}
+      <Dialog open={templateSelectorOpen} onOpenChange={setTemplateSelectorOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Cambiar Template de Email</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[70vh] p-4">
+            <TemplateSelector
+              type="Email"
+              onSelect={(template) => {
+                if (template.content) {
+                  setContent(template.content);
+                  setTemplateSelectorOpen(false);
+                  toast({
+                    title: "Template aplicado",
+                    description: "El nuevo template se ha aplicado correctamente. Recuerda guardar los cambios.",
+                  });
+                }
+              }}
+            />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

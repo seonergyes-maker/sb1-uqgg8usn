@@ -8,7 +8,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
         }
         .email-container {
@@ -20,11 +20,12 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 40px 20px;
             text-align: center;
+            color: #ffffff;
         }
         .header h1 {
-            color: #ffffff;
             margin: 0;
-            font-size: 28px;
+            font-size: 32px;
+            font-weight: 600;
         }
         .content {
             padding: 40px 30px;
@@ -33,58 +34,65 @@
         }
         .content h2 {
             color: #667eea;
+            font-size: 24px;
             margin-top: 0;
         }
         .cta-button {
             display: inline-block;
-            padding: 14px 30px;
+            padding: 14px 32px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #ffffff;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 6px;
             margin: 20px 0;
-            font-weight: bold;
+            font-weight: 600;
         }
         .footer {
             background-color: #f8f9fa;
-            padding: 20px 30px;
+            padding: 30px;
             text-align: center;
-            font-size: 12px;
             color: #666666;
+            font-size: 14px;
             border-top: 1px solid #e0e0e0;
         }
         .footer a {
             color: #667eea;
             text-decoration: none;
         }
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>¡Bienvenido/a a Bordo!</h1>
+            <h1>¡Bienvenido a {{company_name}}!</h1>
         </div>
         
         <div class="content">
             <h2>Hola {{lead_name}},</h2>
-            <p>¡Nos alegra mucho tenerte con nosotros en {{company_name}}! Has dado el primer paso hacia algo increíble.</p>
-            <p>Estamos aquí para ayudarte a alcanzar tus objetivos. Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos en {{company_email}}.</p>
-            <p>Para empezar, te recomendamos explorar nuestras funcionalidades principales:</p>
-            <ul>
-                <li>Crea tu primera landing page</li>
-                <li>Configura tu perfil</li>
-                <li>Importa tus contactos</li>
-            </ul>
-            <center>
-                <a href="#" class="cta-button">Comenzar Ahora</a>
-            </center>
-            <p>¡Esperamos que disfrutes la experiencia!</p>
-            <p>Saludos cordiales,<br>El equipo de {{company_name}}</p>
+            <p>Estamos encantados de darte la bienvenida a nuestra comunidad. Gracias por confiar en nosotros.</p>
+            
+            <p>En {{company_name}}, nos dedicamos a ofrecerte las mejores soluciones para hacer crecer tu negocio. Estamos aquí para ayudarte en cada paso del camino.</p>
+            
+            <p>¿Listo para comenzar? Haz clic en el botón de abajo para acceder a tu panel:</p>
+            
+            <a href="https://tudominio.com/panel" class="cta-button">Acceder al Panel</a>
+            
+            <p>Si tienes alguna pregunta, no dudes en contactarnos respondiendo a este email o escribiendo a <strong>{{company_email}}</strong>.</p>
+            
+            <p>¡Esperamos verte pronto!</p>
+            
+            <p>Saludos cordiales,<br>
+            El equipo de {{company_name}}</p>
         </div>
         
         <div class="footer">
             <p>Has recibido este email porque te registraste en {{company_name}}.</p>
-            <p>Si no deseas recibir más emails, puedes <a href="{{unsubscribe_link}}">darte de baja aquí</a>.</p>
+            <p>Si no quieres recibir más emails, puedes <a href="{{unsubscribe_link}}">darte de baja aquí</a>.</p>
             <p>{{company_name}} | {{company_address}}</p>
         </div>
     </div>

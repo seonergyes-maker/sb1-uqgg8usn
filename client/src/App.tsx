@@ -25,7 +25,7 @@ import Segments from "./pages/user/Segments";
 import Landings from "./pages/user/Landings";
 import LandingEditor from "./pages/user/LandingEditor";
 import EmailEditor from "./pages/user/EmailEditor";
-import Emails from "./pages/Emails";
+import Emails from "./pages/user/Emails";
 import Automations from "./pages/user/Automations";
 import Statistics from "./pages/user/Statistics";
 import AdvancedAnalytics from "./pages/user/AdvancedAnalytics";
@@ -139,6 +139,13 @@ const App = () => (
           <ProtectedRoute>
             <UserLayout>
               <Emails />
+            </UserLayout>
+          </ProtectedRoute>
+        </Route>
+        <Route path="/panel/emails/:id/edit">
+          <ProtectedRoute>
+            <UserLayout>
+              <EmailEditor />
             </UserLayout>
           </ProtectedRoute>
         </Route>

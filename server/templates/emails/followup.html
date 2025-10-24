@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #059669;
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+            color: #333333;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #059669;
+            margin-bottom: 20px;
+        }
+        .content p {
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        .highlight-box {
+            background-color: #f0fdf4;
+            border-left: 4px solid #059669;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .highlight-box h3 {
+            color: #059669;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 14px 32px;
+            background-color: #059669;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666666;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer a {
+            color: #059669;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>👋 Seguimiento de tu consulta</h1>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Hola {{lead_name}},</p>
+            
+            <p>Hace unos días te pusiste en contacto con nosotros y queremos asegurarnos de que recibiste toda la información que necesitas.</p>
+            
+            <p>En {{company_name}}, estamos comprometidos a brindarte el mejor servicio y queremos ayudarte a tomar la mejor decisión para tu negocio.</p>
+            
+            <div class="highlight-box">
+                <h3>¿Tienes dudas?</h3>
+                <p>Nuestro equipo está listo para responder todas tus preguntas. No dudes en contactarnos directamente.</p>
+            </div>
+            
+            <p>Si aún estás evaluando tus opciones, te invitamos a:</p>
+            <ul>
+                <li>Agendar una llamada con nuestro equipo</li>
+                <li>Revisar casos de éxito de nuestros clientes</li>
+                <li>Explorar nuestros recursos gratuitos</li>
+            </ul>
+            
+            <center>
+                <a href="#" class="cta-button">Agendar una Llamada</a>
+            </center>
+            
+            <p>También puedes respondernos directamente a este email o contactarnos en {{company_email}}. Estamos aquí para ayudarte.</p>
+            
+            <p>¿Hay algo específico en lo que podamos ayudarte hoy?</p>
+            
+            <p>Quedamos atentos,<br>
+            El equipo de {{company_name}}</p>
+        </div>
+        
+        <div class="footer">
+            <p>Este email es un seguimiento a tu consulta anterior en {{company_name}}.</p>
+            <p>Si prefieres no recibir seguimientos, puedes <a href="{{unsubscribe_link}}">darte de baja aquí</a>.</p>
+            <p>{{company_name}} | {{company_address}}</p>
+        </div>
+    </div>
+</body>
+</html>

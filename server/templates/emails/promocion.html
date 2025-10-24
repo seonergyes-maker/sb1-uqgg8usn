@@ -106,8 +106,8 @@
         </div>
         
         <div class="content">
-            <h2>Hola {{nombre}}, ¡esta es tu oportunidad!</h2>
-            <p>Hemos preparado una oferta especial exclusiva para ti. No dejes pasar esta increíble oportunidad de ahorrar mientras mejoras tus resultados.</p>
+            <h2>Hola {{lead_name}}, ¡esta es tu oportunidad!</h2>
+            <p>En {{company_name}} hemos preparado una oferta especial exclusiva para ti. No dejes pasar esta increíble oportunidad de ahorrar mientras mejoras tus resultados.</p>
             
             <div class="features">
                 <ul>
@@ -125,14 +125,14 @@
             <a href="#" class="cta-button">APROVECHAR OFERTA</a>
             
             <p style="font-size: 14px; color: #6b7280;">Usa el código <strong>SAVE50</strong> al momento de pagar</p>
-            <p>Si tienes alguna pregunta, nuestro equipo está listo para ayudarte.</p>
-            <p>¡No te lo pierdas!<br>El equipo de ventas</p>
+            <p>Si tienes alguna pregunta, escríbenos a {{company_email}}. Nuestro equipo está listo para ayudarte.</p>
+            <p>¡No te lo pierdas!<br>El equipo de {{company_name}}</p>
         </div>
         
         <div class="footer">
-            <p>Esta oferta es exclusiva para ti, {{nombre}}.</p>
+            <p>Esta oferta es exclusiva para ti, {{lead_name}}.</p>
             <p>Si no estás interesado en ofertas especiales, puedes <a href="{{unsubscribe_link}}">darte de baja aquí</a>.</p>
-            <p>© 2025 Tu Empresa. Todos los derechos reservados.</p>
+            <p>{{company_name}} | {{company_address}}</p>
         </div>
     </div>
 </body>

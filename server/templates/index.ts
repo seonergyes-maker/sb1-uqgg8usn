@@ -15,6 +15,52 @@ export interface BaseTemplate {
   filePath: string;
 }
 
+export interface EmailVariable {
+  name: string;
+  variable: string;
+  description: string;
+  example: string;
+}
+
+export const EMAIL_VARIABLES: EmailVariable[] = [
+  {
+    name: 'Nombre del Lead',
+    variable: '{{lead_name}}',
+    description: 'Nombre del contacto',
+    example: 'Juan Pérez',
+  },
+  {
+    name: 'Email del Lead',
+    variable: '{{lead_email}}',
+    description: 'Dirección de email del contacto',
+    example: 'juan@ejemplo.com',
+  },
+  {
+    name: 'Nombre de la Empresa',
+    variable: '{{company_name}}',
+    description: 'Nombre de tu empresa',
+    example: 'Mi Empresa SL',
+  },
+  {
+    name: 'Email de la Empresa',
+    variable: '{{company_email}}',
+    description: 'Email de contacto de tu empresa',
+    example: 'contacto@miempresa.com',
+  },
+  {
+    name: 'Dirección de la Empresa',
+    variable: '{{company_address}}',
+    description: 'Dirección física de tu empresa',
+    example: 'Calle Principal 123, Madrid',
+  },
+  {
+    name: 'Link de Desuscripción',
+    variable: '{{unsubscribe_link}}',
+    description: 'Link para que el usuario se dé de baja (OBLIGATORIO)',
+    example: 'https://tudominio.com/unsubscribe/...',
+  },
+];
+
 export const BASE_TEMPLATES: BaseTemplate[] = [
   {
     id: 'consultoria',
@@ -63,6 +109,14 @@ export const BASE_TEMPLATES: BaseTemplate[] = [
     type: 'Email',
     category: 'Marketing',
     filePath: 'emails/promocion.html',
+  },
+  {
+    id: 'followup',
+    name: 'Email de Seguimiento',
+    description: 'Template profesional para dar seguimiento a consultas y leads. Ideal para nurturing y cerrar ventas.',
+    type: 'Email',
+    category: 'Transaccional',
+    filePath: 'emails/followup.html',
   },
 ];
 

@@ -1206,6 +1206,16 @@ export function registerRoutes(app: Express) {
     try {
       const id = parseInt(req.params.id);
       const validatedData = updateEmailSchema.parse(req.body);
+      
+      // Validate that {{unsubscribe_link}} exists in content if content is being updated
+      if (validatedData.content) {
+        if (!validatedData.content.includes('{{unsubscribe_link}}')) {
+          return res.status(400).json({ 
+            error: "El email debe incluir la variable {{unsubscribe_link}} para cumplir con las normativas. Esta variable es obligatoria." 
+          });
+        }
+      }
+      
       const email = await storage.updateEmail(id, validatedData);
       
       if (!email) {
