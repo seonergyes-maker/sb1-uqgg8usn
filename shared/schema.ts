@@ -526,6 +526,26 @@ export const updateUserSettingsSchema = z.object({
   customDomain: z.string().max(255).optional().nullable(),
 });
 
+// User Profile Schema - for updating basic profile information
+export const updateProfileSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido").max(255).optional(),
+  email: z.string().email("Email inválido").max(255).optional(),
+  company: z.string().max(255).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  location: z.string().max(255).optional().nullable(),
+  avatarUrl: z.string().max(500).optional().nullable(),
+});
+
+// Change Password Schema - for updating password
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "La contraseña actual es requerida"),
+  newPassword: z.string().min(6, "La nueva contraseña debe tener al menos 6 caracteres"),
+  confirmPassword: z.string().min(1, "Debes confirmar la nueva contraseña"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;

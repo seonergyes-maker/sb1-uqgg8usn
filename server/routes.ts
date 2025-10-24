@@ -11,6 +11,8 @@ import {
   updatePaymentSchema,
   updateSettingsSchema,
   updateUserSettingsSchema,
+  updateProfileSchema,
+  changePasswordSchema,
   insertLeadSchema,
   updateLeadSchema,
   insertSegmentSchema,
@@ -560,6 +562,142 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Datos de configuración inválidos", details: error });
       }
       res.status(500).json({ error: "Failed to update user settings" });
+    }
+  });
+
+  // PROFILE ROUTES - Protected
+
+  // GET /api/profile - Get current user profile
+  app.get("/api/profile", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const [profile] = await db.select({
+        id: clients.id,
+        name: clients.name,
+        email: clients.email,
+        company: clients.company,
+        phone: clients.phone,
+        location: clients.location,
+        avatarUrl: clients.avatarUrl,
+        plan: clients.plan,
+        registeredAt: clients.registeredAt,
+      }).from(clients).where(eq(clients.id, userId)).limit(1);
+
+      if (!profile) {
+        return res.status(404).json({ error: "Perfil no encontrado" });
+      }
+
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ error: "Error al obtener el perfil" });
+    }
+  });
+
+  // PATCH /api/profile - Update current user profile
+  app.patch("/api/profile", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const validatedData = updateProfileSchema.parse(req.body);
+
+      // If email is being changed, check if it's not already in use
+      if (validatedData.email) {
+        const [existingUser] = await db.select()
+          .from(clients)
+          .where(eq(clients.email, validatedData.email))
+          .limit(1);
+
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(400).json({ error: "El email ya está en uso" });
+        }
+      }
+
+      // Update profile
+      const [updatedProfile] = await db.update(clients)
+        .set({
+          ...validatedData,
+          updatedAt: new Date(),
+        })
+        .where(eq(clients.id, userId))
+        .returning({
+          id: clients.id,
+          name: clients.name,
+          email: clients.email,
+          company: clients.company,
+          phone: clients.phone,
+          location: clients.location,
+          avatarUrl: clients.avatarUrl,
+          plan: clients.plan,
+        });
+
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Datos de perfil inválidos", details: error });
+      }
+      res.status(500).json({ error: "Error al actualizar el perfil" });
+    }
+  });
+
+  // POST /api/profile/change-password - Change password
+  app.post("/api/profile/change-password", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const validatedData = changePasswordSchema.parse(req.body);
+
+      // Get current user
+      const [user] = await db.select()
+        .from(clients)
+        .where(eq(clients.id, userId))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Verify current password
+      const isPasswordValid = await comparePassword(validatedData.currentPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ error: "La contraseña actual es incorrecta" });
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(validatedData.newPassword);
+
+      // Update password
+      await db.update(clients)
+        .set({
+          password: hashedPassword,
+          updatedAt: new Date(),
+        })
+        .where(eq(clients.id, userId));
+
+      res.json({ message: "Contraseña cambiada correctamente" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Datos de contraseña inválidos", details: error });
+      }
+      res.status(500).json({ error: "Error al cambiar la contraseña" });
     }
   });
 
