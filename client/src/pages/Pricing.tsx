@@ -7,70 +7,87 @@ import { Link } from "wouter";
 
 const plans = [
   {
-    name: "Starter",
+    name: "Free",
     price: "0",
-    contacts: "1.000",
-    emails: "3.000",
+    contacts: "100",
+    emails: "500",
     features: [
-      "1.000 contactos",
-      "3.000 emails/mes (150/día)",
-      "2 landing pages",
-      "1 automatización",
+      "100 contactos",
+      "500 emails/mes",
+      "1 landing page",
+      "2 automatizaciones",
       "Templates base incluidos",
-      "Estadísticas 7 días",
-      "Branding LandFlow"
+      "Estadísticas básicas"
     ],
     popular: false,
     cta: "Comenzar gratis"
   },
   {
-    name: "Essential",
-    price: "15",
-    contacts: "2.500",
-    emails: "10.000",
+    name: "Starter",
+    price: "9.99",
+    contacts: "500",
+    emails: "1.000",
     features: [
-      "2.500 contactos",
-      "10.000 emails/mes",
-      "5 landing pages",
-      "3 automatizaciones",
-      "Sin branding",
-      "Estadísticas 30 días",
+      "500 contactos",
+      "1.000 emails/mes",
+      "2 landing pages",
+      "1 automatización",
+      "Templates base incluidos",
+      "Estadísticas avanzadas",
       "Soporte por email"
     ],
-    popular: false,
+    popular: true,
     cta: "Empezar ahora"
   },
   {
+    name: "Essential",
+    price: "29.99",
+    contacts: "2.000",
+    emails: "5.000",
+    features: [
+      "2.000 contactos",
+      "5.000 emails/mes",
+      "10 landing pages",
+      "5 automatizaciones",
+      "Editor visual avanzado",
+      "Estadísticas en tiempo real",
+      "Soporte prioritario"
+    ],
+    popular: false,
+    cta: "Comenzar prueba"
+  },
+  {
     name: "Professional",
-    price: "49",
+    price: "79.99",
     contacts: "10.000",
-    emails: "50.000",
+    emails: "25.000",
     features: [
       "10.000 contactos",
-      "50.000 emails/mes",
-      "Landings ilimitadas",
-      "10 automatizaciones",
+      "25.000 emails/mes",
+      "50 landing pages",
+      "20 automatizaciones",
       "A/B Testing",
-      "Estadísticas ilimitadas",
+      "Integraciones avanzadas",
       "Soporte prioritario",
       "Webhooks"
     ],
-    popular: true,
+    popular: false,
     cta: "Comenzar prueba"
   },
   {
     name: "Business",
-    price: "99",
-    contacts: "25.000",
-    emails: "150.000",
+    price: "199.99",
+    contacts: "Ilimitados",
+    emails: "100.000",
     features: [
-      "25.000 contactos",
-      "150.000 emails/mes",
-      "Todo ilimitado",
+      "Contactos ilimitados",
+      "100.000 emails/mes",
+      "Landing pages ilimitadas",
+      "Automatizaciones ilimitadas",
+      "Dominio personalizado",
       "API completa",
-      "Subdominios custom",
       "Soporte 24/7",
-      "Account manager"
+      "Account manager dedicado"
     ],
     popular: false,
     cta: "Contactar ventas"
@@ -95,7 +112,7 @@ const Pricing = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto mb-16">
             {plans.map((plan, index) => (
               <Card 
                 key={index}
