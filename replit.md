@@ -62,6 +62,27 @@ The project is structured into a `client/` for the frontend, a `server/` for the
     -   ✅ Estadísticas: Dashboard con métricas agregadas de todos los módulos
     -   ✅ Landings: 5 landing pages con tracking, 9,670 visitas totales, 1,623 conversiones, 15.91% tasa promedio
     -   ✅ Templates: 8 plantillas (5 email, 3 landing), 14,064 usos totales, sistema de variables dinámicas
+-   **Automatizaciones Avanzadas con Builder Visual (✅ Completed - Oct 24, 2025):**
+    -   ✅ **BACKEND:** Schema simplificado - emails solo plantillas, métricas en automation_executions
+    -   ✅ Tabla automation_executions: tracking individual por lead (leadId, automationId, currentStep, status, métricas)
+    -   ✅ PATCH /api/automations/:id con validación: permite cambiar solo status, o editar completo si pausada
+    -   ✅ GET /api/automations/:id/preview: métricas agregadas (total, active, completed, failed, emailsSent, emailsOpened, openRate, bounceRate, unsubscribeRate)
+    -   ✅ **COMPONENT:** AutomationBuilder con selector de triggers y builder de acciones dinámico:
+        -   3 triggers: segment_enter (lead entra a segmento), segment_exit (lead sale), segment_belongs (lead pertenece)
+        -   Selector de segmento asociado al trigger
+        -   Acciones como array JSON: send_email (selector de plantilla) y wait (duración + unidad minutos/horas/días)
+        -   UI con cards numeradas, iconos visuales (Mail, Clock), separadores visuales entre pasos
+        -   Agregar/eliminar acciones, validación de campos requeridos
+    -   ✅ **AUTOMATIONS.TSX:** Integración completa del builder visual:
+        -   Diálogos crear/editar usan AutomationBuilder (trigger, triggerSegmentId, actions callbacks)
+        -   Serialización correcta: actions como JSON.stringify al enviar, JSON.parse al cargar
+        -   Preview Dialog: métricas en grid + flujo visual de acciones con cards
+        -   Validación UX: edición solo si pausada (toast error si activa)
+        -   toggleStatusMutation separada para evitar corrupción de datos (solo envía campo status)
+        -   Formularios simplificados: nombre + descripción + estado, resto desde builder
+    -   ✅ **BUG FIX CRÍTICO:** toggleStatusMutation separada de updateMutation para evitar enviar campos vacíos que corromperían registros
+    -   ✅ **ARQUITECTO REVIEW:** Sistema completo y funcional, flujos crear/activar/pausar/editar/previsualizar/eliminar validados
+    -   📝 **VENTAJAS:** Builder visual intuitivo, validación robusta, métricas en tiempo real, arquitectura limpia separando plantillas de estado
 -   **Templates Base System (✅ Completed - Oct 24, 2025):**
     -   ✅ **MIGRACIÓN ARQUITECTÓNICA:** Templates base movidas de BD a archivos estáticos en `/server/templates/`
     -   ✅ Estructura de carpetas: `/server/templates/landings/` y `/server/templates/emails/`
