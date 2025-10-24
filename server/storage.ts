@@ -182,6 +182,7 @@ export interface IStorage {
     landingsCount: number;
     automationsCount: number;
   }>;
+  updateUsage(clientId: number, updates: { emailsSent?: number; contactsCount?: number; landingsCount?: number; automationsCount?: number }): Promise<void>;
   createUsageTracking(usage: InsertUsageTracking): Promise<UsageTracking>;
   updateUsageTracking(id: number, usage: UpdateUsageTracking): Promise<UsageTracking | undefined>;
   
@@ -1003,6 +1004,18 @@ export class DbStorage implements IStorage {
       landingsCount: allLandings.length,
       automationsCount: allAutomations.length,
     };
+  }
+
+  async updateUsage(clientId: number, updates: { emailsSent?: number; contactsCount?: number; landingsCount?: number; automationsCount?: number }): Promise<void> {
+    // For emailsSent, we update the client table
+    if (updates.emailsSent !== undefined) {
+      await db.update(clients)
+        .set({ emailsSent: updates.emailsSent, updatedAt: new Date() })
+        .where(eq(clients.id, clientId));
+    }
+    
+    // Note: contactsCount, landingsCount, and automationsCount are calculated from actual records,
+    // not stored separately, so we don't need to update them here
   }
 
   async createUsageTracking(usage: InsertUsageTracking): Promise<UsageTracking> {

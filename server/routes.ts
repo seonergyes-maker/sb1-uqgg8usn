@@ -47,6 +47,7 @@ import {
   cancelSubscription,
   PLAN_CONFIGS 
 } from "./paypal-subscriptions.js";
+import { requireLimit, incrementUsage } from "./middleware/limits.js";
 
 export function registerRoutes(app: Express) {
   // AUTH ROUTES - Public
@@ -804,6 +805,55 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // POST /api/user/subscription/change-plan - Change subscription plan
+  app.post("/api/user/subscription/change-plan", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const { newPlan } = req.body;
+      if (!newPlan || !["Starter", "Essential", "Professional", "Business"].includes(newPlan)) {
+        return res.status(400).json({ error: "Plan inválido" });
+      }
+
+      // Get current user
+      const user = await storage.getClientById(clientId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      if (user.plan === newPlan) {
+        return res.status(400).json({ error: "Ya estás en este plan" });
+      }
+
+      // TODO: In production, this should:
+      // 1. Create/Update PayPal subscription with the new plan
+      // 2. Redirect user to PayPal for approval
+      // 3. Update plan after PayPal confirmation
+      // For now, we'll update the plan directly
+
+      // Update user plan
+      await db.update(clients)
+        .set({ 
+          plan: newPlan,
+          updatedAt: new Date()
+        })
+        .where(eq(clients.id, clientId));
+
+      res.json({ 
+        message: "Plan cambiado correctamente",
+        newPlan: newPlan
+      });
+    } catch (error) {
+      console.error("Error changing plan:", error);
+      res.status(500).json({ error: "Error al cambiar el plan" });
+    }
+  });
+
   // POST /api/user/subscription/cancel - Cancel current subscription
   app.post("/api/user/subscription/cancel", requireUser, async (req, res) => {
     try {
@@ -894,11 +944,25 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // POST /api/leads - Create a new lead
-  app.post("/api/leads", async (req, res) => {
+  // POST /api/leads - Create a new lead (protected endpoint for manual lead creation)
+  app.post("/api/leads", requireUser, requireLimit("contacts"), async (req, res) => {
     try {
-      const validatedData = insertLeadSchema.parse(req.body);
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const validatedData = insertLeadSchema.parse({
+        ...req.body,
+        clientId // Ensure clientId is from authenticated user
+      });
+      
       const newLead = await storage.createLead(validatedData);
+      
+      // Note: No need to increment usage as contactsCount is calculated from actual leads count
+      
       res.status(201).json(newLead);
     } catch (error) {
       console.error("Error creating lead:", error);
@@ -1074,10 +1138,24 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/automations - Create a new automation
-  app.post("/api/automations", async (req, res) => {
+  app.post("/api/automations", requireUser, requireLimit("automations"), async (req, res) => {
     try {
-      const validatedData = insertAutomationSchema.parse(req.body);
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const validatedData = insertAutomationSchema.parse({
+        ...req.body,
+        clientId // Ensure clientId is from authenticated user
+      });
+      
       const newAutomation = await storage.createAutomation(validatedData);
+      
+      // Note: No need to increment usage as automationsCount is calculated from actual automations count
+      
       res.status(201).json(newAutomation);
     } catch (error) {
       console.error("Error creating automation:", error);
@@ -1235,9 +1313,19 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/landings - Create a new landing
-  app.post("/api/landings", async (req, res) => {
+  app.post("/api/landings", requireUser, requireLimit("landings"), async (req, res) => {
     try {
-      const validatedData = insertLandingSchema.parse(req.body);
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const validatedData = insertLandingSchema.parse({
+        ...req.body,
+        clientId // Ensure clientId is from authenticated user
+      });
       
       // Use default template from filesystem if no content provided
       let content = validatedData.content;
@@ -1252,6 +1340,9 @@ export function registerRoutes(app: Express) {
       };
       
       const landing = await storage.createLanding(landingData);
+      
+      // Note: No need to increment usage as landingsCount is calculated from actual landings count
+      
       res.status(201).json(landing);
     } catch (error) {
       console.error("Error creating landing:", error);
@@ -1660,8 +1751,15 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/emails/:id/send - Send personalized email to leads
-  app.post("/api/emails/:id/send", requireUser, async (req, res) => {
+  app.post("/api/emails/:id/send", requireUser, requireLimit("emails"), async (req, res) => {
     try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
       const id = parseInt(req.params.id);
       
       // Validate recipients
@@ -1674,6 +1772,29 @@ export function registerRoutes(app: Express) {
       });
       
       const { recipients } = recipientsSchema.parse(req.body);
+      
+      // Get current usage to check if we can send this many emails
+      const usage = await storage.getCurrentUsage(clientId);
+      const user = await storage.getClientById(clientId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+      
+      const planLimit = await storage.getPlanLimitByName(user.plan);
+      if (!planLimit) {
+        return res.status(404).json({ error: "Límites del plan no encontrados" });
+      }
+      
+      // Check if we can send this quantity of emails
+      if (planLimit.maxEmailsPerMonth !== -1 && 
+          (usage.emailsSent + recipients.length) > planLimit.maxEmailsPerMonth) {
+        return res.status(403).json({ 
+          error: `No puedes enviar ${recipients.length} emails. Límite: ${planLimit.maxEmailsPerMonth}, ya enviados: ${usage.emailsSent}`,
+          current: usage.emailsSent,
+          limit: planLimit.maxEmailsPerMonth,
+          requested: recipients.length
+        });
+      }
       
       const email = await storage.getEmailById(id);
       if (!email) {
@@ -1710,6 +1831,9 @@ export function registerRoutes(app: Express) {
         status: "Enviado",
         sentAt: new Date().toISOString(),
       });
+      
+      // Increment emails sent counter
+      await incrementUsage(clientId, "emails", recipients.length);
       
       res.json({
         success: true,
