@@ -5,6 +5,7 @@ import { setupVite, serveStatic } from "./vite";
 import { createServer } from "http";
 
 const app = express();
+app.set('etag', false); // Disable ETags to prevent caching that bypasses middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
