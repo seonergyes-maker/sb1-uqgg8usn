@@ -132,7 +132,7 @@ export interface IStorage {
   updateScheduledTask(id: number, task: UpdateScheduledTask): Promise<ScheduledTask | undefined>;
   deleteScheduledTask(id: number): Promise<boolean>;
   
-  getEmails(clientId: number, filters?: { status?: string; search?: string }): Promise<Email[]>;
+  getEmails(clientId: number, filters?: { status?: string; type?: string; search?: string }): Promise<Email[]>;
   getEmailById(id: number): Promise<Email | undefined>;
   createEmail(email: InsertEmail): Promise<Email>;
   updateEmail(id: number, email: UpdateEmail): Promise<Email | undefined>;
@@ -710,16 +710,19 @@ export class DbStorage implements IStorage {
     return result[0].affectedRows > 0;
   }
 
-  async getEmails(clientId: number, filters?: { status?: string; search?: string }): Promise<Email[]> {
+  async getEmails(clientId: number, filters?: { status?: string; type?: string; search?: string }): Promise<Email[]> {
     const conditions: SQL[] = [eq(emails.clientId, clientId)];
     
     if (filters?.status && filters.status !== 'all') {
       conditions.push(eq(emails.status, filters.status));
     }
     
+    if (filters?.type && filters.type !== 'all') {
+      conditions.push(eq(emails.type, filters.type));
+    }
+    
     if (filters?.search) {
       const searchCondition = or(
-        like(emails.name, `%${filters.search}%`),
         like(emails.subject, `%${filters.search}%`)
       );
       if (searchCondition) {

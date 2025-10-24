@@ -1082,9 +1082,10 @@ export function registerRoutes(app: Express) {
   app.get("/api/emails/:clientId", requireUser, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
-      const { status, search } = req.query;
+      const { status, type, search } = req.query;
       const emails = await storage.getEmails(clientId, {
         status: status as string,
+        type: type as string,
         search: search as string,
       });
       res.json(emails);

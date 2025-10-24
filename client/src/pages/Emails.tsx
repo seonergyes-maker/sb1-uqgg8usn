@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,7 +86,16 @@ export default function Emails() {
   });
 
   const { data: emails = [], isLoading } = useQuery<Email[]>({
-    queryKey: ["/api/emails", clientId, statusFilter],
+    queryKey: ["/api/emails", clientId, statusFilter, typeFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
+      if (typeFilter && typeFilter !== "all") params.append("type", typeFilter);
+      const queryString = params.toString() ? `?${params.toString()}` : "";
+      const response = await fetch(`/api/emails/${clientId}${queryString}`);
+      if (!response.ok) throw new Error("Failed to fetch emails");
+      return response.json();
+    },
     enabled: !!clientId,
   });
 
@@ -103,7 +112,9 @@ export default function Emails() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/emails"
+      });
       setIsCreateDialogOpen(false);
       setNewEmail({ subject: "", content: "", type: "newsletter" });
       toast({
@@ -125,7 +136,9 @@ export default function Emails() {
       return apiRequest(`/api/emails/${data.id}`, "PATCH", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/emails"
+      });
       setIsEditDialogOpen(false);
       setSelectedEmail(null);
       toast({
@@ -147,7 +160,9 @@ export default function Emails() {
       return apiRequest(`/api/emails/${id}`, "DELETE", null);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/emails"
+      });
       setDeleteEmailId(null);
       toast({
         title: "Email eliminado",
@@ -164,10 +179,8 @@ export default function Emails() {
   });
 
   const filteredEmails = emails.filter((email: Email) => {
-    const matchesSearch = email.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || email.status === statusFilter;
-    const matchesType = typeFilter === "all" || email.type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
+    if (!searchTerm) return true;
+    return email.subject.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const stats = {
