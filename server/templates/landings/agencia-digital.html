@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agencia Digital</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .hero { background: #1a202c; color: white; padding: 3rem 1.5rem; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .hero-content { max-width: 600px; text-align: center; }
+    .hero h1 { font-size: 2.25rem; margin-bottom: 1rem; line-height: 1.2; }
+    .hero .highlight { color: #4fd1c5; }
+    .hero p { font-size: 1.125rem; margin-bottom: 2.5rem; color: #cbd5e0; line-height: 1.6; }
+    .services { background: white; padding: 3rem 1.5rem; }
+    .service-grid { display: grid; gap: 1.5rem; }
+    .service-card { background: #f7fafc; padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid #4fd1c5; }
+    .service-card h3 { font-size: 1.25rem; margin-bottom: 0.75rem; color: #1a202c; }
+    .service-card p { color: #718096; line-height: 1.6; }
+    .contact-section { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; padding: 3rem 1.5rem; }
+    .form-wrapper { max-width: 500px; margin: 0 auto; }
+    .form-wrapper h2 { font-size: 2rem; margin-bottom: 0.75rem; text-align: center; }
+    .form-wrapper .subtitle { text-align: center; color: #cbd5e0; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #e2e8f0; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 0.875rem; border: 2px solid #4a5568; background: #2d3748; color: white; border-radius: 0.5rem; font-size: 1rem; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #4fd1c5; }
+    .submit-btn { background: #4fd1c5; color: #1a202c; padding: 1rem 2rem; border: none; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 700; width: 100%; cursor: pointer; transition: all 0.2s; }
+    .submit-btn:hover { background: #38b2ac; transform: translateY(-2px); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .success-message { background: #48bb78; padding: 1rem; border-radius: 0.5rem; text-align: center; margin-top: 1rem; display: none; }
+    .error-message { background: #f56565; padding: 1rem; border-radius: 0.5rem; text-align: center; margin-top: 1rem; display: none; }
+    @media (min-width: 768px) {
+      .hero h1 { font-size: 3.25rem; }
+      .service-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-content">
+      <h1 contenteditable="false">Transformamos Ideas en <span class="highlight">Experiencias Digitales</span></h1>
+      <p contenteditable="false">Diseño web, marketing digital y desarrollo de apps que convierten visitantes en clientes.</p>
+    </div>
+  </div>
+  
+  <div class="services">
+    <div class="service-grid">
+      <div class="service-card">
+        <h3 contenteditable="false">🎨 Diseño Web</h3>
+        <p contenteditable="false">Sitios web modernos, rápidos y optimizados para conversión en cualquier dispositivo.</p>
+      </div>
+      <div class="service-card">
+        <h3 contenteditable="false">📱 Apps Móviles</h3>
+        <p contenteditable="false">Aplicaciones nativas y multiplataforma que tus usuarios amarán usar.</p>
+      </div>
+      <div class="service-card">
+        <h3 contenteditable="false">🚀 Marketing Digital</h3>
+        <p contenteditable="false">Campañas de Google Ads, Meta Ads y SEO que generan resultados reales.</p>
+      </div>
+      <div class="service-card">
+        <h3 contenteditable="false">📊 Analytics</h3>
+        <p contenteditable="false">Medimos todo para optimizar tu inversión y maximizar el ROI.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="contact-section">
+    <div class="form-wrapper">
+      <h2 contenteditable="false">Hablemos de tu Proyecto</h2>
+      <p class="subtitle" contenteditable="false">Respuesta en menos de 24 horas</p>
+      <form id="leadForm">
+        <div class="form-group">
+          <label contenteditable="false">Tu nombre *</label>
+          <input type="text" name="name" required contenteditable="false">
+        </div>
+        <div class="form-group">
+          <label contenteditable="false">Email *</label>
+          <input type="email" name="email" required contenteditable="false">
+        </div>
+        <div class="form-group">
+          <label contenteditable="false">Teléfono</label>
+          <input type="tel" name="phone" contenteditable="false">
+        </div>
+        <div class="form-group">
+          <label contenteditable="false">Cuéntanos sobre tu proyecto</label>
+          <textarea name="message" rows="4" contenteditable="false"></textarea>
+        </div>
+        <button type="submit" class="submit-btn" contenteditable="false">Solicitar Presupuesto</button>
+      </form>
+      <div class="success-message" id="successMessage">¡Mensaje enviado! Nos pondremos en contacto contigo pronto.</div>
+      <div class="error-message" id="errorMessage">Error al enviar. Por favor, intenta nuevamente.</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('leadForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = this.querySelector('.submit-btn');
+      const successMsg = document.getElementById('successMessage');
+      const errorMsg = document.getElementById('errorMessage');
+      
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+      
+      const formData = {
+        clientId: window.LANDING_CLIENT_ID,
+        name: this.name.value,
+        email: this.email.value,
+        phone: this.phone.value,
+        message: this.message.value,
+        source: 'landing-' + window.LANDING_SLUG
+      };
+      
+      try {
+        const response = await fetch('/api/public/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          successMsg.style.display = 'block';
+          this.reset();
+        } else {
+          errorMsg.style.display = 'block';
+        }
+      } catch (error) {
+        errorMsg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Solicitar Presupuesto';
+      }
+    });
+  </script>
+</body>
+</html>
