@@ -500,7 +500,7 @@ export function registerRoutes(app: Express) {
   // USER SETTINGS ROUTES - Protected
 
   // GET /api/user-settings/:clientId - Get user configuration
-  app.get("/api/user-settings/:clientId", requireUser, async (req, res) => {
+  app.get("/api/user-settings/:clientId", authMiddleware, requireUser, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       
@@ -533,7 +533,7 @@ export function registerRoutes(app: Express) {
   });
 
   // PATCH /api/user-settings/:clientId - Update user configuration
-  app.patch("/api/user-settings/:clientId", requireUser, async (req, res) => {
+  app.patch("/api/user-settings/:clientId", authMiddleware, requireUser, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       const validatedData = updateUserSettingsSchema.parse(req.body);
@@ -585,7 +585,7 @@ export function registerRoutes(app: Express) {
   // PROFILE ROUTES - Protected
 
   // GET /api/profile - Get current user profile
-  app.get("/api/profile", requireUser, async (req, res) => {
+  app.get("/api/profile", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const userId = authReq.user?.id;
@@ -618,7 +618,7 @@ export function registerRoutes(app: Express) {
   });
 
   // PATCH /api/profile - Update current user profile
-  app.patch("/api/profile", requireUser, async (req, res) => {
+  app.patch("/api/profile", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const userId = authReq.user?.id;
@@ -670,7 +670,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/profile/change-password - Change password
-  app.post("/api/profile/change-password", requireUser, async (req, res) => {
+  app.post("/api/profile/change-password", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const userId = authReq.user?.id;
@@ -721,7 +721,7 @@ export function registerRoutes(app: Express) {
   // SUBSCRIPTION ROUTES - Protected User Routes
 
   // GET /api/user/subscription - Get current user subscription with PayPal details
-  app.get("/api/user/subscription", requireUser, async (req, res) => {
+  app.get("/api/user/subscription", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -763,7 +763,7 @@ export function registerRoutes(app: Express) {
   });
 
   // GET /api/user/subscription/usage - Get current usage vs limits
-  app.get("/api/user/subscription/usage", requireUser, async (req, res) => {
+  app.get("/api/user/subscription/usage", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -817,7 +817,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/user/subscription/change-plan - Change subscription plan
-  app.post("/api/user/subscription/change-plan", requireUser, async (req, res) => {
+  app.post("/api/user/subscription/change-plan", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -866,7 +866,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/user/subscription/cancel - Cancel current subscription
-  app.post("/api/user/subscription/cancel", requireUser, async (req, res) => {
+  app.post("/api/user/subscription/cancel", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -900,7 +900,7 @@ export function registerRoutes(app: Express) {
   });
 
   // GET /api/user/payments - Get payment history for current user
-  app.get("/api/user/payments", requireUser, async (req, res) => {
+  app.get("/api/user/payments", authMiddleware, requireUser, async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -956,7 +956,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/leads - Create a new lead (protected endpoint for manual lead creation)
-  app.post("/api/leads", requireUser, requireLimit("contacts"), async (req, res) => {
+  app.post("/api/leads", authMiddleware, authMiddleware, requireUser, requireLimit("contacts"), async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -1149,7 +1149,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/automations - Create a new automation
-  app.post("/api/automations", requireUser, requireLimit("automations"), async (req, res) => {
+  app.post("/api/automations", authMiddleware, requireUser, requireLimit("automations"), async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -1324,7 +1324,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/landings - Create a new landing
-  app.post("/api/landings", requireUser, requireLimit("landings"), async (req, res) => {
+  app.post("/api/landings", authMiddleware, requireUser, requireLimit("landings"), async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
@@ -1658,7 +1658,7 @@ export function registerRoutes(app: Express) {
   // EMAILS ROUTES
   
   // GET /api/emails/:clientId - Get all emails for a client
-  app.get("/api/emails/:clientId", requireUser, async (req, res) => {
+  app.get("/api/emails/:clientId", authMiddleware, requireUser, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       const { status, type, search } = req.query;
@@ -1675,7 +1675,7 @@ export function registerRoutes(app: Express) {
   });
 
   // GET /api/emails/:clientId/:id - Get a single email
-  app.get("/api/emails/:clientId/:id", requireUser, async (req, res) => {
+  app.get("/api/emails/:clientId/:id", authMiddleware, requireUser, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const email = await storage.getEmailById(id);
@@ -1692,7 +1692,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/emails - Create a new email
-  app.post("/api/emails", requireUser, async (req, res) => {
+  app.post("/api/emails", authMiddleware, requireUser, async (req, res) => {
     try {
       const validatedData = insertEmailSchema.parse(req.body);
       
@@ -1717,7 +1717,7 @@ export function registerRoutes(app: Express) {
   });
 
   // PATCH /api/emails/:id - Update an email
-  app.patch("/api/emails/:id", requireUser, async (req, res) => {
+  app.patch("/api/emails/:id", authMiddleware, requireUser, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = updateEmailSchema.parse(req.body);
@@ -1745,7 +1745,7 @@ export function registerRoutes(app: Express) {
   });
 
   // DELETE /api/emails/:id - Delete an email
-  app.delete("/api/emails/:id", requireUser, async (req, res) => {
+  app.delete("/api/emails/:id", authMiddleware, requireUser, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteEmail(id);
@@ -1762,7 +1762,7 @@ export function registerRoutes(app: Express) {
   });
 
   // POST /api/emails/:id/send - Send personalized email to leads
-  app.post("/api/emails/:id/send", requireUser, requireLimit("emails"), async (req, res) => {
+  app.post("/api/emails/:id/send", authMiddleware, requireUser, requireLimit("emails"), async (req, res) => {
     try {
       const authReq = req as AuthRequest;
       const clientId = authReq.user?.id;
