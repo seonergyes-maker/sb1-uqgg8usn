@@ -381,11 +381,15 @@ export const insertAutomationSchema = createInsertSchema(automations).omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
+  clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional().nullable(),
   trigger: z.string().min(1, "El trigger es requerido"),
   conditions: z.string().default("{}"),
-  actions: z.string().default("{}"),
+  actions: z.string().default("[]"),
   status: z.string().default("Inactiva"),
+  executionCount: z.number().default(0),
+  successRate: z.string().default("0.00"),
 });
 
 export const updateAutomationSchema = insertAutomationSchema.partial();

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Zap, Pencil, Trash2, MoreVertical, Play, Pause } from "lucide-react";
+import { Plus, Zap, Pencil, Trash2, MoreVertical, Play, Pause, Eye, Mail, Clock, ArrowDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,11 +37,43 @@ import {
 } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertAutomationSchema, type Automation } from "@shared/schema";
+import { type Automation } from "@shared/schema";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
+import { AutomationBuilder } from "@/components/user/AutomationBuilder";
+
+interface AutomationAction {
+  type: 'send_email' | 'wait';
+  emailId?: number;
+  emailName?: string;
+  duration?: number;
+  unit?: 'minutes' | 'hours' | 'days';
+}
+
+const automationFormSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
+  status: z.string().default("Inactiva"),
+});
+
+interface AutomationPreview {
+  automation: Automation;
+  metrics: {
+    total: number;
+    active: number;
+    completed: number;
+    failed: number;
+    emailsSent: number;
+    emailsOpened: number;
+    emailsBounced: number;
+    emailsUnsubscribed: number;
+    bounceRate: string;
+    openRate: string;
+  };
+  flow: AutomationAction[];
+}
 
 const Automations = () => {
   const { toast } = useToast();
@@ -51,8 +83,19 @@ const Automations = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Create form builder states
+  const [createTrigger, setCreateTrigger] = useState("segment_enter");
+  const [createTriggerSegmentId, setCreateTriggerSegmentId] = useState<number | undefined>(undefined);
+  const [createActions, setCreateActions] = useState<AutomationAction[]>([]);
+
+  // Edit form builder states
+  const [editTrigger, setEditTrigger] = useState("segment_enter");
+  const [editTriggerSegmentId, setEditTriggerSegmentId] = useState<number | undefined>(undefined);
+  const [editActions, setEditActions] = useState<AutomationAction[]>([]);
 
   // Fetch automations
   const { data: automations = [], isLoading } = useQuery<Automation[]>({
@@ -67,46 +110,49 @@ const Automations = () => {
     },
   });
 
+  // Fetch preview data
+  const { data: previewData, isLoading: isLoadingPreview } = useQuery<AutomationPreview>({
+    queryKey: ["/api/automations", selectedAutomation?.id, "preview"],
+    queryFn: () => 
+      fetch(`/api/automations/${selectedAutomation?.id}/preview`).then((res) => res.json()),
+    enabled: previewDialogOpen && !!selectedAutomation,
+  });
+
   // Create form
-  const createForm = useForm<z.infer<typeof insertAutomationSchema>>({
-    resolver: zodResolver(insertAutomationSchema),
+  const createForm = useForm<z.infer<typeof automationFormSchema>>({
+    resolver: zodResolver(automationFormSchema),
     defaultValues: {
-      clientId: clientId,
       name: "",
       description: "",
-      trigger: "new_lead",
-      conditions: "{}",
-      actions: "{}",
       status: "Inactiva",
-      executionCount: 0,
-      successRate: "0.00",
     },
   });
 
   // Edit form
-  const editForm = useForm<z.infer<typeof insertAutomationSchema>>({
-    resolver: zodResolver(insertAutomationSchema),
+  const editForm = useForm<z.infer<typeof automationFormSchema>>({
+    resolver: zodResolver(automationFormSchema),
     defaultValues: {
-      clientId: clientId,
       name: "",
       description: "",
-      trigger: "new_lead",
-      conditions: "{}",
-      actions: "{}",
       status: "Inactiva",
-      executionCount: 0,
-      successRate: "0.00",
     },
   });
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof insertAutomationSchema>) => {
-      return await apiRequest("/api/automations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+    mutationFn: async (data: z.infer<typeof automationFormSchema>) => {
+      const payload = {
+        clientId,
+        name: data.name,
+        description: data.description || "",
+        trigger: createTrigger,
+        conditions: JSON.stringify({ segmentId: createTriggerSegmentId }),
+        actions: JSON.stringify(createActions),
+        status: data.status,
+        executionCount: 0,
+        successRate: "0.00",
+      };
+      return await apiRequest("/api/automations", "POST", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/automations", clientId] });
@@ -116,6 +162,8 @@ const Automations = () => {
       });
       setCreateDialogOpen(false);
       createForm.reset();
+      setCreateActions([]);
+      setCreateTriggerSegmentId(undefined);
     },
     onError: () => {
       toast({
@@ -128,12 +176,16 @@ const Automations = () => {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (data: { id: number; updates: Partial<Automation> }) => {
-      return await apiRequest(`/api/automations/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.updates),
-      });
+    mutationFn: async (data: { id: number; updates: z.infer<typeof automationFormSchema> }) => {
+      const payload = {
+        name: data.updates.name,
+        description: data.updates.description || "",
+        trigger: editTrigger,
+        conditions: JSON.stringify({ segmentId: editTriggerSegmentId }),
+        actions: JSON.stringify(editActions),
+        status: data.updates.status,
+      };
+      return await apiRequest(`/api/automations/${data.id}`, "PATCH", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/automations", clientId] });
@@ -143,6 +195,8 @@ const Automations = () => {
       });
       setEditDialogOpen(false);
       setSelectedAutomation(null);
+      setEditActions([]);
+      setEditTriggerSegmentId(undefined);
     },
     onError: () => {
       toast({
@@ -153,12 +207,32 @@ const Automations = () => {
     },
   });
 
+  // Toggle status mutation (separate from update to avoid corrupting data)
+  const toggleStatusMutation = useMutation({
+    mutationFn: async (data: { id: number; status: string }) => {
+      // Only send status field
+      return await apiRequest(`/api/automations/${data.id}`, "PATCH", { status: data.status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/automations", clientId] });
+      toast({
+        title: "Estado actualizado",
+        description: "El estado de la automatización se ha actualizado correctamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la automatización.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/automations/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/automations/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/automations", clientId] });
@@ -179,17 +253,42 @@ const Automations = () => {
   });
 
   const handleEdit = (automation: Automation) => {
+    if (automation.status === "Activa") {
+      toast({
+        title: "Error",
+        description: "Pausa la automatización antes de editarla",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSelectedAutomation(automation);
+    
+    // Parse actions from JSON string
+    let parsedActions: AutomationAction[] = [];
+    try {
+      parsedActions = JSON.parse(automation.actions || "[]");
+    } catch (e) {
+      parsedActions = [];
+    }
+
+    // Parse conditions to get segmentId
+    let segmentId: number | undefined;
+    try {
+      const conditions = JSON.parse(automation.conditions || "{}");
+      segmentId = conditions.segmentId;
+    } catch (e) {
+      segmentId = undefined;
+    }
+
+    setEditTrigger(automation.trigger);
+    setEditTriggerSegmentId(segmentId);
+    setEditActions(parsedActions);
+
     editForm.reset({
-      clientId: automation.clientId,
       name: automation.name,
       description: automation.description || "",
-      trigger: automation.trigger,
-      conditions: automation.conditions,
-      actions: automation.actions,
       status: automation.status,
-      executionCount: automation.executionCount,
-      successRate: automation.successRate?.toString() || "0.00",
     });
     setEditDialogOpen(true);
   };
@@ -199,19 +298,24 @@ const Automations = () => {
     setDeleteDialogOpen(true);
   };
 
+  const handlePreview = (automation: Automation) => {
+    setSelectedAutomation(automation);
+    setPreviewDialogOpen(true);
+  };
+
   const handleToggleStatus = (automation: Automation) => {
     const newStatus = automation.status === "Activa" ? "Inactiva" : "Activa";
-    updateMutation.mutate({
+    toggleStatusMutation.mutate({
       id: automation.id,
-      updates: { status: newStatus },
+      status: newStatus,
     });
   };
 
-  const onCreateSubmit = (data: z.infer<typeof insertAutomationSchema>) => {
+  const onCreateSubmit = (data: z.infer<typeof automationFormSchema>) => {
     createMutation.mutate(data);
   };
 
-  const onEditSubmit = (data: z.infer<typeof insertAutomationSchema>) => {
+  const onEditSubmit = (data: z.infer<typeof automationFormSchema>) => {
     if (!selectedAutomation) return;
     updateMutation.mutate({
       id: selectedAutomation.id,
@@ -229,6 +333,19 @@ const Automations = () => {
         return <Badge variant="outline">Inactiva</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getTriggerLabel = (trigger: string) => {
+    switch (trigger) {
+      case "segment_enter":
+        return "Lead entra al segmento";
+      case "segment_exit":
+        return "Lead sale del segmento";
+      case "segment_belongs":
+        return "Lead pertenece al segmento";
+      default:
+        return trigger;
     }
   };
 
@@ -360,7 +477,9 @@ const Automations = () => {
                       <p className="text-sm text-muted-foreground">{automation.description || "Sin descripción"}</p>
                       <div className="flex items-center gap-2 mt-3">
                         {getStatusBadge(automation.status)}
-                        <span className="text-xs text-muted-foreground">Trigger: {automation.trigger}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {getTriggerLabel(automation.trigger)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -371,6 +490,10 @@ const Automations = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handlePreview(automation)} data-testid={`button-preview-${automation.id}`}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Previsualizar
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleToggleStatus(automation)}>
                         {automation.status === "Activa" ? (
                           <>
@@ -423,15 +546,15 @@ const Automations = () => {
 
       {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Crear automatización</DialogTitle>
             <DialogDescription>
-              Crea una nueva automatización de email
+              Configura el flujo de tu automatización de email
             </DialogDescription>
           </DialogHeader>
           <Form {...createForm}>
-            <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+            <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-6">
               <FormField
                 control={createForm.control}
                 name="name"
@@ -458,30 +581,16 @@ const Automations = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={createForm.control}
-                name="trigger"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trigger (Disparador)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-trigger">
-                          <SelectValue placeholder="Selecciona el trigger" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="new_lead">Nuevo lead</SelectItem>
-                        <SelectItem value="lead_score_change">Cambio en score de lead</SelectItem>
-                        <SelectItem value="campaign_click">Clic en campaña</SelectItem>
-                        <SelectItem value="form_submit">Envío de formulario</SelectItem>
-                        <SelectItem value="inactivity">Inactividad</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+
+              <AutomationBuilder
+                trigger={createTrigger}
+                triggerSegmentId={createTriggerSegmentId}
+                actions={createActions}
+                onTriggerChange={setCreateTrigger}
+                onTriggerSegmentChange={setCreateTriggerSegmentId}
+                onActionsChange={setCreateActions}
               />
+
               <FormField
                 control={createForm.control}
                 name="status"
@@ -528,15 +637,15 @@ const Automations = () => {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar automatización</DialogTitle>
             <DialogDescription>
-              Modifica la información de la automatización
+              Modifica el flujo de tu automatización (solo si está pausada o inactiva)
             </DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6">
               <FormField
                 control={editForm.control}
                 name="name"
@@ -563,30 +672,16 @@ const Automations = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={editForm.control}
-                name="trigger"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trigger (Disparador)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-edit-trigger">
-                          <SelectValue placeholder="Selecciona el trigger" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="new_lead">Nuevo lead</SelectItem>
-                        <SelectItem value="lead_score_change">Cambio en score de lead</SelectItem>
-                        <SelectItem value="campaign_click">Clic en campaña</SelectItem>
-                        <SelectItem value="form_submit">Envío de formulario</SelectItem>
-                        <SelectItem value="inactivity">Inactividad</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+
+              <AutomationBuilder
+                trigger={editTrigger}
+                triggerSegmentId={editTriggerSegmentId}
+                actions={editActions}
+                onTriggerChange={setEditTrigger}
+                onTriggerSegmentChange={setEditTriggerSegmentId}
+                onActionsChange={setEditActions}
               />
+
               <FormField
                 control={editForm.control}
                 name="status"
@@ -614,16 +709,16 @@ const Automations = () => {
                   type="button" 
                   variant="outline" 
                   onClick={() => setEditDialogOpen(false)}
-                  data-testid="button-edit-cancel"
+                  data-testid="button-cancel-edit"
                 >
                   Cancelar
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={updateMutation.isPending}
-                  data-testid="button-edit-submit"
+                  data-testid="button-submit-edit"
                 >
-                  {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+                  {updateMutation.isPending ? "Actualizando..." : "Actualizar automatización"}
                 </Button>
               </DialogFooter>
             </form>
@@ -631,20 +726,156 @@ const Automations = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
+      {/* Preview Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Previsualización: {selectedAutomation?.name}</DialogTitle>
+            <DialogDescription>
+              Visualiza el flujo y las métricas de esta automatización
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isLoadingPreview ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Cargando previsualización...</p>
+            </div>
+          ) : previewData ? (
+            <div className="space-y-6">
+              {/* Metrics Grid */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Métricas de Ejecución</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{previewData.metrics.total}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Activas</p>
+                      <p className="text-2xl font-bold text-green-600">{previewData.metrics.active}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Completadas</p>
+                      <p className="text-2xl font-bold text-blue-600">{previewData.metrics.completed}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Fallidas</p>
+                      <p className="text-2xl font-bold text-red-600">{previewData.metrics.failed}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Emails Enviados</p>
+                      <p className="text-2xl font-bold">{previewData.metrics.emailsSent}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Emails Abiertos</p>
+                      <p className="text-2xl font-bold">{previewData.metrics.emailsOpened}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Tasa Apertura</p>
+                      <p className="text-2xl font-bold text-primary">{previewData.metrics.openRate}%</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border">
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Tasa Rebote</p>
+                      <p className="text-2xl font-bold">{previewData.metrics.bounceRate}%</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Flow Visualization */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Flujo de Automatización</h3>
+                <div className="space-y-3">
+                  {previewData.flow.map((action, index) => (
+                    <div key={index} className="space-y-2">
+                      {index > 0 && (
+                        <div className="flex justify-center">
+                          <ArrowDown className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      
+                      <Card className="border-dashed">
+                        <CardContent className="pt-6">
+                          <div className="flex items-center gap-3">
+                            {action.type === 'send_email' ? (
+                              <>
+                                <div className="bg-primary/10 p-2 rounded-lg">
+                                  <Mail className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">Enviar Email</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {action.emailName || `Email ID: ${action.emailId}`}
+                                  </p>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="bg-yellow-500/10 p-2 rounded-lg">
+                                  <Clock className="h-5 w-5 text-yellow-600" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">Esperar</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {action.duration} {action.unit === 'minutes' ? 'minutos' : action.unit === 'hours' ? 'horas' : 'días'}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No se pudo cargar la previsualización</p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button onClick={() => setPreviewDialogOpen(false)} data-testid="button-close-preview">
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>¿Eliminar automatización?</DialogTitle>
             <DialogDescription>
-              Esta acción no se puede deshacer. La automatización "{selectedAutomation?.name}" será eliminada permanentemente.
+              Esta acción no se puede deshacer. Se eliminará permanentemente la automatización "{selectedAutomation?.name}".
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button 
               variant="outline" 
               onClick={() => setDeleteDialogOpen(false)}
-              data-testid="button-delete-cancel"
+              data-testid="button-cancel-delete"
             >
               Cancelar
             </Button>
@@ -652,7 +883,7 @@ const Automations = () => {
               variant="destructive" 
               onClick={() => selectedAutomation && deleteMutation.mutate(selectedAutomation.id)}
               disabled={deleteMutation.isPending}
-              data-testid="button-delete-confirm"
+              data-testid="button-confirm-delete"
             >
               {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
             </Button>
