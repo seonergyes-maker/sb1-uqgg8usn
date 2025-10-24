@@ -504,15 +504,15 @@ export const insertScheduledTaskSchema = createInsertSchema(scheduledTasks).omit
 
 export const updateScheduledTaskSchema = insertScheduledTaskSchema.partial();
 
-export const insertEmailSchema = createInsertSchema(emails).omit({
+export const insertEmailSchema = createInsertSchema(emails, {
+  name: (schema) => schema.min(1, "El nombre es requerido"),
+  subject: (schema) => schema.min(1, "El asunto es requerido"),
+  content: (schema) => schema.min(1, "El contenido es requerido"),
+  type: (schema) => schema.default("Campaña"),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).extend({
-  name: z.string().min(1, "El nombre es requerido"),
-  subject: z.string().min(1, "El asunto es requerido"),
-  content: z.string().min(1, "El contenido es requerido"),
-  type: z.string().default("Campaña"),
 });
 
 export const updateEmailSchema = insertEmailSchema.partial();

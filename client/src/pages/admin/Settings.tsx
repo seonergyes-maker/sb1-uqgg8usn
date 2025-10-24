@@ -30,10 +30,7 @@ const SettingsPage = () => {
   // Update settings mutation
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: Partial<Settings>) => {
-      return await apiRequest('/api/settings', {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('/api/settings', 'PATCH', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
