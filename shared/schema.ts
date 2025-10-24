@@ -498,6 +498,28 @@ export const insertUnsubscribeSchema = createInsertSchema(unsubscribes).omit({
   reason: z.string().optional().nullable(),
 });
 
+// User Settings Schema - for updating client configuration
+export const updateUserSettingsSchema = z.object({
+  // Email configuration
+  fromName: z.string().optional().nullable(),
+  fromEmail: z.string().email("Email inválido").optional().nullable(),
+  replyTo: z.string().email("Email de respuesta inválido").optional().nullable(),
+  emailSignature: z.string().optional().nullable(),
+  
+  // Notification preferences
+  notifyNewLeads: z.number().min(0).max(1).optional(),
+  notifyCampaigns: z.number().min(0).max(1).optional(),
+  notifyWeekly: z.number().min(0).max(1).optional(),
+  notifyTips: z.number().min(0).max(1).optional(),
+  
+  // Tracking IDs
+  googleAnalyticsId: z.string().max(50).optional().nullable(),
+  metaPixelId: z.string().max(50).optional().nullable(),
+  
+  // Custom domain (Business plan only)
+  customDomain: z.string().max(255).optional().nullable(),
+});
+
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type UpdateClient = z.infer<typeof updateClientSchema>;

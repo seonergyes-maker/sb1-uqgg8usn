@@ -10,6 +10,7 @@ import {
   insertPaymentSchema,
   updatePaymentSchema,
   updateSettingsSchema,
+  updateUserSettingsSchema,
   insertLeadSchema,
   updateLeadSchema,
   insertSegmentSchema,
@@ -474,6 +475,91 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid settings data", details: error });
       }
       res.status(500).json({ error: "Failed to update settings" });
+    }
+  });
+
+  // USER SETTINGS ROUTES - Protected
+
+  // GET /api/user-settings/:clientId - Get user configuration
+  app.get("/api/user-settings/:clientId", requireUser, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      
+      // Get client with configuration fields
+      const [client] = await db.select({
+        fromName: clients.fromName,
+        fromEmail: clients.fromEmail,
+        replyTo: clients.replyTo,
+        emailSignature: clients.emailSignature,
+        notifyNewLeads: clients.notifyNewLeads,
+        notifyCampaigns: clients.notifyCampaigns,
+        notifyWeekly: clients.notifyWeekly,
+        notifyTips: clients.notifyTips,
+        googleAnalyticsId: clients.googleAnalyticsId,
+        metaPixelId: clients.metaPixelId,
+        customDomain: clients.customDomain,
+        domainVerified: clients.domainVerified,
+        plan: clients.plan,
+      }).from(clients).where(eq(clients.id, clientId)).limit(1);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+      
+      res.json(client);
+    } catch (error) {
+      console.error("Error fetching user settings:", error);
+      res.status(500).json({ error: "Failed to fetch user settings" });
+    }
+  });
+
+  // PATCH /api/user-settings/:clientId - Update user configuration
+  app.patch("/api/user-settings/:clientId", requireUser, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const validatedData = updateUserSettingsSchema.parse(req.body);
+      
+      // Check if client exists
+      const [existingClient] = await db.select().from(clients).where(eq(clients.id, clientId)).limit(1);
+      if (!existingClient) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+      
+      // Validate custom domain is only for Business plan
+      if (validatedData.customDomain && existingClient.plan !== 'Business') {
+        return res.status(403).json({ error: "El dominio personalizado solo está disponible para el plan Business" });
+      }
+      
+      // Update client configuration
+      const [updatedClient] = await db.update(clients)
+        .set({
+          ...validatedData,
+          updatedAt: new Date(),
+        })
+        .where(eq(clients.id, clientId))
+        .returning({
+          fromName: clients.fromName,
+          fromEmail: clients.fromEmail,
+          replyTo: clients.replyTo,
+          emailSignature: clients.emailSignature,
+          notifyNewLeads: clients.notifyNewLeads,
+          notifyCampaigns: clients.notifyCampaigns,
+          notifyWeekly: clients.notifyWeekly,
+          notifyTips: clients.notifyTips,
+          googleAnalyticsId: clients.googleAnalyticsId,
+          metaPixelId: clients.metaPixelId,
+          customDomain: clients.customDomain,
+          domainVerified: clients.domainVerified,
+          plan: clients.plan,
+        });
+      
+      res.json(updatedClient);
+    } catch (error) {
+      console.error("Error updating user settings:", error);
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ error: "Datos de configuración inválidos", details: error });
+      }
+      res.status(500).json({ error: "Failed to update user settings" });
     }
   });
 
