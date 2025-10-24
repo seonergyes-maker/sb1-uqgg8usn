@@ -19,6 +19,9 @@ import {
   updateLandingSchema,
   insertTemplateSchema,
   updateTemplateSchema,
+  insertEmailSchema,
+  updateEmailSchema,
+  insertUnsubscribeSchema,
   registerSchema,
   loginSchema
 } from "../shared/schema.js";
@@ -1070,6 +1073,120 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error creating public lead:", error);
       res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
+  // EMAILS ROUTES
+  
+  // GET /api/emails/:clientId - Get all emails for a client
+  app.get("/api/emails/:clientId", requireUser, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const { status, search } = req.query;
+      const emails = await storage.getEmails(clientId, {
+        status: status as string,
+        search: search as string,
+      });
+      res.json(emails);
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+      res.status(500).json({ error: "Failed to fetch emails" });
+    }
+  });
+
+  // GET /api/emails/:clientId/:id - Get a single email
+  app.get("/api/emails/:clientId/:id", requireUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const email = await storage.getEmailById(id);
+      
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+      
+      res.json(email);
+    } catch (error) {
+      console.error("Error fetching email:", error);
+      res.status(500).json({ error: "Failed to fetch email" });
+    }
+  });
+
+  // POST /api/emails - Create a new email
+  app.post("/api/emails", requireUser, async (req, res) => {
+    try {
+      const validatedData = insertEmailSchema.parse(req.body);
+      
+      // Use default template from filesystem if no content provided
+      let content = validatedData.content;
+      if (!content) {
+        const { loadTemplateContent } = await import('./templates/index');
+        content = loadTemplateContent('bienvenida'); // Default to bienvenida template
+      }
+      
+      const emailData = {
+        ...validatedData,
+        content
+      };
+      
+      const email = await storage.createEmail(emailData);
+      res.status(201).json(email);
+    } catch (error) {
+      console.error("Error creating email:", error);
+      res.status(400).json({ error: "Failed to create email" });
+    }
+  });
+
+  // PATCH /api/emails/:id - Update an email
+  app.patch("/api/emails/:id", requireUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = updateEmailSchema.parse(req.body);
+      const email = await storage.updateEmail(id, validatedData);
+      
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+      
+      res.json(email);
+    } catch (error) {
+      console.error("Error updating email:", error);
+      res.status(400).json({ error: "Failed to update email" });
+    }
+  });
+
+  // DELETE /api/emails/:id - Delete an email
+  app.delete("/api/emails/:id", requireUser, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteEmail(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting email:", error);
+      res.status(500).json({ error: "Failed to delete email" });
+    }
+  });
+
+  // POST /api/public/unsubscribe - Unsubscribe from emails (no auth required)
+  app.post("/api/public/unsubscribe", async (req, res) => {
+    try {
+      const validatedData = insertUnsubscribeSchema.parse(req.body);
+      
+      // Check if already unsubscribed
+      const existing = await storage.getUnsubscribeByEmail(validatedData.email, validatedData.clientId);
+      if (existing) {
+        return res.json({ success: true, message: "Already unsubscribed" });
+      }
+      
+      await storage.createUnsubscribe(validatedData);
+      res.json({ success: true, message: "Successfully unsubscribed" });
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      res.status(500).json({ error: "Failed to unsubscribe" });
     }
   });
 }
