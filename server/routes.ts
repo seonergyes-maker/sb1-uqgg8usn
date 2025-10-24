@@ -42,6 +42,11 @@ import {
 import { db } from "./db.js";
 import { clients } from "../shared/schema.js";
 import { eq } from "drizzle-orm";
+import { 
+  getSubscriptionDetails, 
+  cancelSubscription,
+  PLAN_CONFIGS 
+} from "./paypal-subscriptions.js";
 
 export function registerRoutes(app: Express) {
   // AUTH ROUTES - Public
@@ -698,6 +703,156 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Datos de contraseña inválidos", details: error });
       }
       res.status(500).json({ error: "Error al cambiar la contraseña" });
+    }
+  });
+
+  // SUBSCRIPTION ROUTES - Protected User Routes
+
+  // GET /api/user/subscription - Get current user subscription with PayPal details
+  app.get("/api/user/subscription", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      // Get subscription from database
+      const subscription = await storage.getClientSubscription(clientId);
+      
+      if (!subscription) {
+        return res.status(404).json({ error: "No se encontró suscripción activa" });
+      }
+
+      // If there's a PayPal subscription ID, get details from PayPal
+      let paypalDetails = null;
+      if (subscription.paypalSubscriptionId) {
+        try {
+          paypalDetails = await getSubscriptionDetails(subscription.paypalSubscriptionId);
+        } catch (error) {
+          console.error("Error fetching PayPal subscription details:", error);
+          // If it's a credentials error, return 500
+          if (error instanceof Error && error.message.includes('PayPal credentials not configured')) {
+            return res.status(500).json({ error: "PayPal no está configurado. Contacta al administrador." });
+          }
+          // For other errors, log but continue without PayPal details
+        }
+      }
+
+      res.json({
+        ...subscription,
+        paypalDetails
+      });
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      res.status(500).json({ error: "Error al obtener la suscripción" });
+    }
+  });
+
+  // GET /api/user/subscription/usage - Get current usage vs limits
+  app.get("/api/user/subscription/usage", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      // Get current user
+      const user = await storage.getClientById(clientId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Get plan limits
+      const planLimit = await storage.getPlanLimitByName(user.plan);
+      if (!planLimit) {
+        return res.status(404).json({ error: "Límites del plan no encontrados" });
+      }
+
+      // Get current usage
+      const usage = await storage.getCurrentUsage(clientId);
+
+      res.json({
+        plan: user.plan,
+        limits: {
+          maxContacts: planLimit.maxContacts,
+          maxEmailsPerMonth: planLimit.maxEmailsPerMonth,
+          maxLandingPages: planLimit.maxLandingPages,
+          maxAutomations: planLimit.maxAutomations,
+          customDomainAllowed: planLimit.customDomainAllowed,
+          prioritySupport: planLimit.prioritySupport,
+        },
+        usage: {
+          contactsCount: usage.contactsCount,
+          emailsSent: usage.emailsSent,
+          landingsCount: usage.landingsCount,
+          automationsCount: usage.automationsCount,
+        },
+        percentages: {
+          contacts: planLimit.maxContacts > 0 ? (usage.contactsCount / planLimit.maxContacts) * 100 : 0,
+          emails: planLimit.maxEmailsPerMonth > 0 ? (usage.emailsSent / planLimit.maxEmailsPerMonth) * 100 : 0,
+          landings: planLimit.maxLandingPages > 0 ? (usage.landingsCount / planLimit.maxLandingPages) * 100 : 0,
+          automations: planLimit.maxAutomations > 0 ? (usage.automationsCount / planLimit.maxAutomations) * 100 : 0,
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching usage:", error);
+      res.status(500).json({ error: "Error al obtener el uso" });
+    }
+  });
+
+  // POST /api/user/subscription/cancel - Cancel current subscription
+  app.post("/api/user/subscription/cancel", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const subscription = await storage.getClientSubscription(clientId);
+      if (!subscription) {
+        return res.status(404).json({ error: "No se encontró suscripción activa" });
+      }
+
+      if (!subscription.paypalSubscriptionId) {
+        return res.status(400).json({ error: "No hay suscripción de PayPal para cancelar" });
+      }
+
+      // Cancel in PayPal
+      await cancelSubscription(subscription.paypalSubscriptionId, req.body.reason || "Usuario solicitó cancelación");
+
+      // Update subscription status in database
+      await storage.updateSubscription(subscription.id, {
+        status: "cancelled"
+      });
+
+      res.json({ message: "Suscripción cancelada correctamente. Se mantendrá activa hasta el fin del ciclo actual." });
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ error: "Error al cancelar la suscripción" });
+    }
+  });
+
+  // GET /api/user/payments - Get payment history for current user
+  app.get("/api/user/payments", requireUser, async (req, res) => {
+    try {
+      const authReq = req as AuthRequest;
+      const clientId = authReq.user?.id;
+
+      if (!clientId) {
+        return res.status(401).json({ error: "No autorizado" });
+      }
+
+      const payments = await storage.getPaymentHistory(clientId);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      res.status(500).json({ error: "Error al obtener el historial de pagos" });
     }
   });
 
@@ -1667,6 +1822,162 @@ export function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Error unsubscribing:", error);
       res.status(500).json({ error: "Failed to unsubscribe" });
+    }
+  });
+
+  // PAYPAL WEBHOOK - Public endpoint for PayPal to send events
+  app.post("/api/webhooks/paypal", async (req, res) => {
+    try {
+      const event = req.body;
+      
+      console.log("PayPal webhook received:", event.event_type);
+
+      // Handle different event types
+      switch (event.event_type) {
+        case "BILLING.SUBSCRIPTION.ACTIVATED": {
+          // Subscription was activated
+          const subscriptionId = event.resource.id;
+          const customId = event.resource.custom_id; // We'll use this to store clientId
+          
+          if (customId) {
+            const clientId = parseInt(customId);
+            
+            // Update subscription in database
+            const subscription = await storage.getClientSubscription(clientId);
+            if (subscription) {
+              await storage.updateSubscription(subscription.id, {
+                paypalSubscriptionId: subscriptionId,
+                status: "active",
+                billingCycleAnchor: new Date(event.resource.billing_info.next_billing_time)
+              });
+            }
+          }
+          break;
+        }
+
+        case "PAYMENT.SALE.COMPLETED": {
+          // Payment was completed successfully
+          const subscriptionId = event.resource.billing_agreement_id;
+          const amount = event.resource.amount.total;
+          const currency = event.resource.amount.currency;
+          const transactionId = event.resource.id;
+          
+          // Find subscription by PayPal subscription ID
+          const subscriptions = await storage.getSubscriptions({});
+          const subscription = subscriptions.find(s => s.paypalSubscriptionId === subscriptionId);
+          
+          if (subscription) {
+            // Create payment record
+            await storage.createPayment({
+              clientId: subscription.clientId,
+              subscriptionId: subscription.id,
+              amount: amount,
+              currency: currency,
+              paymentMethod: "PayPal",
+              paymentStatus: "completed",
+              transactionId: transactionId,
+              description: `Pago mensual de suscripción - Plan ${subscription.plan}`,
+              metadata: JSON.stringify(event.resource)
+            });
+
+            // Update billing dates
+            await storage.updateSubscription(subscription.id, {
+              lastBillingDate: new Date(),
+              nextBilling: new Date(event.resource.billing_info?.next_billing_time || Date.now() + 30 * 24 * 60 * 60 * 1000)
+            });
+
+            // Reset monthly email counter
+            const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+            
+            // Save current usage to history
+            const client = await storage.getClientById(subscription.clientId);
+            if (client) {
+              const currentUsage = await storage.getCurrentUsage(subscription.clientId);
+              
+              await storage.createUsageTracking({
+                clientId: subscription.clientId,
+                month: currentMonth,
+                emailsSent: currentUsage.emailsSent,
+                contactsCount: currentUsage.contactsCount,
+                landingsCount: currentUsage.landingsCount,
+                automationsCount: currentUsage.automationsCount
+              });
+
+              // Reset email counter for new billing cycle
+              await storage.updateClient(subscription.clientId, {
+                emailsSent: 0
+              });
+            }
+          }
+          break;
+        }
+
+        case "BILLING.SUBSCRIPTION.CANCELLED": {
+          // Subscription was cancelled
+          const subscriptionId = event.resource.id;
+          
+          const subscriptions = await storage.getSubscriptions({});
+          const subscription = subscriptions.find(s => s.paypalSubscriptionId === subscriptionId);
+          
+          if (subscription) {
+            await storage.updateSubscription(subscription.id, {
+              status: "cancelled"
+            });
+
+            // Update client plan to Starter (free plan)
+            await storage.updateClient(subscription.clientId, {
+              plan: "Starter",
+              status: "active"
+            });
+          }
+          break;
+        }
+
+        case "BILLING.SUBSCRIPTION.SUSPENDED": {
+          // Subscription was suspended (e.g., payment failed)
+          const subscriptionId = event.resource.id;
+          
+          const subscriptions = await storage.getSubscriptions({});
+          const subscription = subscriptions.find(s => s.paypalSubscriptionId === subscriptionId);
+          
+          if (subscription) {
+            await storage.updateSubscription(subscription.id, {
+              status: "suspended"
+            });
+
+            await storage.updateClient(subscription.clientId, {
+              status: "suspended"
+            });
+          }
+          break;
+        }
+
+        case "BILLING.SUBSCRIPTION.EXPIRED": {
+          // Subscription expired
+          const subscriptionId = event.resource.id;
+          
+          const subscriptions = await storage.getSubscriptions({});
+          const subscription = subscriptions.find(s => s.paypalSubscriptionId === subscriptionId);
+          
+          if (subscription) {
+            await storage.updateSubscription(subscription.id, {
+              status: "expired"
+            });
+
+            // Downgrade to Starter plan
+            await storage.updateClient(subscription.clientId, {
+              plan: "Starter",
+              status: "active"
+            });
+          }
+          break;
+        }
+      }
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("Error processing PayPal webhook:", error);
+      res.status(500).json({ error: "Failed to process webhook" });
     }
   });
 }

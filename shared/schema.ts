@@ -53,6 +53,10 @@ export const subscriptions = mysqlTable("subscriptions", {
   status: varchar("status", { length: 50 }).notNull().default("active"),
   startDate: date("start_date").notNull(),
   nextBilling: date("next_billing"),
+  paypalSubscriptionId: varchar("paypal_subscription_id", { length: 255 }),
+  paypalPlanId: varchar("paypal_plan_id", { length: 255 }),
+  billingCycleAnchor: date("billing_cycle_anchor"),
+  lastBillingDate: date("last_billing_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -224,6 +228,28 @@ export const unsubscribes = mysqlTable("unsubscribes", {
   unsubscribedAt: timestamp("unsubscribed_at").notNull().defaultNow(),
 });
 
+export const planLimits = mysqlTable("plan_limits", {
+  id: int("id").primaryKey().autoincrement(),
+  planName: varchar("plan_name", { length: 50 }).notNull().unique(),
+  maxContacts: int("max_contacts").notNull(),
+  maxEmailsPerMonth: int("max_emails_per_month").notNull(),
+  maxLandingPages: int("max_landing_pages").notNull(),
+  maxAutomations: int("max_automations").notNull(),
+  customDomainAllowed: int("custom_domain_allowed").notNull().default(0),
+  prioritySupport: int("priority_support").notNull().default(0),
+});
+
+export const usageTracking = mysqlTable("usage_tracking", {
+  id: int("id").primaryKey().autoincrement(),
+  clientId: int("client_id").notNull(),
+  month: varchar("month", { length: 7 }).notNull(),
+  emailsSent: int("emails_sent").notNull().default(0),
+  contactsCount: int("contacts_count").notNull().default(0),
+  landingsCount: int("landings_count").notNull().default(0),
+  automationsCount: int("automations_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const clientsRelations = relations(clients, ({ many }) => ({
   subscriptions: many(subscriptions),
   payments: many(payments),
@@ -236,6 +262,14 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   emails: many(emails),
   unsubscribes: many(unsubscribes),
   automationExecutions: many(automationExecutions),
+  usageTracking: many(usageTracking),
+}));
+
+export const usageTrackingRelations = relations(usageTracking, ({ one }) => ({
+  client: one(clients, {
+    fields: [usageTracking.clientId],
+    references: [clients.id],
+  }),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -504,6 +538,19 @@ export const insertUnsubscribeSchema = createInsertSchema(unsubscribes).omit({
   reason: z.string().optional().nullable(),
 });
 
+export const insertPlanLimitSchema = createInsertSchema(planLimits).omit({
+  id: true,
+});
+
+export const updatePlanLimitSchema = insertPlanLimitSchema.partial();
+
+export const insertUsageTrackingSchema = createInsertSchema(usageTracking).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateUsageTrackingSchema = insertUsageTrackingSchema.partial();
+
 // User Settings Schema - for updating client configuration
 export const updateUserSettingsSchema = z.object({
   // Email configuration
@@ -596,3 +643,11 @@ export type UpdateAutomationExecution = z.infer<typeof updateAutomationExecution
 
 export type Unsubscribe = typeof unsubscribes.$inferSelect;
 export type InsertUnsubscribe = z.infer<typeof insertUnsubscribeSchema>;
+
+export type PlanLimit = typeof planLimits.$inferSelect;
+export type InsertPlanLimit = z.infer<typeof insertPlanLimitSchema>;
+export type UpdatePlanLimit = z.infer<typeof updatePlanLimitSchema>;
+
+export type UsageTracking = typeof usageTracking.$inferSelect;
+export type InsertUsageTracking = z.infer<typeof insertUsageTrackingSchema>;
+export type UpdateUsageTracking = z.infer<typeof updateUsageTrackingSchema>;

@@ -14,6 +14,8 @@ import {
   scheduledTasks,
   emails,
   unsubscribes,
+  planLimits,
+  usageTracking,
   type Client, 
   type InsertClient, 
   type UpdateClient,
@@ -51,7 +53,13 @@ import {
   type InsertEmail,
   type UpdateEmail,
   type Unsubscribe,
-  type InsertUnsubscribe
+  type InsertUnsubscribe,
+  type PlanLimit,
+  type InsertPlanLimit,
+  type UpdatePlanLimit,
+  type UsageTracking,
+  type InsertUsageTracking,
+  type UpdateUsageTracking
 } from "../shared/schema.js";
 
 export interface DashboardStats {
@@ -161,6 +169,24 @@ export interface IStorage {
     emailsBounced: number;
     emailsUnsubscribed: number;
   }>;
+  
+  getPlanLimits(): Promise<PlanLimit[]>;
+  getPlanLimitByName(planName: string): Promise<PlanLimit | undefined>;
+  createPlanLimit(limit: InsertPlanLimit): Promise<PlanLimit>;
+  updatePlanLimit(id: number, limit: UpdatePlanLimit): Promise<PlanLimit | undefined>;
+  
+  getUsageTracking(clientId: number, month?: string): Promise<UsageTracking[]>;
+  getCurrentUsage(clientId: number): Promise<{
+    emailsSent: number;
+    contactsCount: number;
+    landingsCount: number;
+    automationsCount: number;
+  }>;
+  createUsageTracking(usage: InsertUsageTracking): Promise<UsageTracking>;
+  updateUsageTracking(id: number, usage: UpdateUsageTracking): Promise<UsageTracking | undefined>;
+  
+  getClientSubscription(clientId: number): Promise<Subscription | undefined>;
+  getPaymentHistory(clientId: number): Promise<Payment[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -921,6 +947,91 @@ export class DbStorage implements IStorage {
       totalExecutions,
       avgSuccessRate,
     };
+  }
+
+  async getPlanLimits(): Promise<PlanLimit[]> {
+    return await db.select().from(planLimits);
+  }
+
+  async getPlanLimitByName(planName: string): Promise<PlanLimit | undefined> {
+    const results = await db.select().from(planLimits).where(eq(planLimits.planName, planName));
+    return results[0];
+  }
+
+  async createPlanLimit(limit: InsertPlanLimit): Promise<PlanLimit> {
+    const result = await db.insert(planLimits).values(limit);
+    const insertedId = Number(result[0].insertId);
+    const newLimit = await db.select().from(planLimits).where(eq(planLimits.id, insertedId));
+    if (!newLimit[0]) {
+      throw new Error("Failed to create plan limit");
+    }
+    return newLimit[0];
+  }
+
+  async updatePlanLimit(id: number, limit: UpdatePlanLimit): Promise<PlanLimit | undefined> {
+    await db.update(planLimits).set(limit).where(eq(planLimits.id, id));
+    const updated = await db.select().from(planLimits).where(eq(planLimits.id, id));
+    return updated[0];
+  }
+
+  async getUsageTracking(clientId: number, month?: string): Promise<UsageTracking[]> {
+    if (month) {
+      return await db.select().from(usageTracking)
+        .where(and(eq(usageTracking.clientId, clientId), eq(usageTracking.month, month)));
+    }
+    return await db.select().from(usageTracking).where(eq(usageTracking.clientId, clientId));
+  }
+
+  async getCurrentUsage(clientId: number): Promise<{
+    emailsSent: number;
+    contactsCount: number;
+    landingsCount: number;
+    automationsCount: number;
+  }> {
+    const client = await this.getClientById(clientId);
+    if (!client) {
+      return { emailsSent: 0, contactsCount: 0, landingsCount: 0, automationsCount: 0 };
+    }
+
+    const allLeads = await db.select().from(leads).where(eq(leads.clientId, clientId));
+    const allLandings = await db.select().from(landings).where(eq(landings.clientId, clientId));
+    const allAutomations = await db.select().from(automations).where(eq(automations.clientId, clientId));
+
+    return {
+      emailsSent: client.emailsSent || 0,
+      contactsCount: allLeads.length,
+      landingsCount: allLandings.length,
+      automationsCount: allAutomations.length,
+    };
+  }
+
+  async createUsageTracking(usage: InsertUsageTracking): Promise<UsageTracking> {
+    const result = await db.insert(usageTracking).values(usage);
+    const insertedId = Number(result[0].insertId);
+    const newUsage = await db.select().from(usageTracking).where(eq(usageTracking.id, insertedId));
+    if (!newUsage[0]) {
+      throw new Error("Failed to create usage tracking");
+    }
+    return newUsage[0];
+  }
+
+  async updateUsageTracking(id: number, usage: UpdateUsageTracking): Promise<UsageTracking | undefined> {
+    await db.update(usageTracking).set(usage).where(eq(usageTracking.id, id));
+    const updated = await db.select().from(usageTracking).where(eq(usageTracking.id, id));
+    return updated[0];
+  }
+
+  async getClientSubscription(clientId: number): Promise<Subscription | undefined> {
+    const results = await db.select().from(subscriptions)
+      .where(eq(subscriptions.clientId, clientId))
+      .orderBy(subscriptions.createdAt);
+    return results[results.length - 1];
+  }
+
+  async getPaymentHistory(clientId: number): Promise<Payment[]> {
+    return await db.select().from(payments)
+      .where(eq(payments.clientId, clientId))
+      .orderBy(payments.createdAt);
   }
 }
 
