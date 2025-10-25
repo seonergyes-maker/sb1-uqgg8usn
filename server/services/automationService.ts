@@ -104,7 +104,8 @@ class AutomationService {
         }
       }];
 
-      const results = await emailService.sendBulkEmails(recipients, email.subject, email.content);
+      // Use lead's client SMTP configuration for multi-tenant support
+      const results = await emailService.sendBulkEmails(recipients, email.subject, email.content, lead.clientId);
       
       const successCount = results.filter(r => r.status === 'sent').length;
       console.log(`✅ Email de automatización enviado: ${email.name} → ${lead.email}`);

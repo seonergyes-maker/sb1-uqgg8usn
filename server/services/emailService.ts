@@ -8,23 +8,38 @@ interface EmailOptions {
   html: string;
   from?: string;
   replyTo?: string;
+  clientId?: number; // User ID for multi-tenant SMTP
 }
 
 class EmailService {
-  private transporter: Transporter | null = null;
-  private config: any = null;
+  private transporterCache: Map<number | string, Transporter> = new Map();
+  private configCache: Map<number | string, any> = new Map();
 
-  async loadSMTPConfig() {
+  async loadSMTPConfig(clientId?: number) {
     try {
-      const settings = await storage.getSettings();
-      
-      if (!settings || !settings.smtpHost || !settings.smtpPort || !settings.smtpUser || !settings.smtpPassword) {
-        throw new Error('Configuración SMTP incompleta. Por favor configura el servidor SMTP en Admin > Configuración');
+      const cacheKey = clientId || 'admin';
+      let settings;
+
+      if (clientId) {
+        // Load user-specific SMTP config from clients table
+        const client = await storage.getClientById(clientId);
+        
+        if (!client || !client.smtpHost || !client.smtpPort || !client.smtpUser || !client.smtpPassword) {
+          throw new Error('Configuración SMTP incompleta. Por favor configura tu servidor SMTP en Configuración');
+        }
+        settings = client;
+      } else {
+        // Load admin SMTP config (backward compatibility)
+        settings = await storage.getSettings();
+        
+        if (!settings || !settings.smtpHost || !settings.smtpPort || !settings.smtpUser || !settings.smtpPassword) {
+          throw new Error('Configuración SMTP incompleta. Por favor configura el servidor SMTP en Admin > Configuración');
+        }
       }
 
-      this.config = settings;
+      this.configCache.set(cacheKey, settings);
       
-      this.transporter = nodemailer.createTransport({
+      const transporter = nodemailer.createTransport({
         host: settings.smtpHost,
         port: settings.smtpPort,
         secure: settings.smtpPort === 465,
@@ -34,38 +49,43 @@ class EmailService {
         },
       });
 
-      await this.transporter.verify();
-      console.log('✅ SMTP configurado correctamente');
+      await transporter.verify();
+      this.transporterCache.set(cacheKey, transporter);
+      console.log(`✅ SMTP configurado correctamente para: ${cacheKey}`);
       
       return true;
     } catch (error) {
       console.error('❌ Error configurando SMTP:', error);
-      this.transporter = null;
       throw error;
     }
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
-    if (!this.transporter) {
-      await this.loadSMTPConfig();
+    const cacheKey = options.clientId || 'admin';
+    let transporter = this.transporterCache.get(cacheKey);
+    
+    if (!transporter) {
+      await this.loadSMTPConfig(options.clientId);
+      transporter = this.transporterCache.get(cacheKey);
     }
 
-    if (!this.transporter) {
+    if (!transporter) {
       throw new Error('No se pudo configurar el servicio de email');
     }
 
-    const fromAddress = options.from || this.config?.fromEmail || this.config?.smtpUser;
-    const fromName = this.config?.fromName || 'LandFlow';
+    const config = this.configCache.get(cacheKey);
+    const fromAddress = options.from || config?.fromEmail || config?.smtpUser;
+    const fromName = config?.fromName || 'LandFlow';
 
     const mailOptions = {
       from: `"${fromName}" <${fromAddress}>`,
       to: options.to,
-      replyTo: options.replyTo || this.config?.replyToEmail || fromAddress,
+      replyTo: options.replyTo || config?.replyTo || config?.replyToEmail || fromAddress,
       subject: options.subject,
       html: options.html,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
   }
 
   personalizeContent(content: string, variables: Record<string, any>): string {
@@ -79,7 +99,7 @@ class EmailService {
     return personalizedContent;
   }
 
-  async sendBulkEmails(recipients: Array<{ email: string; variables?: Record<string, any> }>, subject: string, content: string): Promise<Array<{ email: string; status: string; error?: string }>> {
+  async sendBulkEmails(recipients: Array<{ email: string; variables?: Record<string, any> }>, subject: string, content: string, clientId?: number): Promise<Array<{ email: string; status: string; error?: string }>> {
     const results = [];
 
     for (const recipient of recipients) {
@@ -97,6 +117,7 @@ class EmailService {
           to: recipient.email,
           subject: personalizedSubject,
           html: personalizedContent,
+          clientId,
         });
 
         results.push({
@@ -119,9 +140,9 @@ class EmailService {
     return results;
   }
 
-  async testConnection(): Promise<boolean> {
+  async testConnection(clientId?: number): Promise<boolean> {
     try {
-      await this.loadSMTPConfig();
+      await this.loadSMTPConfig(clientId);
       return true;
     } catch {
       return false;

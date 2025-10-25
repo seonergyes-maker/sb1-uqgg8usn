@@ -1925,7 +1925,8 @@ export function registerRoutes(app: Express) {
         }
       }));
       
-      const results = await emailService.sendBulkEmails(recipientsData, email.subject, email.content);
+      // Use user's SMTP configuration for multi-tenant support
+      const results = await emailService.sendBulkEmails(recipientsData, email.subject, email.content, clientId);
       
       // Update email statistics
       await storage.updateEmail(id, {
