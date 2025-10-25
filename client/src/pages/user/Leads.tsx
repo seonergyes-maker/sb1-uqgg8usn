@@ -106,11 +106,7 @@ const Leads = () => {
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof insertLeadSchema>) => {
-      return await apiRequest("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("/api/leads", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", clientId] });
@@ -137,11 +133,7 @@ const Leads = () => {
 
   const updateMutation = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<Lead> }) => {
-      return await apiRequest(`/api/leads/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.updates),
-      });
+      return await apiRequest(`/api/leads/${data.id}`, "PATCH", data.updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", clientId] });
@@ -164,9 +156,7 @@ const Leads = () => {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/leads/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/leads/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", clientId] });

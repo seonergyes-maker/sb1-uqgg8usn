@@ -99,6 +99,14 @@ export default function PublicLanding() {
     }
   }, [landing?.metaPixelId]);
 
+  // Inject landing page variables for form submission
+  useEffect(() => {
+    if (landing && slug) {
+      (window as any).LANDING_CLIENT_ID = landing.clientId;
+      (window as any).LANDING_SLUG = slug;
+    }
+  }, [landing, slug]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
@@ -138,11 +146,6 @@ export default function PublicLanding() {
 
   return (
     <div className="min-h-screen bg-white" data-testid="public-landing">
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.LANDING_CLIENT_ID = ${landing.clientId}; window.LANDING_SLUG = '${slug}';`
-        }}
-      />
       <div
         dangerouslySetInnerHTML={{ __html: landing.content }}
         data-testid="landing-content"
