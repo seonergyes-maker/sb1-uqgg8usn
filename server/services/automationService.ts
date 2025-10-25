@@ -100,7 +100,7 @@ class AutomationService {
         email: lead.email,
         variables: {
           nombre: lead.name,
-          empresa: lead.company || '',
+          empresa: '',
         }
       }];
 
@@ -150,9 +150,11 @@ class AutomationService {
   async processScheduledTasks() {
     try {
       const now = new Date().toISOString();
-      const tasks = await storage.getScheduledTasks({ status: 'Programada' });
+      const tasks = await storage.getScheduledTasks();
       
-      const dueTasks = tasks.filter(task => task.scheduledFor <= now);
+      const dueTasks = tasks.filter(task => 
+        task.status === 'Programada' && task.scheduledFor <= now
+      );
 
       for (const task of dueTasks) {
         if (task.taskType === 'send_automation_email') {

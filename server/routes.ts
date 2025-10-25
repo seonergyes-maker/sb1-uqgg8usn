@@ -646,27 +646,35 @@ export function registerRoutes(app: Express) {
       }
       
       // Update client configuration
-      const [updatedClient] = await db.update(clients)
+      await db.update(clients)
         .set({
           ...validatedData,
           updatedAt: new Date(),
         })
-        .where(eq(clients.id, clientId))
-        .returning({
-          fromName: clients.fromName,
-          fromEmail: clients.fromEmail,
-          replyTo: clients.replyTo,
-          emailSignature: clients.emailSignature,
-          notifyNewLeads: clients.notifyNewLeads,
-          notifyCampaigns: clients.notifyCampaigns,
-          notifyWeekly: clients.notifyWeekly,
-          notifyTips: clients.notifyTips,
-          googleAnalyticsId: clients.googleAnalyticsId,
-          metaPixelId: clients.metaPixelId,
-          customDomain: clients.customDomain,
-          domainVerified: clients.domainVerified,
-          plan: clients.plan,
-        });
+        .where(eq(clients.id, clientId));
+      
+      // MySQL doesn't support returning, so we fetch the updated record
+      const [updatedClient] = await db.select({
+        fromName: clients.fromName,
+        fromEmail: clients.fromEmail,
+        replyTo: clients.replyTo,
+        emailSignature: clients.emailSignature,
+        smtpHost: clients.smtpHost,
+        smtpPort: clients.smtpPort,
+        smtpUser: clients.smtpUser,
+        smtpPassword: clients.smtpPassword,
+        smtpEncryption: clients.smtpEncryption,
+        smtpAuth: clients.smtpAuth,
+        notifyNewLeads: clients.notifyNewLeads,
+        notifyCampaigns: clients.notifyCampaigns,
+        notifyWeekly: clients.notifyWeekly,
+        notifyTips: clients.notifyTips,
+        googleAnalyticsId: clients.googleAnalyticsId,
+        metaPixelId: clients.metaPixelId,
+        customDomain: clients.customDomain,
+        domainVerified: clients.domainVerified,
+        plan: clients.plan,
+      }).from(clients).where(eq(clients.id, clientId)).limit(1);
       
       res.json(updatedClient);
     } catch (error) {
@@ -774,22 +782,24 @@ export function registerRoutes(app: Express) {
       }
 
       // Update profile
-      const [updatedProfile] = await db.update(clients)
+      await db.update(clients)
         .set({
           ...validatedData,
           updatedAt: new Date(),
         })
-        .where(eq(clients.id, userId))
-        .returning({
-          id: clients.id,
-          name: clients.name,
-          email: clients.email,
-          company: clients.company,
-          phone: clients.phone,
-          location: clients.location,
-          avatarUrl: clients.avatarUrl,
-          plan: clients.plan,
-        });
+        .where(eq(clients.id, userId));
+
+      // MySQL doesn't support returning, so we fetch the updated record
+      const [updatedProfile] = await db.select({
+        id: clients.id,
+        name: clients.name,
+        email: clients.email,
+        company: clients.company,
+        phone: clients.phone,
+        location: clients.location,
+        avatarUrl: clients.avatarUrl,
+        plan: clients.plan,
+      }).from(clients).where(eq(clients.id, userId)).limit(1);
 
       res.json(updatedProfile);
     } catch (error) {

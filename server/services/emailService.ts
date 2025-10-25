@@ -100,7 +100,7 @@ class EmailService {
   }
 
   async sendBulkEmails(recipients: Array<{ email: string; variables?: Record<string, any> }>, subject: string, content: string, clientId?: number): Promise<Array<{ email: string; status: string; error?: string }>> {
-    const results = [];
+    const results: Array<{ email: string; status: string; error?: string }> = [];
 
     for (const recipient of recipients) {
       try {
