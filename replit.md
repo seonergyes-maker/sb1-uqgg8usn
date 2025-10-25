@@ -80,9 +80,13 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   **Dynamic Counts:** Segment counts update automatically based on lead criteria matching
 
 ## Recent Changes (October 2025)
--   **Lead Form Submission Fixes (Latest):**
+-   **Landing Page Global Variables Fix (Latest - CRITICAL):**
+    -   **Problem:** Variables `window.LANDING_CLIENT_ID` and `window.LANDING_SLUG` were injected via useEffect AFTER HTML rendered, but inline scripts execute immediately - variables were undefined when forms loaded
+    -   **Solution:** Modified PublicLanding.tsx to prepend variables script directly to HTML content using useMemo before rendering
+    -   **XSS Security:** Double-escape strategy: JSON.stringify() + replace `</` with `<\/` to prevent script injection attacks via malicious slugs
+    -   **Result:** Variables now available when form JavaScript executes, enabling proper lead submission from all public landing pages
+-   **Lead Form Submission Fixes:**
     -   **Leads.tsx apiRequest Fix:** Corrected all mutation calls to use proper signature `apiRequest(url, method, data)` instead of passing RequestInit object
-    -   **PublicLanding.tsx Global Variables:** Fixed injection of `window.LANDING_CLIENT_ID` and `window.LANDING_SLUG` using useEffect instead of inert script tags that React doesn't execute
     -   **Template Success Messages:** Unified all landing page success messages to "Solicitud recibida"
     -   Creates/updates/deletes now work correctly from user panel
     -   Public landing forms now submit correctly with proper clientId and slug tracking
