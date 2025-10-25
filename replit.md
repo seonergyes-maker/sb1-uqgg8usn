@@ -80,7 +80,13 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   **Dynamic Counts:** Segment counts update automatically based on lead criteria matching
 
 ## Recent Changes (October 2025)
--   **Landing Templates Cleanup (Latest):**
+-   **Lead Form Submission Fixes (Latest):**
+    -   **Leads.tsx apiRequest Fix:** Corrected all mutation calls to use proper signature `apiRequest(url, method, data)` instead of passing RequestInit object
+    -   **PublicLanding.tsx Global Variables:** Fixed injection of `window.LANDING_CLIENT_ID` and `window.LANDING_SLUG` using useEffect instead of inert script tags that React doesn't execute
+    -   **Template Success Messages:** Unified all landing page success messages to "Solicitud recibida"
+    -   Creates/updates/deletes now work correctly from user panel
+    -   Public landing forms now submit correctly with proper clientId and slug tracking
+-   **Landing Templates Cleanup:**
     -   Removed unsupported fields from all landing templates (company, message) to match leads schema
     -   Updated consultoria.html, agencia-digital.html, and servicios-profesionales.html to only include valid fields
     -   Templates now only collect: name (required), email (required), phone (optional)
