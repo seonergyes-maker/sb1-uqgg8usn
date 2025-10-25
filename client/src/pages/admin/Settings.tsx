@@ -47,11 +47,26 @@ const SettingsPage = () => {
     updateSettingsMutation.mutate(data);
   };
 
-  const handleTestEmail = () => {
-    toast.info("Enviando email de prueba...");
-    setTimeout(() => {
-      toast.success("Email de prueba enviado correctamente");
-    }, 1500);
+  const testSMTPMutation = useMutation({
+    mutationFn: async () => {
+      const smtpData = {
+        smtpHost: formData.smtpHost ?? settings?.smtpHost,
+        smtpPort: formData.smtpPort ?? settings?.smtpPort,
+        smtpUser: formData.smtpUser ?? settings?.smtpUser,
+        smtpPassword: formData.smtpPassword ?? settings?.smtpPassword,
+      };
+      return await apiRequest('/api/settings/test-smtp', 'POST', smtpData);
+    },
+    onSuccess: (data: any) => {
+      toast.success(data.message || "Conexión SMTP verificada correctamente");
+    },
+    onError: (error: any) => {
+      toast.error(error?.error || "Error al conectar con el servidor SMTP");
+    },
+  });
+
+  const handleTestSMTP = () => {
+    testSMTPMutation.mutate();
   };
 
   if (isLoading) {
@@ -282,6 +297,14 @@ const SettingsPage = () => {
             </div>
             <div className="flex gap-2">
               <Button 
+                variant="outline" 
+                onClick={handleTestSMTP} 
+                data-testid="button-test-smtp"
+                disabled={testSMTPMutation.isPending}
+              >
+                {testSMTPMutation.isPending ? "Probando..." : "Probar conexión"}
+              </Button>
+              <Button 
                 onClick={() => handleSave('smtp', {
                   smtpHost: formData.smtpHost ?? settings.smtpHost,
                   smtpPort: formData.smtpPort ?? settings.smtpPort,
@@ -296,9 +319,6 @@ const SettingsPage = () => {
                 disabled={updateSettingsMutation.isPending}
               >
                 {updateSettingsMutation.isPending ? "Guardando..." : "Guardar configuración SMTP"}
-              </Button>
-              <Button variant="outline" onClick={handleTestEmail} data-testid="button-test-smtp">
-                Enviar email de prueba
               </Button>
             </div>
           </CardContent>
