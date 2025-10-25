@@ -1209,6 +1209,19 @@ export function registerRoutes(app: Express) {
   app.patch("/api/segments/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Check if segment is a system segment
+      const segment = await storage.getSegmentById(id);
+      if (!segment) {
+        return res.status(404).json({ error: "Segmento no encontrado" });
+      }
+      
+      if (segment.isSystem === 1) {
+        return res.status(403).json({ 
+          error: "No se pueden modificar los segmentos del sistema" 
+        });
+      }
+      
       const validatedData = updateSegmentSchema.parse(req.body);
       const updatedSegment = await storage.updateSegment(id, validatedData);
       
@@ -1230,6 +1243,18 @@ export function registerRoutes(app: Express) {
   app.delete("/api/segments/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Check if segment exists and is a system segment
+      const segment = await storage.getSegmentById(id);
+      if (!segment) {
+        return res.status(404).json({ error: "Segmento no encontrado" });
+      }
+      
+      if (segment.isSystem === 1) {
+        return res.status(403).json({ 
+          error: "No se pueden eliminar los segmentos del sistema" 
+        });
+      }
       
       // Check if any landing is using this segment
       const landingsWithSegment = await storage.getLandingsBySegmentId(id);
