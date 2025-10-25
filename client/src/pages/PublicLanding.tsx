@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -99,12 +99,16 @@ export default function PublicLanding() {
     }
   }, [landing?.metaPixelId]);
 
-  // Inject landing page variables for form submission
-  useEffect(() => {
-    if (landing && slug) {
-      (window as any).LANDING_CLIENT_ID = landing.clientId;
-      (window as any).LANDING_SLUG = slug;
-    }
+  // Prepare content with injected variables
+  const contentWithVars = useMemo(() => {
+    if (!landing || !slug) return '';
+    
+    // Escape values safely for inline script
+    const clientIdSafe = JSON.stringify(landing.clientId).replace(/<\//g, '<\\/');
+    const slugSafe = JSON.stringify(slug).replace(/<\//g, '<\\/');
+    
+    const varsScript = '<script>window.LANDING_CLIENT_ID = ' + clientIdSafe + '; window.LANDING_SLUG = ' + slugSafe + ';</script>';
+    return varsScript + landing.content;
   }, [landing, slug]);
 
   if (isLoading) {
@@ -147,7 +151,7 @@ export default function PublicLanding() {
   return (
     <div className="min-h-screen bg-white" data-testid="public-landing">
       <div
-        dangerouslySetInnerHTML={{ __html: landing.content }}
+        dangerouslySetInnerHTML={{ __html: contentWithVars }}
         data-testid="landing-content"
       />
       
