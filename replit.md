@@ -55,13 +55,26 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 -   **Tracking Integration:** Automatic injection of Google Analytics and Meta Pixel scripts in public landing pages when configured by the user.
 -   **Email Automation System (✅ IMPLEMENTED):**
     -   **Real SMTP Email Sending:** Uses `nodemailer` to send real emails via SMTP configured by admin (server/services/emailService.ts)
+    -   **SMTP Connection Testing:** Admin panel includes "Probar conexión" button to validate SMTP settings before saving (POST /api/settings/test-smtp)
     -   **Automatic Triggers:** Automatizations execute automatically when new leads are captured from landing pages
     -   **Scheduled Emails:** Support for delayed emails (days) via scheduling system that runs every 60 seconds
     -   **Variable Personalization:** Emails include dynamic variables ({{nombre}}, {{empresa}}, {{unsubscribe_link}})
     -   **Bulk Sending:** Can send to multiple recipients with individual error handling and reporting
     -   **Email Creation:** Frontend allows creating emails with name/subject only, content auto-filled with default template
+-   **Segment-Landing Integration (✅ IMPLEMENTED):**
+    -   **Auto-Segment Creation:** When a landing page is created, a segment with the same name is automatically created and associated
+    -   **Database Relation:** Added `segmentId` field to `landings` table to link landings with their auto-created segments
+    -   **Delete Protection:** Segments cannot be deleted if they have associated landing pages (validation in DELETE /api/segments/:id)
+    -   **Automatic Association:** Segment filters are automatically configured to track leads from the landing page's slug
 
 ## Recent Changes (October 2025)
+-   **Added SMTP connection testing:** New endpoint POST /api/settings/test-smtp validates SMTP connection before saving, admin panel includes "Probar conexión" button
+-   **Implemented segment-landing integration:**
+    -   Added `segmentId` field to `landings` table in schema (shared/schema.ts)
+    -   Modified POST /api/landings to automatically create segment with same name when landing is created
+    -   Added `getLandingsBySegmentId()` method to storage interface
+    -   Modified DELETE /api/segments/:id to prevent deletion if landing pages are associated
+    -   Segment filters automatically configured with landing page slug for lead tracking
 -   **Fixed email creation bug:** Made `content` field optional in `insertEmailSchema` to allow backend to provide default template
 -   **Added error handling:** Email creation form now shows error toast if mutation fails
 -   **Implemented real email sending:** Replaced simulated email sending with actual SMTP delivery using nodemailer

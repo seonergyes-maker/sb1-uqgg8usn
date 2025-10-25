@@ -1137,6 +1137,16 @@ export function registerRoutes(app: Express) {
   app.delete("/api/segments/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Check if any landing is using this segment
+      const landingsWithSegment = await storage.getLandingsBySegmentId(id);
+      
+      if (landingsWithSegment.length > 0) {
+        return res.status(400).json({ 
+          error: "No se puede eliminar este segmento porque está asociado a una o más landing pages" 
+        });
+      }
+      
       const deleted = await storage.deleteSegment(id);
       
       if (!deleted) {
@@ -1377,6 +1387,18 @@ export function registerRoutes(app: Express) {
         clientId // Ensure clientId is from authenticated user
       });
       
+      // Create a segment with the same name as the landing (auto-associated)
+      let segmentId = validatedData.segmentId;
+      if (!segmentId) {
+        const segment = await storage.createSegment({
+          clientId,
+          name: validatedData.name,
+          description: `Segmento creado automáticamente para la landing: ${validatedData.name}`,
+          filters: JSON.stringify({ source: validatedData.slug }),
+        });
+        segmentId = segment.id;
+      }
+      
       // Use default template from filesystem if no content provided
       let content = validatedData.content;
       if (!content) {
@@ -1386,6 +1408,7 @@ export function registerRoutes(app: Express) {
       
       const landingData = {
         ...validatedData,
+        segmentId,
         content
       };
       

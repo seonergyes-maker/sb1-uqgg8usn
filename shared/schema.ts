@@ -143,6 +143,7 @@ export const automations = mysqlTable("automations", {
 export const landings = mysqlTable("landings", {
   id: int("id").primaryKey().autoincrement(),
   clientId: int("client_id").notNull(),
+  segmentId: int("segment_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull(),
   title: varchar("title", { length: 500 }),
@@ -329,6 +330,10 @@ export const landingsRelations = relations(landings, ({ one }) => ({
     fields: [landings.clientId],
     references: [clients.id],
   }),
+  segment: one(segments, {
+    fields: [landings.segmentId],
+    references: [segments.id],
+  }),
 }));
 
 export const templatesRelations = relations(templates, ({ one }) => ({
@@ -457,6 +462,7 @@ export const updateAutomationSchema = insertAutomationSchema.partial();
 
 export const insertLandingSchema = z.object({
   clientId: z.number(),
+  segmentId: z.number().optional(),
   name: z.string().min(1, "El nombre es requerido"),
   slug: z.string().min(1, "El slug es requerido"),
   title: z.string().optional().nullable(),
