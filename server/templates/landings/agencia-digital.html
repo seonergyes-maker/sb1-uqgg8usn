@@ -82,10 +82,6 @@
           <label contenteditable="false">Teléfono</label>
           <input type="tel" name="phone" contenteditable="false">
         </div>
-        <div class="form-group">
-          <label contenteditable="false">Cuéntanos sobre tu proyecto</label>
-          <textarea name="message" rows="4" contenteditable="false"></textarea>
-        </div>
         <button type="submit" class="submit-btn" contenteditable="false">Solicitar Presupuesto</button>
       </form>
       <div class="success-message" id="successMessage">¡Mensaje enviado! Nos pondremos en contacto contigo pronto.</div>
@@ -110,7 +106,6 @@
         name: this.name.value,
         email: this.email.value,
         phone: this.phone.value,
-        message: this.message.value,
         source: 'landing-' + window.LANDING_SLUG
       };
       

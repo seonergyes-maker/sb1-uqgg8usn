@@ -93,14 +93,6 @@
           <label contenteditable="false">Teléfono</label>
           <input type="tel" name="phone" contenteditable="false">
         </div>
-        <div class="form-group">
-          <label contenteditable="false">Empresa</label>
-          <input type="text" name="company" contenteditable="false">
-        </div>
-        <div class="form-group">
-          <label contenteditable="false">Mensaje</label>
-          <textarea name="message" rows="3" contenteditable="false"></textarea>
-        </div>
         <button type="submit" class="submit-btn" contenteditable="false">Enviar Solicitud</button>
       </form>
       <div class="success-message" id="successMessage">✓ Tu solicitud ha sido enviada correctamente</div>
@@ -125,8 +117,6 @@
         name: this.name.value,
         email: this.email.value,
         phone: this.phone.value,
-        company: this.company.value,
-        message: this.message.value,
         source: 'landing-' + window.LANDING_SLUG
       };
       
