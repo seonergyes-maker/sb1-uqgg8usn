@@ -423,7 +423,7 @@ export const insertSettingsSchema = createInsertSchema(settings).omit({
 
 export const updateSettingsSchema = insertSettingsSchema.partial();
 
-export const insertLeadSchema = createInsertSchema(leads, {
+export const insertLeadSchema = z.object({
   clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   email: z.string().email("Email inválido"),
@@ -431,32 +431,22 @@ export const insertLeadSchema = createInsertSchema(leads, {
   source: z.string().min(1, "El origen es requerido"),
   status: z.string().default("Nuevo"),
   score: z.number().min(0).max(100).default(0),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
 });
 
 export const updateLeadSchema = insertLeadSchema.partial();
 
-export const insertSegmentSchema = createInsertSchema(segments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
+export const insertSegmentSchema = z.object({
+  clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   filters: z.string().default("{}"),
+  leadCount: z.number().default(0),
+  isSystem: z.number().default(0),
 });
 
 export const updateSegmentSchema = insertSegmentSchema.partial();
 
-export const insertAutomationSchema = createInsertSchema(automations).omit({
-  id: true,
-  clientId: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
+export const insertAutomationSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   trigger: z.string().min(1, "El trigger es requerido"),
@@ -482,11 +472,8 @@ export const insertLandingSchema = z.object({
 
 export const updateLandingSchema = insertLandingSchema.partial();
 
-export const insertTemplateSchema = createInsertSchema(templates).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
+export const insertTemplateSchema = z.object({
+  clientId: z.number().optional().nullable(),
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   type: z.string().min(1, "El tipo es requerido"),
@@ -496,16 +483,13 @@ export const insertTemplateSchema = createInsertSchema(templates).omit({
   variables: z.string().optional().nullable(),
   thumbnail: z.string().optional().nullable(),
   status: z.string().default("Activa"),
+  timesUsed: z.number().default(0),
 });
 
 export const updateTemplateSchema = insertTemplateSchema.partial();
 
-export const insertScheduledTaskSchema = createInsertSchema(scheduledTasks).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  executedAt: true,
-}).extend({
+export const insertScheduledTaskSchema = z.object({
+  clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   taskType: z.string().min(1, "El tipo de tarea es requerido"),
@@ -519,28 +503,26 @@ export const insertScheduledTaskSchema = createInsertSchema(scheduledTasks).omit
 
 export const updateScheduledTaskSchema = insertScheduledTaskSchema.partial();
 
-export const insertEmailSchema = createInsertSchema(emails, {
-  name: (schema) => schema.min(1, "El nombre es requerido"),
-  subject: (schema) => schema.min(1, "El asunto es requerido"),
-  content: (schema) => schema.optional(),
-  type: (schema) => schema.default("Campaña"),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertEmailSchema = z.object({
+  clientId: z.number(),
+  name: z.string().min(1, "El nombre es requerido"),
+  subject: z.string().min(1, "El asunto es requerido"),
+  content: z.string().optional(),
+  type: z.string().default("Campaña"),
 });
 
 export const updateEmailSchema = insertEmailSchema.partial();
 
-export const insertAutomationExecutionSchema = createInsertSchema(automationExecutions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
+export const insertAutomationExecutionSchema = z.object({
   automationId: z.number().min(1, "El ID de automatización es requerido"),
   leadId: z.number().min(1, "El ID de lead es requerido"),
   currentStep: z.number().default(0),
   status: z.string().default("En proceso"),
+  nextExecutionAt: z.string().optional().nullable(),
+  emailsSent: z.number().default(0),
+  emailsOpened: z.number().default(0),
+  emailsBounced: z.number().default(0),
+  emailsUnsubscribed: z.number().default(0),
 });
 
 export const updateAutomationExecutionSchema = insertAutomationExecutionSchema.partial();
