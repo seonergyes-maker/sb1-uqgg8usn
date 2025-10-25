@@ -428,7 +428,7 @@ export const insertLeadSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   email: z.string().email("Email inválido"),
   phone: z.string().optional(),
-  source: z.string().min(1, "El origen es requerido"),
+  source: z.string().default("Manual"),
   status: z.string().default("Nuevo"),
   score: z.number().min(0).max(100).default(0),
 });
