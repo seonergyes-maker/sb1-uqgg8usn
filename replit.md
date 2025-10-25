@@ -80,7 +80,12 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   **Dynamic Counts:** Segment counts update automatically based on lead criteria matching
 
 ## Recent Changes (October 2025)
--   **Multi-Tenant SMTP Configuration (Latest):**
+-   **Registration Flow Fixes (Latest):**
+    -   **Automatic Free Subscription:** New users now automatically receive a Free subscription record upon registration (previously only the plan field was set)
+    -   **Lead Source Fix:** Lead creation form now correctly sends source="Manual" instead of empty string in defaultValues
+    -   Created backfill script (scripts/fix-missing-subscription.ts) to safely add Free subscriptions to existing users without breaking data
+    -   Verified all existing users have active subscriptions
+-   **Multi-Tenant SMTP Configuration:**
     -   Added SMTP fields to `clients` table (smtpHost, smtpPort, smtpUser, smtpPassword, smtpEncryption, smtpAuth)
     -   Refactored emailService.ts to support per-client SMTP with transporter caching by clientId
     -   Created POST /api/user-settings/:clientId/test-smtp endpoint for user SMTP connection testing
