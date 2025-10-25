@@ -89,6 +89,63 @@ export function registerRoutes(app: Express) {
         automationsCount: 0
       });
       
+      // Initialize system segments for new user
+      const systemSegments = [
+        {
+          clientId: newClient.id,
+          name: "Todos los leads",
+          description: "Todos los contactos registrados en el sistema",
+          filters: JSON.stringify({}),
+          leadCount: 0,
+          isSystem: 1,
+        },
+        {
+          clientId: newClient.id,
+          name: "Leads nuevos",
+          description: "Contactos captados en los últimos 7 días",
+          filters: JSON.stringify({ daysOld: 7 }),
+          leadCount: 0,
+          isSystem: 1,
+        },
+        {
+          clientId: newClient.id,
+          name: "Leads calificados",
+          description: "Contactos marcados como calificados",
+          filters: JSON.stringify({ status: "Calificado" }),
+          leadCount: 0,
+          isSystem: 1,
+        },
+        {
+          clientId: newClient.id,
+          name: "Leads convertidos",
+          description: "Contactos que se convirtieron en clientes",
+          filters: JSON.stringify({ status: "Convertido" }),
+          leadCount: 0,
+          isSystem: 1,
+        },
+        {
+          clientId: newClient.id,
+          name: "Leads contactados",
+          description: "Contactos que ya fueron contactados",
+          filters: JSON.stringify({ status: "Contactado" }),
+          leadCount: 0,
+          isSystem: 1,
+        },
+        {
+          clientId: newClient.id,
+          name: "Leads inactivos",
+          description: "Contactos sin actividad en más de 30 días",
+          filters: JSON.stringify({ inactiveDays: 30 }),
+          leadCount: 0,
+          isSystem: 1,
+        },
+      ];
+
+      for (const segment of systemSegments) {
+        await storage.createSegment(segment);
+      }
+      console.log(`✅ Segmentos del sistema creados para usuario: ${newClient.email}`);
+      
       // Generate token
       const token = generateToken({
         id: newClient.id,
