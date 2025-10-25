@@ -1800,7 +1800,7 @@ export function registerRoutes(app: Express) {
   // POST /api/public/leads - Create lead from public landing (no auth required)
   app.post("/api/public/leads", async (req, res) => {
     try {
-      const { clientId, name, email, phone, company, message, source } = req.body;
+      const { clientId, name, email, phone, source } = req.body;
       
       if (!clientId || !name || !email) {
         return res.status(400).json({ error: "clientId, name y email son requeridos" });
@@ -1810,13 +1810,10 @@ export function registerRoutes(app: Express) {
         clientId: parseInt(clientId),
         name,
         email,
-        phone: phone || null,
-        company: company || null,
-        tags: source ? source : null,
-        notes: message || null,
+        phone: phone || "",
+        source: source || "Landing Page",
         status: "Nuevo",
         score: 0,
-        source: source || "Landing Page",
       };
       
       const newLead = await storage.createLead(leadData);
