@@ -50,6 +50,15 @@ async function migrate() {
       console.log("⏭️  Columna is_system ya existe en tabla segments");
     }
 
+    // Add segmentId column to landings table
+    const segmentIdExists = await columnExists(connection, "landings", "segment_id");
+    if (!segmentIdExists) {
+      await connection.execute(`ALTER TABLE landings ADD COLUMN segment_id INT`);
+      console.log("✅ Columna segment_id agregada a tabla landings");
+    } else {
+      console.log("⏭️  Columna segment_id ya existe en tabla landings");
+    }
+
     console.log("✅ Todas las migraciones aplicadas exitosamente");
   } catch (error: any) {
     console.error("❌ Error aplicando migraciones:", error.message);
