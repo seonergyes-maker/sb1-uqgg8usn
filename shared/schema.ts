@@ -507,7 +507,7 @@ export const updateScheduledTaskSchema = insertScheduledTaskSchema.partial();
 export const insertEmailSchema = createInsertSchema(emails, {
   name: (schema) => schema.min(1, "El nombre es requerido"),
   subject: (schema) => schema.min(1, "El asunto es requerido"),
-  content: (schema) => schema.min(1, "El contenido es requerido"),
+  content: (schema) => schema.optional(),
   type: (schema) => schema.default("Campaña"),
 }).omit({
   id: true,

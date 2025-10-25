@@ -1648,6 +1648,10 @@ export function registerRoutes(app: Express) {
         }
       }
       
+      // Trigger automations for new lead
+      const { automationService } = await import('./services/automationService');
+      automationService.triggerAutomations('new_lead', newLead.id, parseInt(clientId));
+      
       res.status(201).json({ success: true, lead: newLead });
     } catch (error) {
       console.error("Error creating public lead:", error);
@@ -1812,30 +1816,18 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Email not found" });
       }
       
-      const { replaceEmailVariables, generateUnsubscribeLink } = await import('./utils/emailVariables.js');
+      const { generateUnsubscribeLink } = await import('./utils/emailVariables.js');
+      const { emailService } = await import('./services/emailService');
       
-      const results = [];
-      for (const recipient of recipients) {
-        const variables = {
+      const recipientsData = recipients.map(recipient => ({
+        email: recipient.email,
+        variables: {
           nombre: recipient.name || '',
-          email: recipient.email,
           empresa: recipient.empresa || '',
-          unsubscribe_link: generateUnsubscribeLink(recipient.email, email.clientId),
-        };
-        
-        const personalizedContent = replaceEmailVariables(email.content, variables);
-        const personalizedSubject = replaceEmailVariables(email.subject, variables);
-        
-        // TODO: Replace with actual SES sending logic
-        console.log(`[SIMULATED] Sending email to: ${recipient.email}`);
-        console.log(`Subject: ${personalizedSubject}`);
-        
-        results.push({
-          email: recipient.email,
-          status: 'sent',
-          personalizedSubject,
-        });
-      }
+        }
+      }));
+      
+      const results = await emailService.sendBulkEmails(recipientsData, email.subject, email.content);
       
       // Update email statistics
       await storage.updateEmail(id, {

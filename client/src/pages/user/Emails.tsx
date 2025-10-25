@@ -133,6 +133,13 @@ const Emails = () => {
       // Redirect to email editor
       setLocation(`/panel/emails/${newEmail.id}/edit`);
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error al crear plantilla",
+        description: error?.message || "No se pudo crear la plantilla de email.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Update mutation (for editing name and subject only)
