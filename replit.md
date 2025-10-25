@@ -24,7 +24,12 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 -   **Admin Panel:** Includes CRUD operations for Clients, Subscriptions, and Payments. Features a Dashboard for real-time statistics and a Settings module for platform configuration.
 -   **User Panel:** Offers CRUD operations and management for Leads, Segments, Automations, Templates (email and landing), and Landings. Includes a Scheduler for task management.
 -   **User Profile:** Complete profile management for users to update personal information (name, email, company, phone, location, avatar), change password securely with current password validation, and view account details.
--   **User Settings:** Comprehensive configuration panel for each user including email settings (fromName, fromEmail, replyTo, signature), notification preferences, tracking integration (Google Analytics, Meta Pixel), and custom domain setup (Business plan only).
+-   **User Settings:** Comprehensive configuration panel for each user including:
+    -   **Email settings:** fromName, fromEmail, replyTo, signature
+    -   **SMTP Configuration (Multi-Tenant):** Each user configures their own SMTP server (host, port, user, password, encryption, auth) with connection testing
+    -   **Notification preferences:** Controls for email notifications
+    -   **Tracking integration:** Google Analytics, Meta Pixel
+    -   **Custom domain setup:** Business plan only
 -   **Billing & Subscriptions:** Full subscription management system with PayPal recurring payments integration:
     -   View current subscription plan and next billing date
     -   Real-time usage tracking with visual progress bars (contacts, emails, automations, landing pages)
@@ -54,8 +59,10 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 -   **Custom Domains:** Business plan users can configure custom domains for their landing pages via X-Forwarded-Host header detection.
 -   **Tracking Integration:** Automatic injection of Google Analytics and Meta Pixel scripts in public landing pages when configured by the user.
 -   **Email Automation System (✅ IMPLEMENTED):**
-    -   **Real SMTP Email Sending:** Uses `nodemailer` to send real emails via SMTP configured by admin (server/services/emailService.ts)
-    -   **SMTP Connection Testing:** Admin panel includes "Probar conexión" button to validate SMTP settings before saving (POST /api/settings/test-smtp)
+    -   **Multi-Tenant SMTP:** Each user configures their own SMTP server (host, port, user, password, encryption, auth) stored in `clients` table
+    -   **Real SMTP Email Sending:** Uses `nodemailer` to send real emails via user-configured SMTP with transporter caching per clientId
+    -   **SMTP Connection Testing:** Users can test their SMTP connection via POST /api/user-settings/:clientId/test-smtp before saving
+    -   **Fallback Support:** Maintains backward compatibility with admin-wide SMTP configuration for legacy support
     -   **Automatic Triggers:** Automatizations execute automatically when new leads are captured from landing pages
     -   **Scheduled Emails:** Support for delayed emails (days) via scheduling system that runs every 60 seconds
     -   **Variable Personalization:** Emails include dynamic variables ({{nombre}}, {{empresa}}, {{unsubscribe_link}})
@@ -66,8 +73,28 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   **Database Relation:** Added `segmentId` field to `landings` table to link landings with their auto-created segments
     -   **Delete Protection:** Segments cannot be deleted if they have associated landing pages (validation in DELETE /api/segments/:id)
     -   **Automatic Association:** Segment filters are automatically configured to track leads from the landing page's slug
+-   **System Segments (✅ IMPLEMENTED):**
+    -   **Auto-Creation on Registration:** 6 system segments automatically created when user registers (All leads, New leads, Qualified, Converted, Contacted, Inactive)
+    -   **Protected Segments:** System segments marked with `isSystem: 1` flag, cannot be edited or deleted via API or UI
+    -   **Visual Indicators:** UI displays "Sistema" badge for system segments and hides edit/delete actions
+    -   **Dynamic Counts:** Segment counts update automatically based on lead criteria matching
 
 ## Recent Changes (October 2025)
+-   **Multi-Tenant SMTP Configuration (Latest):**
+    -   Added SMTP fields to `clients` table (smtpHost, smtpPort, smtpUser, smtpPassword, smtpEncryption, smtpAuth)
+    -   Refactored emailService.ts to support per-client SMTP with transporter caching by clientId
+    -   Created POST /api/user-settings/:clientId/test-smtp endpoint for user SMTP connection testing
+    -   Updated UserSettings.tsx with complete SMTP configuration section and test button
+    -   Maintains backward compatibility with admin-wide SMTP for legacy support
+-   **System Segments (Latest):**
+    -   Added `isSystem` field to `segments` table to mark protected system segments
+    -   Auto-creates 6 system segments on user registration (All leads, New leads, Qualified, Converted, Contacted, Inactive)
+    -   Protected PATCH/DELETE endpoints prevent modification/deletion of system segments
+    -   Updated Segments.tsx UI to show "Sistema" badge and disable actions for system segments
+-   **MySQL Compatibility Fixes:**
+    -   Removed all `.returning()` calls from update queries (MySQL doesn't support it)
+    -   Replaced with separate SELECT queries after UPDATE operations
+    -   Fixed type errors in emailService.ts and automationService.ts for MySQL compatibility
 -   **Added SMTP connection testing:** New endpoint POST /api/settings/test-smtp validates SMTP connection before saving, admin panel includes "Probar conexión" button
 -   **Implemented segment-landing integration:**
     -   Added `segmentId` field to `landings` table in schema (shared/schema.ts)
@@ -86,4 +113,4 @@ The project follows a full-stack architecture with a `client/` for the frontend,
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (configured via environment variables).
 -   **Payment Gateways:** Stripe, PayPal (integration keys are anticipated).
--   **Email Services:** Custom SMTP server (configured via Admin Settings) using `nodemailer` library for real email delivery.
+-   **Email Services:** Each user configures their own SMTP server (multi-tenant approach) using `nodemailer` library for real email delivery. Admin-wide SMTP configuration maintained for backward compatibility.
