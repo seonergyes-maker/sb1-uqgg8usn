@@ -27,6 +27,14 @@ export const clients = mysqlTable("clients", {
   replyTo: varchar("reply_to", { length: 255 }),
   emailSignature: text("email_signature"),
   
+  // SMTP configuration (per user)
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: int("smtp_port"),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPassword: varchar("smtp_password", { length: 255 }),
+  smtpEncryption: varchar("smtp_encryption", { length: 20 }),
+  smtpAuth: varchar("smtp_auth", { length: 20 }),
+  
   // Notification preferences
   notifyNewLeads: int("notify_new_leads").notNull().default(1),
   notifyCampaigns: int("notify_campaigns").notNull().default(1),
@@ -121,6 +129,7 @@ export const segments = mysqlTable("segments", {
   description: text("description"),
   filters: text("filters").notNull(),
   leadCount: int("lead_count").notNull().default(0),
+  isSystem: int("is_system").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -564,6 +573,14 @@ export const updateUserSettingsSchema = z.object({
   fromEmail: z.string().email("Email inválido").optional().nullable(),
   replyTo: z.string().email("Email de respuesta inválido").optional().nullable(),
   emailSignature: z.string().optional().nullable(),
+  
+  // SMTP configuration (per user)
+  smtpHost: z.string().optional().nullable(),
+  smtpPort: z.number().optional().nullable(),
+  smtpUser: z.string().optional().nullable(),
+  smtpPassword: z.string().optional().nullable(),
+  smtpEncryption: z.string().optional().nullable(),
+  smtpAuth: z.string().optional().nullable(),
   
   // Notification preferences
   notifyNewLeads: z.number().min(0).max(1).optional(),

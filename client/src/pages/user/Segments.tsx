@@ -86,11 +86,7 @@ const Segments = () => {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof insertSegmentSchema>) => {
-      return await apiRequest("/api/segments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("/api/segments", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/segments", clientId] });
@@ -113,11 +109,7 @@ const Segments = () => {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<Segment> }) => {
-      return await apiRequest(`/api/segments/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.updates),
-      });
+      return await apiRequest(`/api/segments/${data.id}`, "PATCH", data.updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/segments", clientId] });
@@ -140,9 +132,7 @@ const Segments = () => {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/segments/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/segments/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/segments", clientId] });
