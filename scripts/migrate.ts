@@ -59,6 +59,15 @@ async function migrate() {
       console.log("⏭️  Columna segment_id ya existe en tabla landings");
     }
 
+    // Update source column in leads table to have default value 'Manual'
+    try {
+      await connection.execute(`ALTER TABLE leads MODIFY COLUMN source VARCHAR(255) NOT NULL DEFAULT 'Manual'`);
+      console.log("✅ Valor por defecto 'Manual' agregado a columna source en tabla leads");
+    } catch (error: any) {
+      // Si la columna ya tiene el default, seguir adelante
+      console.log("⏭️  Columna source ya tiene configuración correcta en tabla leads");
+    }
+
     console.log("✅ Todas las migraciones aplicadas exitosamente");
   } catch (error: any) {
     console.error("❌ Error aplicando migraciones:", error.message);
