@@ -621,6 +621,42 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // POST /api/user-settings/:clientId/test-smtp - Test user SMTP connection
+  app.post("/api/user-settings/:clientId/test-smtp", authMiddleware, requireUser, async (req, res) => {
+    try {
+      const { smtpHost, smtpPort, smtpUser, smtpPassword } = req.body;
+      
+      if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
+        return res.status(400).json({ error: "Todos los campos SMTP son requeridos" });
+      }
+
+      // Test SMTP connection using nodemailer
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPassword,
+        },
+      });
+
+      // Verify connection
+      await transporter.verify();
+
+      res.json({ 
+        success: true, 
+        message: "Conexión SMTP verificada correctamente" 
+      });
+    } catch (error) {
+      console.error("Error testing user SMTP:", error);
+      res.status(500).json({ 
+        error: "No se pudo conectar con el servidor SMTP. Verifica tu configuración." 
+      });
+    }
+  });
+
   // PROFILE ROUTES - Protected
 
   // GET /api/profile - Get current user profile
