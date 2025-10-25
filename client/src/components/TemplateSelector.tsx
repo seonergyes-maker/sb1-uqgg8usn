@@ -21,6 +21,7 @@ export function TemplateSelector({ type, onSelect, selectedTemplateId }: Templat
 
   const { data: baseTemplates = [], isLoading } = useQuery<Template[]>({
     queryKey: ["/api/templates/base", { type }],
+    queryFn: () => fetch(`/api/templates/base?type=${type}`).then((res) => res.json()),
   });
 
   const handleSelect = async (template: Template) => {
