@@ -142,7 +142,6 @@ const Automations = () => {
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof automationFormSchema>) => {
       const payload = {
-        clientId,
         name: data.name,
         description: data.description || "",
         trigger: createTrigger,

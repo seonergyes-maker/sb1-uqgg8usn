@@ -453,10 +453,10 @@ export const updateSegmentSchema = insertSegmentSchema.partial();
 
 export const insertAutomationSchema = createInsertSchema(automations).omit({
   id: true,
+  clientId: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
-  clientId: z.number(),
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional().nullable(),
   trigger: z.string().min(1, "El trigger es requerido"),

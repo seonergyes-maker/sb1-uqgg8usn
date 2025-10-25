@@ -1335,12 +1335,12 @@ export function registerRoutes(app: Express) {
         return res.status(401).json({ error: "No autorizado" });
       }
 
-      const validatedData = insertAutomationSchema.parse({
-        ...req.body,
+      const validatedData = insertAutomationSchema.parse(req.body);
+      
+      const newAutomation = await storage.createAutomation({
+        ...validatedData,
         clientId // Ensure clientId is from authenticated user
       });
-      
-      const newAutomation = await storage.createAutomation(validatedData);
       
       // Note: No need to increment usage as automationsCount is calculated from actual automations count
       

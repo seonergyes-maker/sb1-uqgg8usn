@@ -48,7 +48,7 @@ export function AutomationBuilder({
   const { data: emails = [] } = useQuery<Email[]>({
     queryKey: ["/api/emails", clientId],
     queryFn: () =>
-      fetch(`/api/emails?clientId=${clientId}`).then((res) => res.json()),
+      fetch(`/api/emails/${clientId}`).then((res) => res.json()),
   });
 
   const addAction = () => {
