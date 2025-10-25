@@ -287,7 +287,7 @@ const Leads = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre</FormLabel>
+                        <FormLabel>Nombre *</FormLabel>
                         <FormControl>
                           <Input placeholder="Nombre completo" {...field} data-testid="input-name" />
                         </FormControl>
@@ -300,7 +300,7 @@ const Leads = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Email *</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="correo@ejemplo.com" {...field} data-testid="input-email" />
                         </FormControl>
@@ -313,65 +313,9 @@ const Leads = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Teléfono</FormLabel>
+                        <FormLabel>Teléfono (opcional)</FormLabel>
                         <FormControl>
                           <Input placeholder="+34 612 345 678" {...field} data-testid="input-phone" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="source"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Origen</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Landing page, Campaña email, etc." {...field} data-testid="input-source" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estado</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-status">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Nuevo">Nuevo</SelectItem>
-                            <SelectItem value="Calificado">Calificado</SelectItem>
-                            <SelectItem value="Contactado">Contactado</SelectItem>
-                            <SelectItem value="Convertido">Convertido</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="score"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Score (0-100)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                            data-testid="input-score"
-                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
