@@ -10,6 +10,13 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
@@ -22,6 +29,12 @@ interface UserSettings {
   fromEmail: string | null;
   replyTo: string | null;
   emailSignature: string | null;
+  smtpHost: string | null;
+  smtpPort: number | null;
+  smtpUser: string | null;
+  smtpPassword: string | null;
+  smtpEncryption: string | null;
+  smtpAuth: string | null;
   notifyNewLeads: number;
   notifyCampaigns: number;
   notifyWeekly: number;
@@ -38,6 +51,12 @@ const settingsSchema = z.object({
   fromEmail: z.string().email("Email inválido").optional().or(z.literal("")).nullable(),
   replyTo: z.string().email("Email de respuesta inválido").optional().or(z.literal("")).nullable(),
   emailSignature: z.string().optional().nullable(),
+  smtpHost: z.string().optional().nullable(),
+  smtpPort: z.number().optional().nullable(),
+  smtpUser: z.string().optional().nullable(),
+  smtpPassword: z.string().optional().nullable(),
+  smtpEncryption: z.string().optional().nullable(),
+  smtpAuth: z.string().optional().nullable(),
   notifyNewLeads: z.number().min(0).max(1),
   notifyCampaigns: z.number().min(0).max(1),
   notifyWeekly: z.number().min(0).max(1),
@@ -68,6 +87,12 @@ const UserSettings = () => {
       fromEmail: "",
       replyTo: "",
       emailSignature: "",
+      smtpHost: "",
+      smtpPort: 587,
+      smtpUser: "",
+      smtpPassword: "",
+      smtpEncryption: "tls",
+      smtpAuth: "login",
       notifyNewLeads: 1,
       notifyCampaigns: 1,
       notifyWeekly: 1,
@@ -86,6 +111,12 @@ const UserSettings = () => {
         fromEmail: settings.fromEmail || "",
         replyTo: settings.replyTo || "",
         emailSignature: settings.emailSignature || "",
+        smtpHost: settings.smtpHost || "",
+        smtpPort: settings.smtpPort || 587,
+        smtpUser: settings.smtpUser || "",
+        smtpPassword: settings.smtpPassword || "",
+        smtpEncryption: settings.smtpEncryption || "tls",
+        smtpAuth: settings.smtpAuth || "login",
         notifyNewLeads: settings.notifyNewLeads,
         notifyCampaigns: settings.notifyCampaigns,
         notifyWeekly: settings.notifyWeekly,
@@ -117,8 +148,38 @@ const UserSettings = () => {
     },
   });
 
+  // Test SMTP mutation
+  const testSMTPMutation = useMutation({
+    mutationFn: async () => {
+      const smtpData = {
+        smtpHost: form.watch("smtpHost"),
+        smtpPort: form.watch("smtpPort"),
+        smtpUser: form.watch("smtpUser"),
+        smtpPassword: form.watch("smtpPassword"),
+      };
+      return await apiRequest(`/api/user-settings/${clientId}/test-smtp`, "POST", smtpData);
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Conexión exitosa",
+        description: data.message || "La conexión SMTP se verificó correctamente.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error de conexión",
+        description: error?.error || "No se pudo conectar con el servidor SMTP.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: SettingsFormData) => {
     updateMutation.mutate(data);
+  };
+
+  const handleTestSMTP = () => {
+    testSMTPMutation.mutate();
   };
 
   if (isLoading) {
@@ -198,6 +259,111 @@ const UserSettings = () => {
                   {...form.register("emailSignature")}
                   placeholder="Saludos,&#10;El equipo de Tu Empresa"
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SMTP Configuration */}
+          <Card className="border-border lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Servidor SMTP</CardTitle>
+              <CardDescription>
+                Configura tu servidor de correo saliente para enviar automations
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="smtpHost">Host SMTP</Label>
+                  <Input
+                    id="smtpHost"
+                    data-testid="input-smtpHost"
+                    {...form.register("smtpHost")}
+                    placeholder="smtp.gmail.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPort">Puerto SMTP</Label>
+                  <Input
+                    id="smtpPort"
+                    type="number"
+                    data-testid="input-smtpPort"
+                    {...form.register("smtpPort", { valueAsNumber: true })}
+                    placeholder="587"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpUser">Usuario SMTP</Label>
+                  <Input
+                    id="smtpUser"
+                    type="email"
+                    data-testid="input-smtpUser"
+                    {...form.register("smtpUser")}
+                    placeholder="tu-email@gmail.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPassword">Contraseña SMTP</Label>
+                  <Input
+                    id="smtpPassword"
+                    type="password"
+                    data-testid="input-smtpPassword"
+                    {...form.register("smtpPassword")}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpEncryption">Cifrado</Label>
+                  <Select
+                    value={form.watch("smtpEncryption") || "tls"}
+                    onValueChange={(value) => form.setValue("smtpEncryption", value)}
+                  >
+                    <SelectTrigger id="smtpEncryption" data-testid="select-smtpEncryption">
+                      <SelectValue placeholder="Selecciona cifrado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ninguno</SelectItem>
+                      <SelectItem value="tls">TLS</SelectItem>
+                      <SelectItem value="ssl">SSL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpAuth">Autenticación</Label>
+                  <Select
+                    value={form.watch("smtpAuth") || "login"}
+                    onValueChange={(value) => form.setValue("smtpAuth", value)}
+                  >
+                    <SelectTrigger id="smtpAuth" data-testid="select-smtpAuth">
+                      <SelectValue placeholder="Tipo de autenticación" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="login">LOGIN</SelectItem>
+                      <SelectItem value="plain">PLAIN</SelectItem>
+                      <SelectItem value="cram-md5">CRAM-MD5</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleTestSMTP}
+                  data-testid="button-test-smtp"
+                  disabled={testSMTPMutation.isPending}
+                >
+                  {testSMTPMutation.isPending ? "Probando..." : "Probar conexión"}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="flex-1"
+                  data-testid="button-save-smtp"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? "Guardando..." : "Guardar configuración"}
+                </Button>
               </div>
             </CardContent>
           </Card>
