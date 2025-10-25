@@ -80,7 +80,12 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   **Dynamic Counts:** Segment counts update automatically based on lead criteria matching
 
 ## Recent Changes (October 2025)
--   **Registration Flow Fixes (Latest):**
+-   **Landing Templates Cleanup (Latest):**
+    -   Removed unsupported fields from all landing templates (company, message) to match leads schema
+    -   Updated consultoria.html, agencia-digital.html, and servicios-profesionales.html to only include valid fields
+    -   Templates now only collect: name (required), email (required), phone (optional)
+    -   JavaScript updated to stop sending non-existent fields to API
+-   **Registration Flow Fixes:**
     -   **Automatic Free Subscription:** New users now automatically receive a Free subscription record upon registration (previously only the plan field was set)
     -   **Lead Source Fix:** Lead creation form now correctly sends source="Manual" instead of empty string in defaultValues
     -   Created backfill script (scripts/fix-missing-subscription.ts) to safely add Free subscriptions to existing users without breaking data
