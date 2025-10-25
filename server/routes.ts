@@ -146,6 +146,21 @@ export function registerRoutes(app: Express) {
       }
       console.log(`✅ Segmentos del sistema creados para usuario: ${newClient.email}`);
       
+      // Create Free subscription for new user
+      const startDate = new Date();
+      await storage.createSubscription({
+        clientId: newClient.id,
+        plan: "Free",
+        status: "active",
+        startDate: startDate.toISOString(),
+        endDate: null, // Free plan has no end date
+        paypalSubscriptionId: null,
+        paypalPlanId: null,
+        billingCycleAnchor: null,
+        lastBillingDate: null
+      });
+      console.log(`✅ Suscripción Free creada para usuario: ${newClient.email}`);
+      
       // Generate token
       const token = generateToken({
         id: newClient.id,

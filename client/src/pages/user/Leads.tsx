@@ -98,7 +98,7 @@ const Leads = () => {
       name: "",
       email: "",
       phone: "",
-      source: "",
+      source: "Manual",
       status: "Nuevo",
       score: 0,
     },
