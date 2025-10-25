@@ -53,8 +53,24 @@ The project follows a full-stack architecture with a `client/` for the frontend,
     -   Business ($199.99/mo): Unlimited contacts/emails/automations/landing pages + custom domains + priority support
 -   **Custom Domains:** Business plan users can configure custom domains for their landing pages via X-Forwarded-Host header detection.
 -   **Tracking Integration:** Automatic injection of Google Analytics and Meta Pixel scripts in public landing pages when configured by the user.
+-   **Email Automation System (✅ IMPLEMENTED):**
+    -   **Real SMTP Email Sending:** Uses `nodemailer` to send real emails via SMTP configured by admin (server/services/emailService.ts)
+    -   **Automatic Triggers:** Automatizations execute automatically when new leads are captured from landing pages
+    -   **Scheduled Emails:** Support for delayed emails (days) via scheduling system that runs every 60 seconds
+    -   **Variable Personalization:** Emails include dynamic variables ({{nombre}}, {{empresa}}, {{unsubscribe_link}})
+    -   **Bulk Sending:** Can send to multiple recipients with individual error handling and reporting
+    -   **Email Creation:** Frontend allows creating emails with name/subject only, content auto-filled with default template
+
+## Recent Changes (October 2025)
+-   **Fixed email creation bug:** Made `content` field optional in `insertEmailSchema` to allow backend to provide default template
+-   **Added error handling:** Email creation form now shows error toast if mutation fails
+-   **Implemented real email sending:** Replaced simulated email sending with actual SMTP delivery using nodemailer
+-   **Created email service:** New `server/services/emailService.ts` handles SMTP configuration, sending, and personalization
+-   **Created automation service:** New `server/services/automationService.ts` triggers automations on new leads and handles scheduled sends
+-   **Integrated automation triggers:** Public lead capture endpoint now automatically triggers active automations with "new_lead" trigger
+-   **Scheduled task processor:** Background job runs every 60 seconds to execute pending scheduled email tasks
 
 ## External Dependencies
 -   **Database:** MySQL/MariaDB (configured via environment variables).
 -   **Payment Gateways:** Stripe, PayPal (integration keys are anticipated).
--   **Email Services:** Generic SMTP server for email sending (configured via Admin Settings).
+-   **Email Services:** Custom SMTP server (configured via Admin Settings) using `nodemailer` library for real email delivery.
