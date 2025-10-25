@@ -173,6 +173,7 @@ export function AutomationBuilder({
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Acción {index + 1}</span>
                       <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => removeAction(index)}
@@ -279,6 +280,7 @@ export function AutomationBuilder({
           )}
 
           <Button
+            type="button"
             variant="outline"
             className="w-full"
             onClick={addAction}
